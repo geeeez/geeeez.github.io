@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="php反序列化">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-26T07:30:30.601Z">
+<meta property="og:updated_time" content="2019-08-26T07:44:26.527Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="浅谈 php反序列化">
 <meta name="twitter:description" content="php反序列化">
@@ -237,9 +237,9 @@
 <ul>
 <li>序列化字符串中表示对象属性个数的值大于真实的属性个数时会跳过__wakeup的执行</li>
 <li>反序列化结合phar file等伪协议进行的文件读取和上传shell的操作</li>
-<li>反序列化完的字符串各类型可见字符串长度与所显示类型长度不匹配时，注意%00非打印字符的问题 非常常见！<h4 id="php反序列化的例子"><a href="#php反序列化的例子" class="headerlink" title="php反序列化的例子"></a>php反序列化的例子</h4><h5 id="Typecho反序列化漏洞导致前台getshell"><a href="#Typecho反序列化漏洞导致前台getshell" class="headerlink" title="Typecho反序列化漏洞导致前台getshell"></a>Typecho反序列化漏洞导致前台getshell</h5></li>
+<li>反序列化完的字符串各类型可见字符串长度与所显示类型长度不匹配时，注意%00非打印字符的问题 非常常见！  </li>
 </ul>
-<p>前段时间Typecho的一个后门，利用了反序列化来隐藏，利用链长度属于中等吧，大家都可以看着跟一下，非常适合入门。</p>
+<h4 id="php反序列化的例子"><a href="#php反序列化的例子" class="headerlink" title="php反序列化的例子"></a>php反序列化的例子</h4><h5 id="Typecho反序列化漏洞导致前台getshell"><a href="#Typecho反序列化漏洞导致前台getshell" class="headerlink" title="Typecho反序列化漏洞导致前台getshell"></a>Typecho反序列化漏洞导致前台getshell</h5><p>前段时间Typecho的一个后门，利用了反序列化来隐藏，利用链长度属于中等吧，大家都可以看着跟一下，非常适合入门。</p>
 <p>install.php文件里面有个后门<br>229~235行代码如下：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$config = unserialize(base64_decode(Typecho_Cookie::get(<span class="string">'__typecho_config'</span>))); <span class="comment">//关键控制点</span></span><br><span class="line">Typecho_Cookie::delete(<span class="string">'__typecho_config'</span>);</span><br><span class="line">$db = <span class="keyword">new</span> Typecho_Db($config[<span class="string">'adapter'</span>], $config[<span class="string">'prefix'</span>]); <span class="comment">//这里后面也会用到</span></span><br><span class="line">$db-&gt;addServer($config, Typecho_Db::READ | Typecho_Db::WRITE);</span><br><span class="line">Typecho_Db::set($db);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -253,7 +253,7 @@
 <p>上面代码中可以看到$_COOKIE为空时我们直接POST数据即可控制__typecho_config，然后我们就需要找到危险函数来进行触发。<br>经过全局搜索(当然过程肯定很麻烦，各种危险函数和魔术方法都要过一遍)发现Feed.php文件的__toString() 方法的290行左右代码如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">foreach ($this-&gt;_items as $item) &#123;</span><br><span class="line">    $content .= &apos;&lt;item&gt;&apos; . self::EOL;</span><br><span class="line">    $content .= &apos;&lt;title&gt;&apos; . htmlspecialchars($item[&apos;title&apos;]) . &apos;&lt;/title&gt;&apos; . self::EOL;</span><br><span class="line">    $content .= &apos;&lt;link&gt;&apos; . $item[&apos;link&apos;] . &apos;&lt;/link&gt;&apos; . self::EOL;</span><br><span class="line">    $content .= &apos;&lt;guid&gt;&apos; . $item[&apos;link&apos;] . &apos;&lt;/guid&gt;&apos; . self::EOL;</span><br><span class="line">    $content .= &apos;&lt;pubDate&gt;&apos; . $this-&gt;dateFormat($item[&apos;date&apos;]) . &apos;&lt;/pubDate&gt;&apos; . self::EOL;</span><br><span class="line">    $content .= &apos;&lt;dc:creator&gt;&apos; . htmlspecialchars($item[&apos;author&apos;]-&gt;screenName) . &apos;&lt;/dc:creator&gt;&apos; . self::EOL;</span><br><span class="line">    //下面的代码不重要</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>我们通过基础知识点得知 当把一个类当作字符串使用时自动调用toString方法，而install.php文件的232行有一行这样的代码：</p>
+<p>我们通过基础知识点得知 当把一个类当作字符串使用时自动调用toString方法，而上面的install.php文件的232行有一行这样的代码：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$db = <span class="keyword">new</span> Typecho_Db($config[<span class="string">'adapter'</span>], $config[<span class="string">'prefix'</span>]);</span><br></pre></td></tr></table></figure>
 
 <p>这里， 跟进Typecho_Db， 有一行代码是：</p>
@@ -402,6 +402,15 @@
 
   
 <nav id="article-nav">
+  
+    <a href="/2019/03/01/adb的简单使用/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          adb工具的使用笔记
+        
+      </div>
+    </a>
   
   
     <a href="/2018/05/14/awd工具(awd_all_in_one)/" id="article-nav-older" class="article-nav-link-wrap">
@@ -557,11 +566,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">web</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
               </li>
              
               <li class="article-tag-list-item">
