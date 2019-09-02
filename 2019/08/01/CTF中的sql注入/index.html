@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="CTF中的sql注入总结">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-02T14:24:58.660Z">
+<meta property="og:updated_time" content="2019-09-02T14:28:36.716Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CTF中的sql注入总结">
 <meta name="twitter:description" content="CTF中的sql注入总结">
@@ -213,20 +213,20 @@
 <table>
 <thead>
 <tr>
-<th>id</th>
-<th>username</th>
-<th>xxxxxx</th>
+<th align="center">id</th>
+<th align="center">username</th>
+<th align="center">xxxxxx</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>1</td>
-<td>admin</td>
-<td>flag{this_is_flag}</td>
+<td align="center">1</td>
+<td align="center">admin</td>
+<td align="center">flag{this_is_flag}</td>
 </tr>
 <tr>
-<td>2</td>
-<td>admin2</td>
-<td>1</td>
+<td align="center">2</td>
+<td align="center">admin2</td>
+<td align="center">1</td>
 </tr>
 </tbody></table>
 <p>如上一个数据表flag，当我们通过information表获取到了表明和有多少列，但是死活不知道最后一列列名，那么怎么查？</p>
@@ -258,20 +258,20 @@
 <table>
 <thead>
 <tr>
-<th>c1</th>
-<th>c2</th>
-<th>c3</th>
+<th align="center">c1</th>
+<th align="center">c2</th>
+<th align="center">c3</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>1</td>
-<td>2</td>
-<td>3</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
 </tr>
 </tbody></table>
 <p>然后我们联合查询flag数据表</p>
@@ -281,20 +281,20 @@
 <table>
 <thead>
 <tr>
-<th>c1</th>
-<th>c2</th>
-<th>c3</th>
+<th align="center">c1</th>
+<th align="center">c2</th>
+<th align="center">c3</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>1</td>
-<td>2</td>
-<td>3</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
 </tr>
 <tr>
-<td>1</td>
-<td>admin</td>
-<td>flag{this_is_flag}</td>
+<td align="center">1</td>
+<td align="center">admin</td>
+<td align="center">flag{this_is_flag}</td>
 </tr>
 </tbody></table>
 <p>现在我们把上面这个语句查询出来的表命名为t，然后我们查询这个表的c3字段,并取第二行的数据</p>
@@ -304,11 +304,11 @@
 <table>
 <thead>
 <tr>
-<th>c3</th>
+<th align="center">c3</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>flag{this_is_flag}</td>
+<td align="center">flag{this_is_flag}</td>
 </tr>
 </tbody></table>
 <p>当然盲注我们是不能看到的，所以还需要mid或者substr进行切割，最终我们写脚本来进行未知列名的数据读取：</p>
@@ -336,14 +336,14 @@
 <table>
 <thead>
 <tr>
-<th>username</th>
+<th align="center">username</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>admin</td>
+<td align="center">admin</td>
 </tr>
 <tr>
-<td>null</td>
+<td align="center">null</td>
 </tr>
 </tbody></table>
 <p>可以通过limit 来返回一个null。当然这个技巧很少用。</p>
@@ -638,11 +638,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
               </li>
              
               <li class="article-tag-list-item">
