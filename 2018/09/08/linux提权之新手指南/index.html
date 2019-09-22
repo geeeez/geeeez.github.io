@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="linux提权">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-18T14:32:31.171Z">
+<meta property="og:updated_time" content="2019-09-20T15:19:16.835Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux提权之新手指南">
 <meta name="twitter:description" content="linux提权">
@@ -197,7 +197,9 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这篇文章主要是给自己做个笔记，方便提权时漏掉一些东西，也适合小白吧！</p>
+        <p>这篇文章主要是给自己做个笔记，方便提权时查找漏掉一些东西，然后本人也是开始学习提权的思路和过程，并没有太多的骚姿势分享给大家，所以本文适合小白吧。</p>
+<a id="more"></a>
+
 <h4 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line"><span class="comment">#查看当前用户权限</span></span><br><span class="line"></span><br><span class="line">uname -a </span><br><span class="line"><span class="comment">#Linux - 内核名</span></span><br><span class="line"><span class="comment">#audit - 主机名</span></span><br><span class="line"><span class="comment">#2.6.18-128.el5 - 内核版本</span></span><br><span class="line"><span class="comment">#1 SMP Wed Jan 21 10:41:14 ....2009 - 内核编译日期</span></span><br><span class="line"><span class="comment">#x86_64 - 操作系统版本</span></span><br><span class="line"><span class="comment">#x86_64 - 处理器类型</span></span><br><span class="line"><span class="comment">#x86_64 - 硬件平台</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#举个例子：</span></span><br><span class="line">4.4.0-161-generic  </span><br><span class="line"><span class="comment">#主版本.次版本.释出版本-修改版本</span></span><br><span class="line"></span><br><span class="line">cat /proc/version</span><br><span class="line"><span class="comment">#同 uname -a的作用</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="searchsploit的使用"><a href="#searchsploit的使用" class="headerlink" title="searchsploit的使用"></a>searchsploit的使用</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#例子如下，自己去学参数语法，不过一般下面这几句就够了</span></span><br><span class="line">searchsploit linux priv esc 4.4 ubuntu 16  <span class="comment">#priv esc 是为了匹配Privilege Escalation 即提权 </span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用--exclude=选项删除不想要的结果</span></span><br><span class="line">searchsploit smb windows remote --exclude=<span class="string">"(POC)|txt"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#搜索包含abcd的漏洞标题，默认不加参数即 -t 参数 空格隔开就犹如百度搜索的空格隔开</span></span><br><span class="line">searchsploit -t abcd</span><br></pre></td></tr></table></figure>
@@ -520,10 +522,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
               </li>
              
@@ -537,6 +535,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">app</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">
