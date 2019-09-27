@@ -720,6 +720,85 @@
 
 
   
+    <article id="post-一篇文件搞懂sqlmap的tamper" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/27/一篇文件搞懂sqlmap的tamper/">一篇文章搞懂sqlmap的tamper</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/27/一篇文件搞懂sqlmap的tamper/" class="archive-article-date">
+  	<time datetime="2018-09-27T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-27</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="sqlmap的tamper-怎么使用？"><a href="#sqlmap的tamper-怎么使用？" class="headerlink" title="sqlmap的tamper 怎么使用？"></a>sqlmap的tamper 怎么使用？</h4><p>sqlmap -u [url] –tamper [模块名]</p>
+<h4 id="sqlmap的tamper怎么编写？"><a href="#sqlmap的tamper怎么编写？" class="headerlink" title="sqlmap的tamper怎么编写？"></a>sqlmap的tamper怎么编写？</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)</span></span><br><span class="line"><span class="comment">#See the file 'doc/COPYING' for copying permission</span></span><br><span class="line"><span class="comment">#Author:J8sec.com</span></span><br><span class="line"><span class="keyword">from</span> lib.core.enums <span class="keyword">import</span> PRIORITY</span><br><span class="line"></span><br><span class="line">__priority__ = PRIORITY.LOW</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dependencies</span><span class="params">()</span>:</span></span><br><span class="line">     <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">tamper</span><span class="params">(payload, **kwargs)</span>:</span></span><br><span class="line">      <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>上面是一个tamper的完整结构结构，下面一一讲解其中的参数作用。</p>
+        
+          <a class="article-more-a" href="/2018/09/27/一篇文件搞懂sqlmap的tamper/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/27/一篇文件搞懂sqlmap的tamper/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-linux提权之新手指南" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -878,82 +957,6 @@
 
 
   
-    <article id="post-awd工具(awd_all_in_one)" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/14/awd工具(awd_all_in_one)/">AWD工具</a>
-    </h1>
-  
-
-        
-        <a href="/2018/05/14/awd工具(awd_all_in_one)/" class="archive-article-date">
-  	<time datetime="2018-05-14T04:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-05-14</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>awd_all_in_one 是一个为awd比赛服务的脚本，旨在简化一些繁杂的批量代码编写,另外也是为了一些新手小白能好好体验下AWD的乐趣，当然学会写脚本是必须的，好的hacker必须是一个好的coder。注意：因为比赛调试需要，所有的脚本get、post请求都代理到了burp 即127.0.0.1 8080 如果不想改代码就开启burp（burp要添加127.0.0.1:8080监听）然后再运行脚本
-        
-          <a class="article-more-a" href="/2018/05/14/awd工具(awd_all_in_one)/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些工具</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/05/14/awd工具(awd_all_in_one)/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1056,11 +1059,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">

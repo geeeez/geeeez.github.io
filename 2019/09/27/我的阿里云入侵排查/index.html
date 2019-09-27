@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="linux入侵排查">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-27T03:09:49.145Z">
+<meta property="og:updated_time" content="2019-09-27T05:40:05.047Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux入侵排查">
 <meta name="twitter:description" content="linux入侵排查">
@@ -247,35 +247,10 @@
 <td>6</td>
 <td>重启动</td>
 </tr>
-<tr>
-<td>查看当前运行击别命令：runlevel</td>
-<td></td>
-</tr>
-<tr>
-<td>系统默认允许级别：vi /etc/inittab</td>
-<td></td>
-</tr>
-<tr>
-<td>id=3：initdefault 系统开机后直接进入哪个运行级别</td>
-<td></td>
-</tr>
-<tr>
-<td>开机启动配置文件</td>
-<td></td>
-</tr>
-<tr>
-<td>/etc/rc.local /etc/rc.d/rc[0~6].d</td>
-<td></td>
-</tr>
-<tr>
-<td>例子:当我们需要开机启动自己的脚本时，只需要将可执行脚本丢 在/etc/init.d目录下，然后在/etc/rc.d/rc*.d中建立软链接即可</td>
-<td></td>
-</tr>
-<tr>
-<td><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@localhost ~] ln -s /etc/init.d/sshd /etc/rc.d/rc3.d/S100ssh</span><br></pre></td></tr></table></figure></td>
-<td></td>
-</tr>
 </tbody></table>
+<p>查看当前运行击别命令：runlevel<br>系统默认允许级别：vi /etc/inittab<br>id=3：initdefault 系统开机后直接进入哪个运行级别<br>开机启动配置文件<br>/etc/rc.local /etc/rc.d/rc[0~6].d<br>例子:当我们需要开机启动自己的脚本时，只需要将可执行脚本丢 在/etc/init.d目录下，然后在/etc/rc.d/rc*.d中建立软链接即可 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@localhost ~] ln -s /etc/init.d/sshd /etc/rc.d/rc3.d/S100ssh</span><br></pre></td></tr></table></figure>
+
 <p>此处sshd是具体服务的脚本文件，S100ssh是其软链接，S开头代表加 载时自启动；如果是K开头的脚本文件，代表运行级别加载时需要关闭 的。<br>查看启动项文件一些命令： </p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">more /etc/rc.local </span><br><span class="line">more /etc/rc.d/rc[0~6].d   </span><br><span class="line">ls -l /etc/rc[0-6].d/</span><br></pre></td></tr></table></figure>
 
@@ -650,11 +625,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">一些工具</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
