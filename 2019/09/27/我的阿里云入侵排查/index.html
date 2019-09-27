@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="linux入侵排查">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-27T03:04:10.352Z">
+<meta property="og:updated_time" content="2019-09-27T03:09:49.145Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux入侵排查">
 <meta name="twitter:description" content="linux入侵排查">
@@ -198,6 +198,8 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h3 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h3><p>我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭</p>
+<a id="more"></a>
+
 <h3 id="用户分析"><a href="#用户分析" class="headerlink" title="用户分析"></a>用户分析</h3><p><strong>首先肯定是看有没有非法用户，有没有用户有非法权限</strong><br>通过对 /etc/passwd /etc/shadow 的查看，发现用户的权限还有用户并没有更改</p>
 <p>tips：我一般更改完密码会备份一份/etc/passwd 然后排查的时候直接diff进行比对，因为用户和服务很多有时候我自己都不清楚.</p>
 <p>至于新人，这里给一份这两个文件的详解：</p>
@@ -281,11 +283,9 @@
 <h3 id="定时任务"><a href="#定时任务" class="headerlink" title="定时任务"></a>定时任务</h3><p>基本使用：利用crontab 创建计划任务<br>基本命令：crontab -l 列出某个用户cron服务的详细内容   Tips：默认编写的crontab文件会保存在 (/var/spool/cron/用户名 例 如: /var/spool/cron/root<br>crontab -r 删除每个用户cront任务(谨慎：删除所有的计划任务)<br>crontab -e 使用编辑器编辑当前的crontab文件<br>使用案例之每天运行/home/backup.sh脚本：<br>vi /etc/anacrontab @daily 10 example.daily /bin/bash /home/backup.sh<br>当机器在 backup.sh 期望被运行时是关机的，anacron会在机器开机十 分钟之后运行它，而不用再等待 7天。<br>入侵排查 、<br>重点关注以下目录中是否存在恶意脚本 </p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/var/spool/cron/* </span><br><span class="line">/etc/crontab </span><br><span class="line">/etc/cron.d/* </span><br><span class="line">/etc/cron.daily/* </span><br><span class="line">/etc/cron.hourly/* </span><br><span class="line">/etc/cron.monthly/* </span><br><span class="line">/etc/cron.weekly/ </span><br><span class="line">/etc/anacrontab </span><br><span class="line">/var/spool/anacron/* </span><br><span class="line"><span class="comment">#小技巧： more /etc/cron.daily/* 查看目录下所有文件</span></span><br></pre></td></tr></table></figure>
 
-<h3 id="服务排查"><a href="#服务排查" class="headerlink" title="服务排查"></a>服务排查</h3><p>七、服务</p>
-<h4 id="服务自启动的设置"><a href="#服务自启动的设置" class="headerlink" title="服务自启动的设置"></a>服务自启动的设置</h4><p>第一种修改方法：<br>chkconfig [–level 运行级别] [独立服务名] [on|off]<br>chkconfig –level 2345 httpd on 开启自启动<br>chkconfig httpd on （默认level是2345）<br>第二种修改方法：<br>修改/etc/re.d/rc.local 文件<br>加入 /etc/init.d/httpd start<br>第三种修改方法：<br>使用ntsysv命令管理自启动，可以管理独立服务和xinetd服务。</p>
-<h4 id="服务的排查"><a href="#服务的排查" class="headerlink" title="服务的排查"></a>服务的排查</h4><p>1、查询已安装的服务<br>RPM 包安装的服务！<br>chkconfig   –list 查看服务自启动状态，可以看到所有的RPM包安装的服务<br>ps aux | grep crond 查看当前服务<br>系统再3与5级别下的启动项<br>2、源码包安装的服务<br>查看服务安装位置，一般实在/user/local/<br>service httpd start<br>搜索/etc/rc.d/init.d/ 查看是否存在！</p>
+<h3 id="服务排查"><a href="#服务排查" class="headerlink" title="服务排查"></a>服务排查</h3><p>** 服务自启动的设置 **<br>第一种修改方法：<br>chkconfig [–level 运行级别] [独立服务名] [on|off]<br>chkconfig –level 2345 httpd on 开启自启动<br>chkconfig httpd on （默认level是2345）<br>第二种修改方法：<br>修改/etc/re.d/rc.local 文件<br>加入 /etc/init.d/httpd start<br>第三种修改方法：<br>使用ntsysv命令管理自启动，可以管理独立服务和xinetd服务。<br>** 服务的排查 **<br>1、查询已安装的服务<br>RPM 包安装的服务！<br>chkconfig   –list 查看服务自启动状态，可以看到所有的RPM包安装的服务<br>ps aux | grep crond 查看当前服务<br>系统再3与5级别下的启动项<br>2、源码包安装的服务<br>查看服务安装位置，一般实在/user/local/<br>service httpd start<br>搜索/etc/rc.d/init.d/ 查看是否存在！</p>
 <h3 id="日志分析"><a href="#日志分析" class="headerlink" title="日志分析"></a>日志分析</h3><p>这里是入侵排查最重要的东西，一般有web日志和系统日志，web日志我这里没有，因为我为了安全所有的web都在docker里面，所以我这里主要就是系统日志。而且前面的排查我也没排查出什么东西。</p>
-<h4 id="日志文件的描述"><a href="#日志文件的描述" class="headerlink" title="日志文件的描述"></a>日志文件的描述</h4><p>日志默认存放位置： /var/log/<br>查看日志配置情况： more /etc/rsyslog.conf</p>
+<p>** 日志文件的描述 **<br>日志默认存放位置： /var/log/<br>查看日志配置情况： more /etc/rsyslog.conf</p>
 <table>
 <thead>
 <tr>
@@ -339,7 +339,7 @@
 </tr>
 </tbody></table>
 <p>#注意，一个系统可能并不拥有上面表格中的所有日志，比如ubuntu上述日志就有很多没有，这和设置与系统版本有关，所以入侵排排查，应该先确定原来有哪些日志，日志有没有被删除。</p>
-<h4 id="日志分析技巧"><a href="#日志分析技巧" class="headerlink" title="日志分析技巧"></a>日志分析技巧</h4><p>1、定位有多少IP再爆破主机的root账号</p>
+<p>** 日志分析技巧 **<br>1、定位有多少IP再爆破主机的root账号</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">"Failed password for root"</span> /var/<span class="built_in">log</span>/syslog | awk <span class="string">'&#123;print $11&#125;'</span> | sort | uniq -c | sort -nr | more</span><br></pre></td></tr></table></figure>
 
 <p>注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log<br>2、定位有哪些ip在爆破</p>
@@ -507,7 +507,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#起源"><span class="toc-number">1.</span> <span class="toc-text">起源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用户分析"><span class="toc-number">2.</span> <span class="toc-text">用户分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#历史命令查看"><span class="toc-number">3.</span> <span class="toc-text">历史命令查看</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#进程和端口排查"><span class="toc-number">4.</span> <span class="toc-text">进程和端口排查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#开机启动项"><span class="toc-number">5.</span> <span class="toc-text">开机启动项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定时任务"><span class="toc-number">6.</span> <span class="toc-text">定时任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务排查"><span class="toc-number">7.</span> <span class="toc-text">服务排查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#服务自启动的设置"><span class="toc-number">7.1.</span> <span class="toc-text">服务自启动的设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#服务的排查"><span class="toc-number">7.2.</span> <span class="toc-text">服务的排查</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#日志分析"><span class="toc-number">8.</span> <span class="toc-text">日志分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#日志文件的描述"><span class="toc-number">8.1.</span> <span class="toc-text">日志文件的描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#日志分析技巧"><span class="toc-number">8.2.</span> <span class="toc-text">日志分析技巧</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#我的服务器（乌龙）"><span class="toc-number">9.</span> <span class="toc-text">我的服务器（乌龙）</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#起源"><span class="toc-number">1.</span> <span class="toc-text">起源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用户分析"><span class="toc-number">2.</span> <span class="toc-text">用户分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#历史命令查看"><span class="toc-number">3.</span> <span class="toc-text">历史命令查看</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#进程和端口排查"><span class="toc-number">4.</span> <span class="toc-text">进程和端口排查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#开机启动项"><span class="toc-number">5.</span> <span class="toc-text">开机启动项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定时任务"><span class="toc-number">6.</span> <span class="toc-text">定时任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务排查"><span class="toc-number">7.</span> <span class="toc-text">服务排查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#日志分析"><span class="toc-number">8.</span> <span class="toc-text">日志分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#我的服务器（乌龙）"><span class="toc-number">9.</span> <span class="toc-text">我的服务器（乌龙）</span></a></li></ol>
                     </div>
                 </span>
             </div>
