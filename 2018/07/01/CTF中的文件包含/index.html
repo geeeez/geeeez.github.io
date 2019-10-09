@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="CTF中的文件包含">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-09T09:49:30.496Z">
+<meta property="og:updated_time" content="2019-10-09T16:12:45.848Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CTF中的文件包含">
 <meta name="twitter:description" content="CTF中的文件包含">
@@ -199,6 +199,9 @@
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>CTF比赛中文件包含总是作为第一步或者最后一步来进行信息泄露或者flag读取，大多数的文件包含与文件读取有关，剩下的可能就是通过文件包含来getshell。</p>
 <p>这篇文章主要是记录一下我打CTF比赛中的一些文件包含漏洞利用经验（由于比赛大部分是PHP的文件包含，所以这里是以PHP的文件包含为案例来写的，其他语言的文件包含类似）。</p>
+<p>CTF中的文件包含，看这一篇就够了！</p>
+<a id="more"></a>
+
 <h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>1、文件包含分为 ：本地包含和远程包含 远程包含需要php.ini中的allow_url_include = On<br>2、inclue() include_once()和require（）require_once区别 ： 前者遇到错误给出警告继续执行，后者直接给出警告，终端执行！<br>3、一张表了解php的伪协议：</p>
 <table>
 <thead>
@@ -590,11 +593,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">

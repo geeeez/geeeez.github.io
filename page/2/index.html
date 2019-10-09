@@ -276,103 +276,10 @@
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>CTF比赛中文件包含总是作为第一步或者最后一步来进行信息泄露或者flag读取，大多数的文件包含与文件读取有关，剩下的可能就是通过文件包含来getshell。</p>
 <p>这篇文章主要是记录一下我打CTF比赛中的一些文件包含漏洞利用经验（由于比赛大部分是PHP的文件包含，所以这里是以PHP的文件包含为案例来写的，其他语言的文件包含类似）。</p>
-<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>1、文件包含分为 ：本地包含和远程包含 远程包含需要php.ini中的allow_url_include = On<br>2、inclue() include_once()和require（）require_once区别 ： 前者遇到错误给出警告继续执行，后者直接给出警告，终端执行！<br>3、一张表了解php的伪协议：</p>
-<table>
-<thead>
-<tr>
-<th>协议</th>
-<th>测试php版本</th>
-<th>allow_url_fopen</th>
-<th>allow_url_include</th>
-<th>用法</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>file://</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=file:///etc/passwd</td>
-</tr>
-<tr>
-<td>php://filter</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=php://filter/read=convert.base64-encode/resource=./index.php</td>
-</tr>
-<tr>
-<td>php://input</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>on</td>
-<td>?file=php://input POST DATA <?php phpinfo(); ?></td>
-</tr>
-<tr>
-<td>zip://</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=zip:///tmp/1.zip%231.txt</td>
-</tr>
-<tr>
-<td>compress.bzip2://</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=compress.bzip2://./file.bz2</td>
-</tr>
-<tr>
-<td>compress.zlib://</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=compress.zlib://./file.gz</td>
-</tr>
-<tr>
-<td>data://</td>
-<td>&gt;=5.2</td>
-<td>on</td>
-<td>on</td>
-<td>?file=data://text/plain,<?php phpinfo(); ?> or ?file=data://text/plain;base64,PD9waHAgcGhwaW5mbygpOyA/Pg== or ?file=data:text/plain,<?php phpinfo();?> or ?file=data.text/plain;base64,PD9waHAgcGhwaW5mbygpOyA/Pg==</td>
-</tr>
-<tr>
-<td>phar://</td>
-<td>&gt;=5.2</td>
-<td>off/on</td>
-<td>off/on</td>
-<td>?file=phar://php.zip/php.jpg</td>
-</tr>
-</tbody></table>
-<p>4、除了基础知识，我们还需要了解一些特性：</p>
-<ul>
-<li><p>%00截断 只适用于低版本php  php &lt;= 5.3.0 且magic_quotes_gpc 为off</p>
-</li>
-<li><p>点号 系统特性截断 只适用于低版本php  php &lt;= 5.3.0<br>windows 259个bytes <strong>.</strong> 可造成截断</p>
-<p>linux 4096个bytes <strong>.</strong>  可造成截断</p>
-</li>
-</ul>
-<ul>
-<li>路径长度截断：<br>?file=../../../../../../../../../etc/passwd/././././././.[…]/./././././.<br>(php版本小于5.3.0(?)可以成功，linux需要文件名长于4096，windows需要长于256)</li>
-<li>默认情况下 allow_url_fopen 为on allow_url_include 为off</li>
-</ul>
-<h3 id="各个协议详解"><a href="#各个协议详解" class="headerlink" title="各个协议详解"></a>各个协议详解</h3><p><strong>file协议</strong><br>可在allow_url_fopen ：off/on allow_url_include：off/on下均可使用，但是必须要用绝对路径，而且可以读取文件，当然文件内容不能是php代码形式（这点要切记，非常容易犯错）否则会被直接解析。如果不是php代码的内容会被直接显示出来。</p>
-<p><strong>php://协议</strong><br>条件：<br>不需要开启allow_url_fopen，仅php://input、 php://stdin、 php://memory 和 php://temp 需要开启allow_url_include。<br>1、php://filter 不需要 allow_url 开启即可读取、包含。PHP代码读取需要编码否则直接执行php代码（很重要）<br>2、常用来读取代码的包含命令  php://filter/read=convert.base64-encode/resource=./cmd.php<br>3、php://input 需要 allow_url_include:on<br>4、当allow_url_include为On，而allow_url_fopen为Off的时候，不可以直接远程包含文件，但是可以使用php://input、 php://stdin、 php://memory 和 php://temp等伪协议<br>5、利用 php 的数据协议 data:// 可以查看文件源代码，前提是 php.ini 中的 allow_url_fopen 和 allow_url_include 两个配置为 on</p>
-<p><strong>zip协议</strong><br>zip://, bzip2://, zlib://协议在allow_url双off的情况下都可以正常使用；</p>
-<p>zip协议：php5.2.x需要绝对路径 其他版本可以相对路径 windows复现成功了<br>包含例子：zip://1.png%231.php 或者 zip://1.zip%231.php</p>
-<p><strong>phar协议</strong><br>allow 两个都为ON 并且PHP版本高于5.3<br>例子：<a href="http://127.0.0.1/file.php?file=phar://phartest2.zip/a.jpg" target="_blank" rel="noopener">http://127.0.0.1/file.php?file=phar://phartest2.zip/a.jpg</a> 和zip伪协议是一样的用法<br>生成phar打包代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$p = <span class="keyword">new</span> PharData(dirname(<span class="keyword">__FILE__</span>).<span class="string">'/phartest2.zip'</span>, <span class="number">0</span>,<span class="string">'phartest2'</span>,Phar::ZIP) ;</span><br><span class="line">$x=file_get_contents(<span class="string">'./php.php'</span>);</span><br><span class="line">$p-&gt;addFromString(<span class="string">'a.jpg'</span>,$x);</span><br><span class="line"><span class="comment">//会生成一个zip的压缩文件phartest2.zip 其中压缩了一个a.jpg a.jpg里面代码是php.php的内容</span></span><br><span class="line"><span class="comment">//当然和zip协议一样，你也可以把phartest2.zip改成任意后缀，这里的后缀和包含读取是没有关系的。怎么绕过白名单方便就怎么来</span></span><br><span class="line"><span class="comment">//然后我们构造http://127.0.0.1/file.php?file=phar://phartest2.zip/a.jpg</span></span><br><span class="line"><span class="comment">//也可以直接shell</span></span><br><span class="line"><span class="comment">//其中phar适用范围为php&gt;5.3.0</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>data:协议</strong><br>allow_url 两个都需要 On (没用，都为on我直接就去php://input getshell了)<br>例子：data://text/plain;base64,PD9waHAgcGhwaW5mbygpOyA/Pg （phpinfo)</p>
-<h3 id="奇巧淫技"><a href="#奇巧淫技" class="headerlink" title="奇巧淫技"></a>奇巧淫技</h3><p>伪协议不只应用在文件包含中，所有对文件的操作都可以进行伪协议的利用，所以如果我们能控制文件名，就应该多跟一下这个文件名被哪些函数操作，而不是只关注在文件包含，下面这些函数都支持伪协议：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">fopen()</span><br><span class="line">file_get_contents()</span><br><span class="line">copy()</span><br><span class="line">parse_ini_file()</span><br><span class="line">readfile()</span><br><span class="line">file_put_contents()</span><br><span class="line">mkdir()</span><br><span class="line">tempnam()</span><br><span class="line">touch()</span><br><span class="line">move_uploaded_file()</span><br><span class="line">rename()</span><br><span class="line">unlink()</span><br><span class="line">rmdir()</span><br><span class="line"><span class="keyword">require</span>()</span><br><span class="line"><span class="keyword">include</span>()</span><br><span class="line"><span class="keyword">require_once</span>()</span><br><span class="line"><span class="keyword">include_once</span>()</span><br><span class="line">ZipArchive::open()</span><br></pre></td></tr></table></figure>
-
-<p>另外实际渗透测试中，我们无法进行可控的文件包含，只能盲包（😂就是盲目包含），所以下面是一些常见可供包含的文件路径</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">日志路径</span><br><span class="line">/var/<span class="built_in">log</span>/apache/error.log</span><br><span class="line">/var/<span class="built_in">log</span>/apache/access_log</span><br><span class="line">/var/www/logs/access_log</span><br><span class="line">/var/<span class="built_in">log</span>/asscess_log</span><br><span class="line">/var/<span class="built_in">log</span>/access.log</span><br><span class="line">session 路径</span><br><span class="line">/tmp/sess_phpsession_id</span><br><span class="line"></span><br><span class="line">敏感信息路径</span><br><span class="line">windows</span><br><span class="line">c:\boot.ini  <span class="comment">#查看系统版本</span></span><br><span class="line">c:\Windows\System32\inetsrv\MetaBase.xml <span class="comment">#IIS配置文件</span></span><br><span class="line">c:\Windows\repair\sam  <span class="comment">#存储系统初次安装密码</span></span><br><span class="line">c:\Windows\php.ini  <span class="comment">#php配置信息</span></span><br><span class="line">c:\Windows\my.ini  <span class="comment">#mysql配置信息</span></span><br><span class="line">c:\Program Files\mysql\my.ini</span><br><span class="line">c:\Program Files\mysql\data\mysql\user.MYD <span class="comment">#mysql root</span></span><br><span class="line">phpstudy的各种路径具体分析</span><br><span class="line"></span><br><span class="line">linux</span><br><span class="line">/root/.ssh/authorized_keys</span><br><span class="line">/root/.ssh/id_rsa</span><br><span class="line">/root/.ssh/id_rsa.keystore</span><br><span class="line">/root/.ssh/known_hosts</span><br><span class="line">/etc/passwd</span><br><span class="line">/etc/shadow</span><br><span class="line">/etc/my.cnf</span><br><span class="line">/root/httpd/conf/httpd.conf</span><br><span class="line">/root/.bash_history</span><br><span class="line">/root/.mysql_history</span><br><span class="line">/proc/self/fd/fd[0-9]*</span><br><span class="line">/proc/mounts</span><br><span class="line">/proc/config.gz</span><br><span class="line">/etc/nginx/                <span class="comment">#配置文件具体路径自己找</span></span><br><span class="line">/etc/apache/               <span class="comment">#配置文件具体路径自己找</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>php文件包含是最骚的，因为php太灵活（毕竟是世界上最好的语言），其他文件包含可关注下jsp的文件包含，但是感觉其他语言的文件包含漏洞较少。比如jsp也分为本地文件和远程文件包含，远程文件包含很少开启，另外jsp文件包含必须是1.jsp这种格式的而不是php那种可以任意后缀进行文件包含，所以在这点上jsp比php安全很多。当然，安全没有绝对。</p>
-<p>如果上述内容有问题欢迎留言或者直接把疑问发我邮箱。</p>
-
+<p>CTF中的文件包含，看这一篇就够了！</p>
+        
+          <a class="article-more-a" href="/2018/07/01/CTF中的文件包含/#more">more >></a>
+        
       
 
       
@@ -735,6 +642,91 @@
 
 
   
+    <article id="post-何为坦然面对人生" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/1997/01/03/何为坦然面对人生/">传信者</a>
+    </h1>
+  
+
+        
+        <a href="/1997/01/03/何为坦然面对人生/" class="archive-article-date">
+  	<time datetime="1997-01-02T16:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>1997-01-03</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>坦然不是努力接受能接受的事情</p>
+<p>坦然是被迫接受所不能接受的</p>
+<p>如果你在医院，医生告诉你需要手术，病情严重，你的接受不叫坦然</p>
+<p>如果你在医院，医生说时日无长，及时行乐，此处我竟不敢开口。</p>
+<p>坦然是无可奈何后的尊严维护，</p>
+<p>坦然就是悬崖边上的放手。</p>
+<p>一个人活到60岁，他的朋友活到90岁，好像60的人也没那么惨。</p>
+<p>一个人活到30岁，他的朋友活到60岁，你会觉得30岁的人很悲催吗？</p>
+<p>我们的理解都不叫坦然，我们没有资格劝别人看开。</p>
+<p>希望众人不必坦然，只为着自己想要的那一丢丢满足感，拼尽最后一点力气。</p>
+<p>坦然的事情，就交给不幸的人吧！</p>
+<p>愿我们年少轻狂放纵，青年热血无悔，中年运筹帷幄，老年风雨不动，暮年坦然如初。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/1997/01/03/何为坦然面对人生/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-深夜十二点" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -990,11 +982,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
