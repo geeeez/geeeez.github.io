@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="linux入侵排查">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-27T05:40:05.047Z">
+<meta property="og:updated_time" content="2019-10-10T01:59:52.741Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux入侵排查">
 <meta name="twitter:description" content="linux入侵排查">
@@ -338,7 +338,7 @@
 <h3 id="我的服务器（乌龙）"><a href="#我的服务器（乌龙）" class="headerlink" title="我的服务器（乌龙）"></a>我的服务器（乌龙）</h3><p>重点来了，我做了上述的所有检查，比对/etc/passwd 没发现变动，cron没有任何新添加的定时任务，服务没有没见过的服务，而且我的web服务全在docker，开机启动项和服务自启动也没有问题。</p>
 <p>直到日志排查，我发现一个ip在我出差的时候登陆了我的阿里云，ip定位是石家庄，可我从没去过石家庄，我也不是石家庄的，然后我就开始警觉，查询日志发现该ip没有爆破，一次登陆。震惊！我的密码可是10位大小字母加数字和特殊字符混合出来的。查看历史命令，执行了一个ls，然后就没有了，我刚开始怀疑是他删除了日志和历史命令，于是去查看系统有没有后门，排查了一圈，没有任何服务出网到可疑的ip。</p>
 <p>无果后我就问了下一个大佬，他说你的手机是不是河北的，是不是开热点了。于是我发现我虽然不是石家庄的但是我的联通热点的出口是石家庄，那么一切就解释清楚了。哎，白忙活了三个小时。</p>
-<p>不过这些基础的排查还是写出来供大家参考吧！其实很多也是通过网上学习的！</p>
+<p>不过这些基础的排查还是写出来供大家参考吧！其实很多我也是通过网上学习的！</p>
 
       
 
@@ -630,11 +630,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">app</a>
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -642,7 +638,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
+                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">app</a>
               </li>
              
               <li class="article-tag-list-item">
