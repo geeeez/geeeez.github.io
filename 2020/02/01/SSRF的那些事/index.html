@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="geez博客">
 <meta property="og:description" content="SSRF问题总结">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-04-17T08:32:58.153Z">
+<meta property="og:updated_time" content="2020-04-17T08:35:24.394Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SSRF的那些问题">
 <meta name="twitter:description" content="SSRF问题总结">
@@ -199,6 +199,8 @@
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>&#160; &#160; &#160; SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还是有用武之地的。</p>
 <h3 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h3><p>&#160; &#160; &#160; SSRF(Server-Side Request Forgery:服务器端请求伪造) 是一种由攻击者构造形成由服务端发起请求的一个安全漏洞。很晦涩！！！举个例子：服务端有一个在线加载图片的功能，你传入一个图片URL，网站就会加载出来对应图片，所以图片的URL是网站服务器去访问的，如果我们利用这点传入一些只有服务端才能进行访问的URL，比如不对外开放的后台地址，那么这个过程就是服务端的请求伪造。</p>
+<a id="more"></a>
+
 <h3 id="常简存在SSRF漏洞的函数"><a href="#常简存在SSRF漏洞的函数" class="headerlink" title="常简存在SSRF漏洞的函数"></a>常简存在SSRF漏洞的函数</h3><h4 id="php"><a href="#php" class="headerlink" title="php"></a>php</h4><p>1.file_get_contents()<br>2.fsockopen()<br>3.curl_exec()   默认不支持302跳转的</p>
 <h4 id="java"><a href="#java" class="headerlink" title="java"></a>java</h4><p>1.HttpClient<br>2.Request (对HttpClient封装后的类)<br>3.HttpURLConnection<br>4.URLConnection<br>5.URL<br>6.okhttp<br>以上的几个发送网络请求的类都有可能导致SSRF，但是java的各个类对协议的支持各有不同，所以利用过程首先得确定支持哪些协议。</p>
 <h3 id="SSRF支持的协议"><a href="#SSRF支持的协议" class="headerlink" title="SSRF支持的协议"></a>SSRF支持的协议</h3><p>这里协议描述的细一点，也参考了各个文章的trick。因为协议的技巧都是通用的，xxe、文件读取、文件包含等都可能用的上。</p>
@@ -725,10 +727,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">ctf</a>
               </li>
              
@@ -738,6 +736,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">app</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">
