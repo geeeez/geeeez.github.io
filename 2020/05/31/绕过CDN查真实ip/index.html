@@ -6,20 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://geeeez.github.io">
-  <title>死亡剖析 | geez博客</title>
+  <title>Apache solr RCE（CVE-2019-xxxx） | geez博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="剖析我的死亡。">
-<meta name="keywords" content="随笔">
+  <meta name="description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="keywords" content="web">
 <meta property="og:type" content="article">
-<meta property="og:title" content="死亡剖析">
-<meta property="og:url" content="https://geeeez.github.io/2019/10/28/剖析自己/index.html">
+<meta property="og:title" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta property="og:url" content="https://geeeez.github.io/2020/05/31/绕过CDN查真实ip/index.html">
 <meta property="og:site_name" content="geez博客">
-<meta property="og:description" content="剖析我的死亡。">
+<meta property="og:description" content="Apache solr RCE（CVE-2019-xxxx）">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-31T07:37:29.213Z">
+<meta property="og:image" content="https://geeeez.github.io/images/1587865705889.png">
+<meta property="og:updated_time" content="2020-07-01T06:01:42.001Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="死亡剖析">
-<meta name="twitter:description" content="剖析我的死亡。">
+<meta name="twitter:title" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="twitter:description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="twitter:image" content="https://geeeez.github.io/images/1587865705889.png">
   
     <link rel="alternative" href="/atom.xml" title="geez博客" type="application/atom+xml">
   
@@ -177,30 +179,38 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-剖析自己" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-绕过CDN查真实ip" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      死亡剖析
+      Apache solr RCE（CVE-2019-xxxx）
     </h1>
   
 
         
-        <a href="/2019/10/28/剖析自己/" class="archive-article-date">
-  	<time datetime="2019-10-27T16:01:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-10-28</time>
+        <a href="/2020/05/31/绕过CDN查真实ip/" class="archive-article-date">
+  	<time datetime="2020-05-31T15:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-05-31</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>我本来在这里写了几十行字，</p>
-<p>但是我一一删除，</p>
-<p>成年人的直觉告诉我，</p>
-<p>可怜是不值得被同情的，更不应该给别人贩卖卑微。</p>
+        <h2 id="绕过CDN查找真实ip"><a href="#绕过CDN查找真实ip" class="headerlink" title="绕过CDN查找真实ip"></a>绕过CDN查找真实ip</h2><h4 id="如何确定网站是否开启CDN"><a href="#如何确定网站是否开启CDN" class="headerlink" title="如何确定网站是否开启CDN"></a>如何确定网站是否开启CDN</h4><p>1、全国乱ping，如果ip不尽相同，说明开启CDN加速：<a href="http://ping.chinaz.com/" target="_blank" rel="noopener">http://ping.chinaz.com/</a></p>
+<p>2、直接查ip，大厂商的CDNip可直接查到：<br><img src="/images/1587865705889.png" alt="1587865705889"></p>
+<a id="more"></a>
+<h4 id="二级域名法"><a href="#二级域名法" class="headerlink" title="二级域名法"></a>二级域名法</h4><p>很多厂商的二级域名不会也开启CDN防护，所以可能这样就可以找到对应的真实ip，但是也有很多个人会把自己的子域名都放到CDN上，而且有时候不同子域名不用同一个ip，所以此方法也不是万能的。</p>
+<h4 id="nslookup查找真实IP"><a href="#nslookup查找真实IP" class="headerlink" title="nslookup查找真实IP"></a>nslookup查找真实IP</h4><p>国内很多CDN厂商不在国外做CDN，业务需求不高嘛，所以可以用国外的一些DNS看看有没有绑定真实IP</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nslookup http://xxx.com <span class="number">8</span>.<span class="number">8</span>.<span class="number">8</span>.<span class="number">8</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="看DNS历史记录"><a href="#看DNS历史记录" class="headerlink" title="看DNS历史记录"></a>看DNS历史记录</h4><p>通过历史解析过的DNS记录来查找到真实IP，万一测试的时候没有上CDN，可能就被爬虫爬下来：</p>
+<p><a href="https://securitytrails.com/domain/tituku.cn/dns" target="_blank" rel="noopener">https://securitytrails.com/domain/tituku.cn/dns</a></p>
+<h4 id="通过证书找到真实IP"><a href="#通过证书找到真实IP" class="headerlink" title="通过证书找到真实IP"></a>通过证书找到真实IP</h4><p>有些人没有钱搞证书，又想上HTTPS，他就会找一些免费的证书，而这些免费的证书都是绑定在域名上的，而如果这时候有一个全网扫描的东西扫全网的443端口，查看证书的信息就可以（因为你的申请证书必须要有域名）</p>
+<p><a href="https://censys.io/" target="_blank" rel="noopener">https://censys.io/</a>  </p>
+<p>我们不需要去找证书，上面这个网站直接全网爬取然后找到证书一致的网站ip和域名对应起来，这样一个个人博客即使他绑定之前就直接使用了CDN，但是如果他的证书如果被比对到也会被识别到真实的IP。</p>
 
       
 
@@ -245,7 +255,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
         		</li>
       		
 		</ul>
@@ -301,7 +311,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2019/10/28/剖析自己/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2020/05/31/绕过CDN查真实ip/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -315,18 +325,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/12/25/我的git笔记/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          我的git笔记
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/09/29/如何绕过app的ssl-pinning/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">如何绕过app的ssl-pinning</div>
+    <a href="/2020/02/11/SSRF的那些事/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">SSRF的那些问题</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -353,7 +354,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#绕过CDN查找真实ip"><span class="toc-number">1.</span> <span class="toc-text">绕过CDN查找真实ip</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#如何确定网站是否开启CDN"><span class="toc-number">1.0.1.</span> <span class="toc-text">如何确定网站是否开启CDN</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#二级域名法"><span class="toc-number">1.0.2.</span> <span class="toc-text">二级域名法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#nslookup查找真实IP"><span class="toc-number">1.0.3.</span> <span class="toc-text">nslookup查找真实IP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#看DNS历史记录"><span class="toc-number">1.0.4.</span> <span class="toc-text">看DNS历史记录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过证书找到真实IP"><span class="toc-number">1.0.5.</span> <span class="toc-text">通过证书找到真实IP</span></a></li></ol></li></ol></li></ol>
                     </div>
                 </span>
             </div>
@@ -492,6 +493,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">ctf</a>
               </li>
              
@@ -501,10 +506,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">app</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">

