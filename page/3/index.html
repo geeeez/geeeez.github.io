@@ -1,7 +1,195 @@
-extends includes/layout.pug
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>geez博客</title><meta name="keywords" content="安全,白帽子,黑客,诗人"><meta name="author" content="geez"><meta name="copyright" content="geez"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="个人笔记博客">
+<meta property="og:type" content="website">
+<meta property="og:title" content="geez博客">
+<meta property="og:url" content="https://geeeez.github.io/page/3/index.html">
+<meta property="og:site_name" content="geez博客">
+<meta property="og:description" content="个人笔记博客">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://geeeez.github.io/null">
+<meta property="article:author" content="geez">
+<meta property="article:tag" content="安全,白帽子,黑客,诗人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://geeeez.github.io/null"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://geeeez.github.io/page/3/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  hexoversion: '5.1.1',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
 
-block content
-  include ./includes/mixins/post-ui.pug
-  #recent-posts.recent-posts
-    +postUI
-    include includes/pagination.pug
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isSidebar: false,
+  postUpdate: '2020-09-17 14:04:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+  }
+}
+
+var autoChangeMode = 'false'
+var t = saveToLocal.get('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (saveToLocal.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="geez博客" type="application/atom+xml">
+</head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">25</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">5</div></a></div></div></div><hr/></div></div><div id="body-wrap"><header class="full_page" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">geez博客</a></span><span id="menus"><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="site-info"><h1 id="site_title">geez博客</h1><div id="site_subtitle"><span id="subtitle"></span></div></div><div id="scroll_down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout_page" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info"><a class="article-title" href="/2018/04/08/linux%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E4%B8%93%E9%A2%98/" title="命令执行专题">命令执行专题</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2018-04-08T04:12:57.000Z" title="发表于 2018-04-08 12:12:57">2018-04-08</time></span></div><div class="content">&#160; &#160; &#160; &#160;前段时间给一些的学生讲解命令执行的trick，所以今天就总结了所讲的知识点，分享出来给大家学习。这里只是把网上的资源整合在了一起，加一些自己在ctf比赛中的trick，本文章适合打CTF的初学者。&#160; &#160; &#160; 
+话不多说，直接看题目：  
+level-1
+其实很多CTF已经考过这个考点了也有大佬发过文章，这里简单说一下：我们利用 &gt;a 这种方式可以创建一个文件，然后我们可以创建一些类似 &gt;cat &gt;curl这样的文件。然后通过* 执行 或者 ls&gt;a这样把文件名写入到一个文件中通过sh a 来执行。另外我们可以使用 \ 这种续行符号来拼接命令使得我们可以在有长度限制的命令执行中执行我们想执行的命令一图胜千言：这里需要注意两点1：文件名的顺序（这里就需要经验和尝试了 另外还有一个逆序rev和一些head等取位置的技巧）2：命令拼接后保证命令的顺利执行
+代码如下四个长度读取flag，其实很简单，四个长度都能getshell了首先我们创建一个cat : &gt;cat 刚好四个字节然后： ...</div></div></div><div class="recent-post-item"><div class="recent-post-info"><a class="article-title" href="/2018/01/11/%E5%8D%9A%E5%AE%A2%E6%90%AC%E8%BF%81/" title="我的博客再次上线">我的博客再次上线</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2018-01-11T04:12:57.000Z" title="发表于 2018-01-11 12:12:57">2018-01-11</time></span></div><div class="content">&#160; &#160; &#160; &#160;第一个博客是大二上学期搭建的，那时候满腔热血，隔几天就要更新一波博客。后来越来越忙，更新越来越少。直到有一天我的服务器和域名都到期了，我觉得没有继续下去的必要了，所以博客下线，我的总结更多的写在了evernote（印象笔记国际版）上。&#160; &#160; &#160; &#160;现在刚入职cfca，工作不算特别忙，翻看我的笔记发现由于没有给别人看的需求，文章写的太乱，排版也很差，现在我自己看起来都费劲。所以，我觉得是时候搭建一个博客来监督我的学习了。&#160; &#160; &#160; &#160;之所以选择hexo是因为我目前大多数情况下用markdown，另外博客的本质就是分享内容，越简单越好。另外也不想买域名、服务器。又要续费又要时时维护，很麻烦，所以就搭在github上了。我不想在这些事情上花费太多精力，我只想好好学习，赚点钱，改善生活。嘿嘿。&#160; &#160; &#160; &#160;我的博客总体来说就是我的笔记，大部分都是给我自己看的，当然如果文章有错误也欢迎指正。&#160; &#160; &#1 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info"><a class="article-title" href="/1997/01/03/%E4%BD%95%E4%B8%BA%E5%9D%A6%E7%84%B6%E9%9D%A2%E5%AF%B9%E4%BA%BA%E7%94%9F/" title="坦然面对人生">坦然面对人生</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="1997-01-02T16:12:57.000Z" title="发表于 1997-01-03 00:12:57">1997-01-03</time></span></div><div class="content">坦然不是努力接受能接受的事情
+坦然是被迫接受所不能接受的
+如果你在医院，医生告诉你需要手术，病情严重，你的接受不叫坦然
+如果你在医院，医生说时日无长，及时行乐，此处我竟不敢开口。
+坦然是无可奈何后的尊严维护，
+坦然就是悬崖边上的放手。
+一个人活到60岁，他的朋友活到90岁，好像60的人也没那么惨。
+一个人活到30岁，他的朋友活到60岁，你会觉得30岁的人很悲催吗？
+我们的理解都不叫坦然，我们没有资格劝别人看开。
+希望众人不必坦然，只为着自己想要的那一丢丢满足感，拼尽最后一点力气。
+坦然的事情，就交给不幸的人吧！
+愿我们年少轻狂放纵，青年热血无悔，中年运筹帷幄，老年风雨不动，暮年坦然如初。
+</div></div></div><div class="recent-post-item"><div class="recent-post-info"><a class="article-title" href="/1997/01/02/%E6%B7%B1%E5%A4%9C%E5%8D%81%E4%BA%8C%E7%82%B9/" title="深夜12点">深夜12点</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="1997-01-01T16:12:57.000Z" title="发表于 1997-01-02 00:12:57">1997-01-02</time></span></div><div class="content">深夜十二点了，
+北京的灯未熄灭
+我在我的出租屋房
+我在我的台灯下写
+
+
+这台灯的光还算温暖
+正如这晚夏的夜风也未寒
+我点着一根烟
+就在这灯下写
+我不知道写点什么
+但是我必须要写
+因为写下才能证明我活着
+而不像这静默死寂的夜
+我幻想晚上有个姑娘来我床前
+也幻想她好看又风度翩翩
+我幻想风从墙里吹来
+还带着烧烤的烟火和闲谈的酒
+我幻想倾盆大雨
+带着冰雹报复这大地
+也幻想阳光明媚
+我在微风中看草木衰竭
+我幻想我活着，像大家想象中的成功人，能衣锦还乡
+我幻想我死了，像万人唾弃的大坏蛋，仍名垂青史
+可这也只是我的幻想
+无非为了安慰我只能在这十平米小屋的灯下写
+我可以用笔勾勒人生
+但我不是马良
+你也不是
+睡吧
+我们都是平凡人
+我们都是写手
+也写心
+睡吧
+</div></div></div><div class="recent-post-item"><div class="recent-post-info"><a class="article-title" href="/1997/01/01/%E4%BC%A0%E4%BF%A1%E8%80%85/" title="传信者">传信者</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="1996-12-31T16:12:57.000Z" title="发表于 1997-01-01 00:12:57">1997-01-01</time></span></div><div class="content">我本想托月亮带话给你但今夜无月我又等不到太阳出来只能托这清风又怕你在屋里只能多多嘱咐清风让他万万要吹到屋里吹在你的耳边
+</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span></div></nav></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">geez</div><div class="author-info__description">个人笔记博客</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length_num">25</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length_num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div></div><div class="sticky_layout"><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><div class="content"><a class="title" href="/2020/05/31/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E7%9C%9F%E5%AE%9Eip/" title="绕过CDN查找真实ip">绕过CDN查找真实ip</a><time datetime="2020-05-31T15:12:57.000Z" title="发表于 2020-05-31 23:12:57">2020-05-31</time></div></div><div class="aside-list-item"><div class="content"><a class="title" href="/2020/02/11/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/" title="SSRF的那些问题">SSRF的那些问题</a><time datetime="2020-02-11T15:12:57.000Z" title="发表于 2020-02-11 23:12:57">2020-02-11</time></div></div><div class="aside-list-item"><div class="content"><a class="title" href="/2020/02/02/%E7%BB%95%E8%BF%87php%E7%9A%84disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" title="php绕过disable函数进行命令执行">php绕过disable函数进行命令执行</a><time datetime="2020-02-02T12:12:57.000Z" title="发表于 2020-02-02 20:12:57">2020-02-02</time></div></div><div class="aside-list-item"><div class="content"><a class="title" href="/2019/12/25/%E6%88%91%E7%9A%84git%E7%AC%94%E8%AE%B0/" title="我的git笔记">我的git笔记</a><time datetime="2019-12-25T15:12:57.000Z" title="发表于 2019-12-25 23:12:57">2019-12-25</time></div></div><div class="aside-list-item"><div class="content"><a class="title" href="/2019/10/31/Apache-solr%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" title="Apache solr RCE（CVE-2019-xxxx）">Apache solr RCE（CVE-2019-xxxx）</a><time datetime="2019-10-31T15:12:57.000Z" title="发表于 2019-10-31 23:12:57">2019-10-31</time></div></div></div></div></div><div class="card-widget card-tags"><div class="card-content"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/app/" style="font-size: 1.1em; color: #999">app</a> <a href="/tags/ctf/" style="font-size: 1.2em; color: #999da3">ctf</a> <a href="/tags/web/" style="font-size: 1.5em; color: #99a9bf">web</a> <a href="/tags/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" style="font-size: 1.3em; color: #99a1ac">内网安全</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 1.4em; color: #99a5b6">随笔</a></div></div></div><div class="card-widget card-archives"><div class="card-content"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/05/"><span class="card-archive-list-date">五月 2020</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/02/"><span class="card-archive-list-date">二月 2020</span><span class="card-archive-list-count">2</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2019/12/"><span class="card-archive-list-date">十二月 2019</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2019/10/"><span class="card-archive-list-date">十月 2019</span><span class="card-archive-list-count">2</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2019/09/"><span class="card-archive-list-date">九月 2019</span><span class="card-archive-list-count">6</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2019/06/"><span class="card-archive-list-date">六月 2019</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2019/03/"><span class="card-archive-list-date">三月 2019</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2018/11/"><span class="card-archive-list-date">十一月 2018</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item more is-center"><a class="card-archive-list-link-more" href="/archives/">
+              <span>查看更多</span><i class="fas fa-angle-right"  ></i></a></li></ul></div></div><div class="card-widget card-webinfo"><div class="card-content"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">25</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2020-09-17T06:04:52.718Z"></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 By geez</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><section id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>

