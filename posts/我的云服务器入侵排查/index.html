@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="起源我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我的云服务器（linux）入侵排查">
+<meta property="og:url" content="http://localhost:4000/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="起源我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-09-27T04:12:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T07:22:06.119Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="服务器安全">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>我的云服务器（linux）入侵排查 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          我的云服务器（linux）入侵排查
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-09-27 12:12:57" itemprop="dateCreated datePublished" datetime="2019-09-27T12:12:57+08:00">2019-09-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 15:22:06" itemprop="dateModified" datetime="2022-03-23T15:22:06+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">内网安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h3><p>我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭</p>
+<span id="more"></span>
+
+<h3 id="用户分析"><a href="#用户分析" class="headerlink" title="用户分析"></a>用户分析</h3><p><strong>首先肯定是看有没有非法用户，有没有用户有非法权限</strong><br>通过对 &#x2F;etc&#x2F;passwd &#x2F;etc&#x2F;shadow 的查看，发现用户的权限还有用户并没有更改</p>
+<p>tips：我一般更改完密码会备份一份&#x2F;etc&#x2F;passwd 然后排查的时候直接diff进行比对，因为用户和服务很多有时候我自己都不清楚.</p>
+<p>至于新人，这里给一份这两个文件的详解：</p>
+<p>account:password:UID:GID:GECOS:directory:shell<br>用户名：密码：用户ID：组ID：用户说明：家目录：登陆之后shell 注意：无密码只允许本机登陆，远程不允许登陆</p>
+<p>root:$6$oGs1PqhL2p3ZetrE$X7o7bzoouHQVSEmSgsYN5UD4.kMHx6qgbTq wNVC5oOAouXvcjQSt.Ft7ql1WpkopY0UV9ajBwUt1DpYxTCVvI&#x2F;:16809:0: 99999:7:::<br>用户名：加密密码：密码最后一次修改日期：两次密码的修改时间间隔：密码有效期：密码修改到期到的警告天数：密码过期之后的宽限天数：账号失效时间：保留 </p>
+<p><strong>一些常用排查用户的命令</strong><br>last：这个命令可用于查看我们系统的成功登录、关机、重启等情况；这个命令就是将&#x2F;var&#x2F;log&#x2F;wtmp文件格式化输出。<br>lastb：这个命令用于查看登录失败的情况；这个命令就是将&#x2F;var&#x2F;log&#x2F;btmp文件格式化输出。<br>lastlog：这个命令用于查看用户上一次的登录情况；这个命令就是将&#x2F;var&#x2F;log&#x2F;lastlog文件格式化输出。（有的linux没有这个命令）<br>who：这个命令用户查看当前登录系统的情况；这个命令就是将&#x2F;var&#x2F;log&#x2F;utmp文件格式化输出。<br>w：与who命令一致。</p>
+<p><strong>权限排查</strong><br>1、查询特权用户特权用户(uid 为0)  [root@localhost ~]# awk -F: ‘$3&#x3D;&#x3D;0{print $1}’ &#x2F;etc&#x2F;passwd<br>2、查询可以远程登录的帐号信息     [root@localhost ~]# awk ‘&#x2F;$1|$6&#x2F;{print $1}’ &#x2F;etc&#x2F;shadow<br>3、除root帐号外，其他帐号是否存在sudo权限。如非管理需要，普通帐号应删除sudo权限 [root@localhost ~]# more &#x2F;etc&#x2F;sudoers | grep -v “^#|^$” | grep “ALL&#x3D;(ALL)”<br>4、禁用或删除多余及可疑的帐号 usermod -L user 禁用帐号，帐号无法登录，&#x2F;etc&#x2F;shadow第 二栏为!开头 userdel user 删除user用户 userdel -r user 将删除user用户，并且将&#x2F;home目录下的 user目录一并删除</p>
+<h3 id="历史命令查看"><a href="#历史命令查看" class="headerlink" title="历史命令查看"></a>历史命令查看</h3><p>1、查看root的历史命令 history<br>2、打开 &#x2F;home各帐号目录下的.bash_history，查看普通帐号的历史 命令   cat .bash_history &gt;&gt; history.txt<br>3、历史操作命令的清除：history -c 但此命令并不会清除保存在文件中的记录，因此需要手动删 除.bash_profile文件中的记录。</p>
+<p><strong>tips：如何设置详细记录命令？</strong><br>为历史的命令增加登录的IP地址、执行命令时间等信息：<br>1）保存1万条命令 sed -i ‘s&#x2F;^HISTSIZE&#x3D;1000&#x2F;HISTSIZE&#x3D;10000&#x2F;g’ &#x2F;etc&#x2F;profile<br>2）在&#x2F;etc&#x2F;profile的文件尾部添加如下行数配置信息：<br>######jiagu history xianshi#########<br>USER_IP&#x3D;<code>who -u am i 2&gt;/dev/null | awk &#39;&#123;print $NF&#125;&#39; | sed - e &#39;s/[()]//g&#39;</code><br>if [ “$USER_IP” &#x3D; “” ]<br>then USER_IP&#x3D;<code>hostname</code><br>fi export HISTTIMEFORMAT&#x3D;”%F %T $USER_IP <code>whoami</code> “<br>shopt -s histappend<br>export PROMPT_COMMAND&#x3D;”history -a”<br>######### jiagu history xianshi ##########<br>3）source &#x2F;etc&#x2F;profile让配置生效 生成效果： 1 2018-07-10 19:45:39 192.168.204.1 root source &#x2F;etc&#x2F;profile</p>
+<h3 id="进程和端口排查"><a href="#进程和端口排查" class="headerlink" title="进程和端口排查"></a>进程和端口排查</h3><p>1、使用 netstat 网络连接命令 分析可疑端口、ip、PID<br>命令：netstat -antlp | more   &#x2F;&#x2F; 直接端口 状态 连接ip 一目了然！<br>2、 进程主要查看有没有高占用、有没有和外部通信、有没有不认识的程序 命令：ps aux</p>
+<h3 id="开机启动项"><a href="#开机启动项" class="headerlink" title="开机启动项"></a>开机启动项</h3><table>
+<thead>
+<tr>
+<th>运行级别</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>关机</td>
+</tr>
+<tr>
+<td>1</td>
+<td>单用户模式</td>
+</tr>
+<tr>
+<td>2</td>
+<td>不完全的命令行模式</td>
+</tr>
+<tr>
+<td>3</td>
+<td>完全的命令行模式</td>
+</tr>
+<tr>
+<td>4</td>
+<td>系统保留</td>
+</tr>
+<tr>
+<td>5</td>
+<td>图形模式</td>
+</tr>
+<tr>
+<td>6</td>
+<td>重启动</td>
+</tr>
+</tbody></table>
+<p>查看当前运行击别命令：runlevel<br>系统默认允许级别：vi &#x2F;etc&#x2F;inittab<br>id&#x3D;3：initdefault 系统开机后直接进入哪个运行级别<br>开机启动配置文件<br>&#x2F;etc&#x2F;rc.local &#x2F;etc&#x2F;rc.d&#x2F;rc[0~6].d<br>例子:当我们需要开机启动自己的脚本时，只需要将可执行脚本丢 在&#x2F;etc&#x2F;init.d目录下，然后在&#x2F;etc&#x2F;rc.d&#x2F;rc*.d中建立软链接即可 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@localhost ~] <span class="built_in">ln</span> -s /etc/init.d/sshd /etc/rc.d/rc3.d/S100ssh </span><br></pre></td></tr></table></figure>
+<p>此处sshd是具体服务的脚本文件，S100ssh是其软链接，S开头代表加 载时自启动；如果是K开头的脚本文件，代表运行级别加载时需要关闭 的。<br>查看启动项文件一些命令： </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">more /etc/rc.local </span><br><span class="line">more /etc/rc.d/rc[0~6].d   </span><br><span class="line"><span class="built_in">ls</span> -l /etc/rc[0-6].d/</span><br></pre></td></tr></table></figure>
+<p>备注：一般在上述文件夹下的服务 程序都需要注意。</p>
+<h3 id="定时任务"><a href="#定时任务" class="headerlink" title="定时任务"></a>定时任务</h3><p>基本使用：利用crontab 创建计划任务<br>基本命令：crontab -l 列出某个用户cron服务的详细内容   Tips：默认编写的crontab文件会保存在 (&#x2F;var&#x2F;spool&#x2F;cron&#x2F;用户名 例 如: &#x2F;var&#x2F;spool&#x2F;cron&#x2F;root<br>crontab -r 删除每个用户cront任务(谨慎：删除所有的计划任务)<br>crontab -e 使用编辑器编辑当前的crontab文件<br>使用案例之每天运行&#x2F;home&#x2F;backup.sh脚本：<br>vi &#x2F;etc&#x2F;anacrontab @daily 10 example.daily &#x2F;bin&#x2F;bash &#x2F;home&#x2F;backup.sh<br>当机器在 backup.sh 期望被运行时是关机的，anacron会在机器开机十 分钟之后运行它，而不用再等待 7天。<br>入侵排查 、<br>重点关注以下目录中是否存在恶意脚本 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/var/spool/cron/* </span><br><span class="line">/etc/crontab </span><br><span class="line">/etc/cron.d/* </span><br><span class="line">/etc/cron.daily/* </span><br><span class="line">/etc/cron.hourly/* </span><br><span class="line">/etc/cron.monthly/* </span><br><span class="line">/etc/cron.weekly/ </span><br><span class="line">/etc/anacrontab </span><br><span class="line">/var/spool/anacron/* </span><br><span class="line"><span class="comment">#小技巧： more /etc/cron.daily/* 查看目录下所有文件</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="服务排查"><a href="#服务排查" class="headerlink" title="服务排查"></a>服务排查</h3><p>** 服务自启动的设置 **<br>第一种修改方法：<br>chkconfig [–level 运行级别] [独立服务名] [on|off]<br>chkconfig –level 2345 httpd on 开启自启动<br>chkconfig httpd on （默认level是2345）<br>第二种修改方法：<br>修改&#x2F;etc&#x2F;re.d&#x2F;rc.local 文件<br>加入 &#x2F;etc&#x2F;init.d&#x2F;httpd start<br>第三种修改方法：<br>使用ntsysv命令管理自启动，可以管理独立服务和xinetd服务。<br>** 服务的排查 **<br>1、查询已安装的服务<br>RPM 包安装的服务！<br>chkconfig   –list 查看服务自启动状态，可以看到所有的RPM包安装的服务<br>ps aux | grep crond 查看当前服务<br>系统再3与5级别下的启动项<br>2、源码包安装的服务<br>查看服务安装位置，一般实在&#x2F;user&#x2F;local&#x2F;<br>service httpd start<br>搜索&#x2F;etc&#x2F;rc.d&#x2F;init.d&#x2F; 查看是否存在！</p>
+<h3 id="日志分析"><a href="#日志分析" class="headerlink" title="日志分析"></a>日志分析</h3><p>这里是入侵排查最重要的东西，一般有web日志和系统日志，web日志我这里没有，因为我为了安全所有的web都在docker里面，所以我这里主要就是系统日志。而且前面的排查我也没排查出什么东西。</p>
+<p>** 日志文件的描述 **<br>日志默认存放位置： &#x2F;var&#x2F;log&#x2F;<br>查看日志配置情况： more &#x2F;etc&#x2F;rsyslog.conf</p>
+<table>
+<thead>
+<tr>
+<th>日志文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;var&#x2F;log&#x2F;cron</td>
+<td>记录系统定时任务相关日志</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;cups</td>
+<td>记录打印信息的日志</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;dmesg</td>
+<td>记录系统开机时内核自检信息</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;mailog</td>
+<td>记录邮件信息</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;message</td>
+<td>记录系统重要信息日志，系统出现问题时的首要检查这个日志</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;btmp</td>
+<td>记录错误登陆日志，此日志是二进制文件，lastb命令查看</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;lastlog</td>
+<td>记录系统种所有用户最后一次登陆事件的日志，二进制文件，lastlog查看</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;wtmp</td>
+<td>永久记录所有用户的登陆、注销信息，同时记录系统的重启、关机、启动事件。二进制文件，用last查看</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;utmp</td>
+<td>记录当前已经登陆的用户信息，只记录房前登陆用户的信息，w 命令查看</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;secure</td>
+<td>记录验证和授权方面的信息，比如ssh、su、sudo登陆还有添加修改账户密码等，也是应急响应种的重点排查对象</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;auth.log*</td>
+<td>同上，ubuntu下的安全日志</td>
+</tr>
+</tbody></table>
+<p>#注意，一个系统可能并不拥有上面表格中的所有日志，比如ubuntu上述日志就有很多没有，这和设置与系统版本有关，所以入侵排排查，应该先确定原来有哪些日志，日志有没有被删除。</p>
+<p>** 日志分析技巧 **<br>1、定位有多少IP再爆破主机的root账号</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&quot;Failed password for root&quot;</span> /var/log/syslog | awk <span class="string">&#x27;&#123;print $11&#125;&#x27;</span> | <span class="built_in">sort</span> | <span class="built_in">uniq</span> -c | <span class="built_in">sort</span> -nr | more</span><br></pre></td></tr></table></figure>
+<p>注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log<br>2、定位有哪些ip在爆破</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&quot;Failed password for root&quot;</span> /var/log/syslog | awk <span class="string">&#x27;&#123;print $11&#125;&#x27;</span> | <span class="built_in">sort</span> | <span class="built_in">uniq</span> -c | <span class="built_in">sort</span> -nr | more</span><br><span class="line">注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log</span><br><span class="line">3、爆破用户用的字典是什么</span><br><span class="line">​```bash</span><br><span class="line">grep <span class="string">&quot;Failed password&quot;</span> /var/log/secure|perl -e <span class="string">&#x27;while($_= &lt;&gt;)&#123; /for(.*?) from/; print&quot;$1\n&quot;;&#125;&#x27;</span>|<span class="built_in">uniq</span> -c|<span class="built_in">sort</span> -nr</span><br></pre></td></tr></table></figure>
+<p>注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log<br>4、登陆成功的ip有哪些？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&quot;Accepted &quot;</span> /var/log/secure | awk <span class="string">&#x27;&#123;print $11&#125;&#x27;</span> | <span class="built_in">sort</span> | <span class="built_in">uniq</span> -c | <span class="built_in">sort</span> -nr | more</span><br></pre></td></tr></table></figure>
+<p>注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log<br>5、登陆成功的日期 用户名 IP</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&quot;Accepted &quot;</span> /var/log/secure | awk <span class="string">&#x27;&#123;print $1,$2,$3,$9,$11&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>注意 ubuntu 在auth.log 所以可能有的服务器 登陆日志也在auth.log<br>6、增加一个用户kali日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Jul 10 00:12:15 localhost useradd[2382]: new group: name=kali, GID=1001 Jul 10 00:12:15 localhost useradd[2382]: new user: name=kali, UID=1001, GID=1001, home=/home/kali , shell=/bin/bash Jul 10 00:12:58 localhost passwd: pam_unix(passwd:chauthtok): password changed <span class="keyword">for</span> kali <span class="comment">#grep &quot;useradd&quot; /var/log/secure</span></span><br></pre></td></tr></table></figure>
+<p>7、删除一个用户kali日志：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Jul 10 00:14:17 localhost userdel[2393]: delete user <span class="string">&#x27;kali&#x27;</span> Jul 10 00:14:17 localhost userdel[2393]: removed group <span class="string">&#x27;kali&#x27;</span> owned by <span class="string">&#x27;kali&#x27;</span> Jul 10 00:14:17 localhost userdel[2393]: removed shadow group <span class="string">&#x27;kali&#x27;</span> owned by <span class="string">&#x27;kali&#x27;</span> <span class="comment"># grep &quot;userdel&quot; /var/log/secure</span></span><br></pre></td></tr></table></figure>
+<p>8、sudo授权执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -l Jul 10 00:43:09 localhost sudo: good : TTY=pts/4 ; PWD=/home/good ; USER=root ; COMMAND=/sbin/shutdown -r now</span><br></pre></td></tr></table></figure>
+<h3 id="我的服务器（乌龙）"><a href="#我的服务器（乌龙）" class="headerlink" title="我的服务器（乌龙）"></a>我的服务器（乌龙）</h3><p>重点来了，我做了上述的所有检查，比对&#x2F;etc&#x2F;passwd 没发现变动，cron没有任何新添加的定时任务，服务没有没见过的服务，而且我的web服务全在docker，开机启动项和服务自启动也没有问题。</p>
+<p>直到日志排查，我发现一个ip在我出差的时候登陆了我的阿里云，ip定位是石家庄，可我从没去过石家庄，我也不是石家庄的，然后我就开始警觉，查询日志发现该ip没有爆破，一次登陆。震惊！我的密码可是10位大小字母加数字和特殊字符混合出来的。查看历史命令，执行了一个ls，然后就没有了，我刚开始怀疑是他删除了日志和历史命令，于是去查看系统有没有后门，排查了一圈，没有任何服务出网到可疑的ip。</p>
+<p>无果后我就问了下一个大佬，他说你的手机是不是河北的，是不是开热点了。于是我发现我虽然不是石家庄的但是我的联通热点的出口是石家庄，那么一切就解释清楚了。哎，白忙活了三个小时。</p>
+<p>不过这些基础的排查还是写出来供大家参考吧！其实很多我也是通过网上学习的！</p>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%89%E5%85%A8/" rel="tag"><i class="fa fa-tag"></i> 服务器安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/" rel="prev" title="phpstudy后门事件">
+      <i class="fa fa-chevron-left"></i> phpstudy后门事件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/" rel="next" title="如何绕过app的ssl-pinning">
+      如何绕过app的ssl-pinning <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B5%B7%E6%BA%90"><span class="nav-text">起源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E5%88%86%E6%9E%90"><span class="nav-text">用户分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4%E6%9F%A5%E7%9C%8B"><span class="nav-text">历史命令查看</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%AB%AF%E5%8F%A3%E6%8E%92%E6%9F%A5"><span class="nav-text">进程和端口排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8%E9%A1%B9"><span class="nav-text">开机启动项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="nav-text">定时任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E6%8E%92%E6%9F%A5"><span class="nav-text">服务排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90"><span class="nav-text">日志分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%91%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B9%8C%E9%BE%99%EF%BC%89"><span class="nav-text">我的服务器（乌龙）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

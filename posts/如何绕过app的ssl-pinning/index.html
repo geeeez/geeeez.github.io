@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="什么是ssl-pinning？为了防止中间人攻击，app很多采用了证书固定技术，就是证书的双向认证。   我们在burp抓取浏览器https的包时，有时候会弹出警告当前证书不可信，然后我们手动勾选信任即可进行抓包（这种就是单向验证，我们强制服务端接收我们自己的证书）。  app的双向验证就是，如果我们的证书和app内置在客户端的证书不一致，那么他就直接报错或者直接退出。所以我们在渗透测试app的业">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何绕过app的ssl-pinning">
+<meta property="og:url" content="http://localhost:4000/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="什么是ssl-pinning？为了防止中间人攻击，app很多采用了证书固定技术，就是证书的双向认证。   我们在burp抓取浏览器https的包时，有时候会弹出警告当前证书不可信，然后我们手动勾选信任即可进行抓包（这种就是单向验证，我们强制服务端接收我们自己的证书）。  app的双向验证就是，如果我们的证书和app内置在客户端的证书不一致，那么他就直接报错或者直接退出。所以我们在渗透测试app的业">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-09-29T14:12:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T06:59:07.655Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="app">
+<meta property="article:tag" content="ssl-unpining">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>如何绕过app的ssl-pinning | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何绕过app的ssl-pinning
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-09-29 22:12:57" itemprop="dateCreated datePublished" datetime="2019-09-29T22:12:57+08:00">2019-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 14:59:07" itemprop="dateModified" datetime="2022-03-23T14:59:07+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/app/" itemprop="url" rel="index"><span itemprop="name">app</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>25k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>23 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="什么是ssl-pinning？"><a href="#什么是ssl-pinning？" class="headerlink" title="什么是ssl-pinning？"></a>什么是ssl-pinning？</h3><p style="text-indent: 2em;">为了防止中间人攻击，app很多采用了证书固定技术，就是证书的双向认证。  
+我们在burp抓取浏览器https的包时，有时候会弹出警告当前证书不可信，然后我们手动勾选信任即可进行抓包（这种就是单向验证，我们强制服务端接收我们自己的证书）。
+</p>
+<p style="text-indent: 2em;">app的双向验证就是，如果我们的证书和app内置在客户端的证书不一致，那么他就直接报错或者直接退出。所以我们在渗透测试app的业务时需要一点手段绕过ssl的双向认证，目前绕过ssl-pinning的主要手段就是hook和逆向源码重新修改修改 IPA 文件、打包、安装。
+</p>
+<p style="text-indent: 2em;">由于很多app都进行了加固，逆向源码是不太容易的事情，所以更多的人采用hook函数的方法来进行ssl-pinning的绕过，本篇文章就是介绍两种过SSL-unpining的绕过方法。
+</p>
+<span id="more"></span>
+
+
+<h3 id="ssl-pinning实现方法"><a href="#ssl-pinning实现方法" class="headerlink" title="ssl-pinning实现方法"></a>ssl-pinning实现方法</h3><p style="text-indent: 2em;">长话短说，只有知道实现方法才能更好的理解hook原理，绝大多数都采用的是Okhttp这个库。
+在OKhttp中实现 SSL Pining十分简单。
+
+<p>先来看看官方文档，是英文的，但是为了阅读友好，我大概翻译了一下😂：</p>
+<blockquote>
+<p>默认情况下，okhttp信任主机平台的证书颁发机构。此策略最大化了连接，但它会受到证书颁发机构攻击，如2011 DigiNotar攻击。它还假设您的https服务器的证书是由证书颁发机构签名的。<br>使用CertificatePinner限制信任哪些证书和证书颁发机构。证书固定增加了安全性，但限制了服务器团队更新其TLS证书的能力。未经服务器的tls管理员许可，请勿使用证书固定。</p>
+</blockquote>
+<p>代码实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CertificatePinning</span><span class="params">()</span> &#123;</span><br><span class="line">  client = <span class="keyword">new</span> <span class="title class_">OkHttpClient</span>.Builder()</span><br><span class="line">      .certificatePinner(<span class="keyword">new</span> <span class="title class_">CertificatePinner</span>.Builder()</span><br><span class="line">          .add(<span class="string">&quot;publicobject.com&quot;</span>, <span class="string">&quot;sha256/afwiKY3RxoMmLkuRW1l7QsPZTJPwDS2pdDROQjXw8ig=&quot;</span>)</span><br><span class="line">          .build())</span><br><span class="line">      .build();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Request</span>.Builder()</span><br><span class="line">      .url(<span class="string">&quot;https://publicobject.com/robots.txt&quot;</span>)</span><br><span class="line">      .build();</span><br><span class="line"></span><br><span class="line">  <span class="type">Response</span> <span class="variable">response</span> <span class="operator">=</span> client.newCall(request).execute();</span><br><span class="line">  <span class="keyword">if</span> (!response.isSuccessful()) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IOException</span>(<span class="string">&quot;Unexpected code &quot;</span> + response);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (Certificate certificate : response.handshake().peerCertificates()) &#123;</span><br><span class="line">    System.out.println(CertificatePinner.pin(certificate));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>另外还有更简单的，直接在AndroidManifest.xml 中指定(好像有版本限制，但是版本我忘了😂)：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="line">&lt;network-security-config&gt;</span><br><span class="line">    &lt;domain-config&gt;</span><br><span class="line">        &lt;domain includeSubdomains=&quot;true&quot;&gt;appmattus.com&lt;/domain&gt;</span><br><span class="line">        &lt;pin-set&gt;</span><br><span class="line">            &lt;pin digest=&quot;SHA-256&quot;&gt;4hw5tz+scE+TW+mlai5YipDfFWn1dqvfLG+nU7tq1V8=&lt;/pin&gt;</span><br><span class="line">            &lt;pin digest=&quot;SHA-256&quot;&gt;YLh1dUR9y6Kja30RrAn7JKnbQG/uEtLMkBgFF2Fuihg=&lt;/pin&gt;</span><br><span class="line">        &lt;/pin-set&gt;</span><br><span class="line">    &lt;/domain-config&gt;</span><br><span class="line">&lt;/network-security-config&gt;</span><br></pre></td></tr></table></figure>
+<p>先来了解下https的工作流程：</p>
+<blockquote>
+<p>在会话的初始阶段，客户端第一次发送请求时，通过明文进行发送的，为了防止信息泄露，服务端在返回时则返回一个公钥和证书给客户端。客户端验证证书是否是认证机构颁发，证书是否在有效期内，若没问题则进行下一次请求。在下一次客户端发送请求的时，通过公钥对核心数据进行加密，服务端在接收到数据时，获取对称加密的密钥。此后请求就是通过对称加密的密钥进行加密。</p>
+</blockquote>
+<p>那我们来捋一遍流程，安装app时app的自带证书就安置到了我们的手机，且此证书也存在在服务端，另外app的代码是开启了SSLpinning的，当我们用burp抓包时需要导入手机证书，那我们劫持https的流量就是用我们burp的证书加解密的，而burp的证书和app的自带证书不一致，所以直接down。多说一句，证书的一致性是通过sha&#x2F;256来进行比较的。</p>
+<h3 id="xpose绕过ssl-pining"><a href="#xpose绕过ssl-pining" class="headerlink" title="xpose绕过ssl-pining"></a>xpose绕过ssl-pining</h3><p>xpose下载地址：<a target="_blank" rel="noopener" href="https://repo.xposed.info/module/de.robv.android.xposed.installer">https://repo.xposed.info/module/de.robv.android.xposed.installer</a><br>注意：目前好像不支持android 9.0以上，我也不会写怎么安装的。恩，懒得写。</p>
+<p><strong>JustTrustMe模块绕过：</strong><br>模块下载地址 <a target="_blank" rel="noopener" href="https://github.com/Fuzion24/JustTrustMe">https://github.com/Fuzion24/JustTrustMe</a><br>此模块是以前用的最多的模块，但是近来越来越不好用了，经过源码分析：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> just.trust.me;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.content.Context;</span><br><span class="line"><span class="keyword">import</span> android.net.http.SslError;</span><br><span class="line"><span class="keyword">import</span> android.util.Log;</span><br><span class="line"><span class="keyword">import</span> android.webkit.SslErrorHandler;</span><br><span class="line"><span class="keyword">import</span> android.webkit.WebView;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"><span class="keyword">import</span> java.net.UnknownHostException;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.security.SecureRandom;</span><br><span class="line"><span class="keyword">import</span> java.security.KeyStore;</span><br><span class="line"><span class="keyword">import</span> java.security.KeyStoreException;</span><br><span class="line"><span class="keyword">import</span> java.security.cert.CertificateException;</span><br><span class="line"><span class="keyword">import</span> java.security.cert.X509Certificate;</span><br><span class="line"><span class="keyword">import</span> java.security.KeyManagementException;</span><br><span class="line"><span class="keyword">import</span> java.security.NoSuchAlgorithmException;</span><br><span class="line"><span class="keyword">import</span> java.security.UnrecoverableKeyException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.net.ssl.HostnameVerifier;</span><br><span class="line"><span class="keyword">import</span> javax.net.ssl.KeyManager;</span><br><span class="line"><span class="keyword">import</span> javax.net.ssl.SSLContext;</span><br><span class="line"><span class="keyword">import</span> javax.net.ssl.TrustManager;</span><br><span class="line"><span class="keyword">import</span> javax.net.ssl.X509TrustManager;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.ClientConnectionManager;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.scheme.HostNameResolver;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.scheme.PlainSocketFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.scheme.SchemeRegistry;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.scheme.Scheme;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.conn.ssl.SSLSocketFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.impl.client.DefaultHttpClient;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.impl.conn.SingleClientConnManager;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.params.HttpParams;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> de.robv.android.xposed.IXposedHookLoadPackage;</span><br><span class="line"><span class="keyword">import</span> de.robv.android.xposed.XC_MethodHook;</span><br><span class="line"><span class="keyword">import</span> de.robv.android.xposed.XC_MethodReplacement;</span><br><span class="line"><span class="keyword">import</span> de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.callMethod;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.callStaticMethod;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.findAndHookConstructor;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.findAndHookMethod;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.getObjectField;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.newInstance;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.setObjectField;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> de.robv.android.xposed.XposedHelpers.findClass;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> <span class="keyword">implements</span> <span class="title class_">IXposedHookLoadPackage</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">TAG</span> <span class="operator">=</span> <span class="string">&quot;JustTrustMe&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">currentPackageName</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handleLoadPackage</span><span class="params">(<span class="keyword">final</span> LoadPackageParam lpparam)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">        currentPackageName = lpparam.packageName;</span><br><span class="line">        <span class="comment">/* Apache Hooks */</span></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/impl/client/DefaultHttpClient.java */</span></span><br><span class="line">        <span class="comment">/* public DefaultHttpClient() */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking DefaultHTTPClient for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookConstructor(DefaultHttpClient.class, <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;defaultParams&quot;</span>, <span class="literal">null</span>);</span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;connManager&quot;</span>, getSCCM());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/impl/client/DefaultHttpClient.java */</span></span><br><span class="line">        <span class="comment">/* public DefaultHttpClient(HttpParams params) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking DefaultHTTPClient(HttpParams) for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookConstructor(DefaultHttpClient.class, HttpParams.class, <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;defaultParams&quot;</span>, (HttpParams) param.args[<span class="number">0</span>]);</span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;connManager&quot;</span>, getSCCM());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/impl/client/DefaultHttpClient.java */</span></span><br><span class="line">        <span class="comment">/* public DefaultHttpClient(ClientConnectionManager conman, HttpParams params) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking DefaultHTTPClient(ClientConnectionManager, HttpParams) for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookConstructor(DefaultHttpClient.class, ClientConnectionManager.class, HttpParams.class, <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">HttpParams</span> <span class="variable">params</span> <span class="operator">=</span> (HttpParams) param.args[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;defaultParams&quot;</span>, params);</span><br><span class="line">                setObjectField(param.thisObject, <span class="string">&quot;connManager&quot;</span>, getCCM(param.args[<span class="number">0</span>], params));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */</span></span><br><span class="line">        <span class="comment">/* public SSLSocketFactory( ... ) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking SSLSocketFactory(String, KeyStore, String, KeyStore) for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookConstructor(SSLSocketFactory.class, String.class, KeyStore.class, String.class, KeyStore.class,</span><br><span class="line">                SecureRandom.class, HostNameResolver.class, <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="type">String</span> <span class="variable">algorithm</span> <span class="operator">=</span> (String) param.args[<span class="number">0</span>];</span><br><span class="line">                        <span class="type">KeyStore</span> <span class="variable">keystore</span> <span class="operator">=</span> (KeyStore) param.args[<span class="number">1</span>];</span><br><span class="line">                        <span class="type">String</span> <span class="variable">keystorePassword</span> <span class="operator">=</span> (String) param.args[<span class="number">2</span>];</span><br><span class="line">                        <span class="type">SecureRandom</span> <span class="variable">random</span> <span class="operator">=</span> (SecureRandom) param.args[<span class="number">4</span>];</span><br><span class="line"></span><br><span class="line">                        KeyManager[] keymanagers = <span class="literal">null</span>;</span><br><span class="line">                        TrustManager[] trustmanagers = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">if</span> (keystore != <span class="literal">null</span>) &#123;</span><br><span class="line">                            keymanagers = (KeyManager[]) callStaticMethod(SSLSocketFactory.class, <span class="string">&quot;createKeyManagers&quot;</span>, keystore, keystorePassword);</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                        trustmanagers = <span class="keyword">new</span> <span class="title class_">TrustManager</span>[]&#123;<span class="keyword">new</span> <span class="title class_">ImSureItsLegitTrustManager</span>()&#125;;</span><br><span class="line"></span><br><span class="line">                        setObjectField(param.thisObject, <span class="string">&quot;sslcontext&quot;</span>, SSLContext.getInstance(algorithm));</span><br><span class="line">                        callMethod(getObjectField(param.thisObject, <span class="string">&quot;sslcontext&quot;</span>), <span class="string">&quot;init&quot;</span>, keymanagers, trustmanagers, random);</span><br><span class="line">                        setObjectField(param.thisObject, <span class="string">&quot;socketfactory&quot;</span>,</span><br><span class="line">                                callMethod(getObjectField(param.thisObject, <span class="string">&quot;sslcontext&quot;</span>), <span class="string">&quot;getSocketFactory&quot;</span>));</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */</span></span><br><span class="line">        <span class="comment">/* public static SSLSocketFactory getSocketFactory() */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking static SSLSocketFactory(String, KeyStore, String, KeyStore) for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;org.apache.http.conn.ssl.SSLSocketFactory&quot;</span>, lpparam.classLoader, <span class="string">&quot;getSocketFactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> (SSLSocketFactory) newInstance(SSLSocketFactory.class);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */</span></span><br><span class="line">        <span class="comment">/* public boolean isSecure(Socket) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking SSLSocketFactory(Socket) for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;org.apache.http.conn.ssl.SSLSocketFactory&quot;</span>, lpparam.classLoader, <span class="string">&quot;isSecure&quot;</span>, Socket.class, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* JSSE Hooks */</span></span><br><span class="line">        <span class="comment">/* libcore/luni/src/main/java/javax/net/ssl/TrustManagerFactory.java */</span></span><br><span class="line">        <span class="comment">/* public final TrustManager[] getTrustManager() */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking TrustManagerFactory.getTrustManagers() for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;javax.net.ssl.TrustManagerFactory&quot;</span>, lpparam.classLoader, <span class="string">&quot;getTrustManagers&quot;</span>, <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (hasTrustManagerImpl()) &#123;</span><br><span class="line">                    Class&lt;?&gt; cls = findClass(<span class="string">&quot;com.android.org.conscrypt.TrustManagerImpl&quot;</span>, lpparam.classLoader);</span><br><span class="line"></span><br><span class="line">                    TrustManager[] managers = (TrustManager[])param.getResult();</span><br><span class="line">                    <span class="keyword">if</span>(managers.length &gt; <span class="number">0</span> &amp;&amp; cls.isInstance(managers[<span class="number">0</span>]))</span><br><span class="line">                        <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                param.setResult(<span class="keyword">new</span> <span class="title class_">TrustManager</span>[]&#123;<span class="keyword">new</span> <span class="title class_">ImSureItsLegitTrustManager</span>()&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* libcore/luni/src/main/java/javax/net/ssl/HttpsURLConnection.java */</span></span><br><span class="line">        <span class="comment">/* public void setDefaultHostnameVerifier(HostnameVerifier) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking HttpsURLConnection.setDefaultHostnameVerifier for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;javax.net.ssl.HttpsURLConnection&quot;</span>, lpparam.classLoader, <span class="string">&quot;setDefaultHostnameVerifier&quot;</span>,</span><br><span class="line">                            HostnameVerifier.class, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* libcore/luni/src/main/java/javax/net/ssl/HttpsURLConnection.java */</span></span><br><span class="line">        <span class="comment">/* public void setSSLSocketFactory(SSLSocketFactory) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking HttpsURLConnection.setSSLSocketFactory for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;javax.net.ssl.HttpsURLConnection&quot;</span>, lpparam.classLoader, <span class="string">&quot;setSSLSocketFactory&quot;</span>, javax.net.ssl.SSLSocketFactory.class,</span><br><span class="line">                            <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* libcore/luni/src/main/java/javax/net/ssl/HttpsURLConnection.java */</span></span><br><span class="line">        <span class="comment">/* public void setHostnameVerifier(HostNameVerifier) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking HttpsURLConnection.setHostnameVerifier for: &quot;</span> + currentPackageName);</span><br><span class="line">        findAndHookMethod(<span class="string">&quot;javax.net.ssl.HttpsURLConnection&quot;</span>, lpparam.classLoader, <span class="string">&quot;setHostnameVerifier&quot;</span>, HostnameVerifier.class,</span><br><span class="line">                            <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">/* WebView Hooks */</span></span><br><span class="line">        <span class="comment">/* frameworks/base/core/java/android/webkit/WebViewClient.java */</span></span><br><span class="line">        <span class="comment">/* public void onReceivedSslError(Webview, SslErrorHandler, SslError) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking WebViewClient.onReceivedSslError(WebView, SslErrorHandler, SslError) for: &quot;</span> + currentPackageName);</span><br><span class="line"></span><br><span class="line">        findAndHookMethod(<span class="string">&quot;android.webkit.WebViewClient&quot;</span>, lpparam.classLoader, <span class="string">&quot;onReceivedSslError&quot;</span>,</span><br><span class="line">                              WebView.class, SslErrorHandler.class, SslError.class, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                ((android.webkit.SslErrorHandler)param.args[<span class="number">1</span>]).proceed();</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* frameworks/base/core/java/android/webkit/WebViewClient.java */</span></span><br><span class="line">        <span class="comment">/* public void onReceivedError(WebView, int, String, String) */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking WebViewClient.onReceivedSslError(WebView, int, string, string) for: &quot;</span> + currentPackageName);</span><br><span class="line"></span><br><span class="line">        findAndHookMethod(<span class="string">&quot;android.webkit.WebViewClient&quot;</span>, lpparam.classLoader, <span class="string">&quot;onReceivedError&quot;</span>,</span><br><span class="line">                            WebView.class, <span class="type">int</span>.class, String.class, String.class, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Multi-dex support: https://github.com/rovo89/XposedBridge/issues/30#issuecomment-68486449</span></span><br><span class="line">        findAndHookMethod(<span class="string">&quot;android.app.Application&quot;</span>,</span><br><span class="line">            lpparam.classLoader,</span><br><span class="line">            <span class="string">&quot;attach&quot;</span>,</span><br><span class="line">            Context.class,</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">XC_MethodHook</span>() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">afterHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                    <span class="comment">// Hook OkHttp or third party libraries.</span></span><br><span class="line">                    <span class="type">Context</span> <span class="variable">context</span> <span class="operator">=</span> (Context) param.args[<span class="number">0</span>];</span><br><span class="line">                    processOkHttp(context.getClassLoader());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Only for newer devices should we try to hook TrustManagerImpl */</span></span><br><span class="line">        <span class="keyword">if</span> (hasTrustManagerImpl()) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* external/conscrypt/src/platform/java/org/conscrypt/TrustManagerImpl.java#217 */</span></span><br><span class="line">            <span class="comment">/* public List&lt;X509Certificate&gt; checkServerTrusted(X509Certificate[] chain,</span></span><br><span class="line"><span class="comment">                                    String authType, String host) throws CertificateException */</span></span><br><span class="line">            Log.d(TAG, <span class="string">&quot;Hooking com.android.org.conscrypt.TrustManagerImpl.checkServerTrusted(X509Certificate[]) for: &quot;</span> + currentPackageName);</span><br><span class="line">            findAndHookMethod(<span class="string">&quot;com.android.org.conscrypt.TrustManagerImpl&quot;</span>, lpparam.classLoader,</span><br><span class="line">                                <span class="string">&quot;checkServerTrusted&quot;</span>, X509Certificate[].class, String.class,</span><br><span class="line">                                String.class, <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam param)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                    ArrayList&lt;X509Certificate&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;X509Certificate&gt;();</span><br><span class="line">                    <span class="keyword">return</span> list;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="comment">// End Hooks</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Helpers */</span></span><br><span class="line">    <span class="comment">// Check for TrustManagerImpl class</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasTrustManagerImpl</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Class.forName(<span class="string">&quot;com.android.org.conscrypt.TrustManagerImpl&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Create a SingleClientConnManager that trusts everyone!</span></span><br><span class="line">    <span class="keyword">public</span> ClientConnectionManager <span class="title function_">getSCCM</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        KeyStore trustStore;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">            trustStore = KeyStore.getInstance(KeyStore.getDefaultType());</span><br><span class="line">            trustStore.load(<span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">            <span class="type">SSLSocketFactory</span> <span class="variable">sf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TrustAllSSLSocketFactory</span>(trustStore);</span><br><span class="line">            sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);</span><br><span class="line"></span><br><span class="line">            <span class="type">SchemeRegistry</span> <span class="variable">registry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SchemeRegistry</span>();</span><br><span class="line">            registry.register(<span class="keyword">new</span> <span class="title class_">Scheme</span>(<span class="string">&quot;http&quot;</span>, PlainSocketFactory.getSocketFactory(), <span class="number">80</span>));</span><br><span class="line">            registry.register(<span class="keyword">new</span> <span class="title class_">Scheme</span>(<span class="string">&quot;https&quot;</span>, sf, <span class="number">443</span>));</span><br><span class="line"></span><br><span class="line">            <span class="type">ClientConnectionManager</span> <span class="variable">ccm</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SingleClientConnManager</span>(<span class="literal">null</span>, registry);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> ccm;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">//This function creates a ThreadSafeClientConnManager that trusts everyone!</span></span><br><span class="line">     <span class="keyword">public</span> ClientConnectionManager <span class="title function_">getTSCCM</span><span class="params">(HttpParams params)</span> &#123;</span><br><span class="line"></span><br><span class="line">        KeyStore trustStore;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">            trustStore = KeyStore.getInstance(KeyStore.getDefaultType());</span><br><span class="line">            trustStore.load(<span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">            <span class="type">SSLSocketFactory</span> <span class="variable">sf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TrustAllSSLSocketFactory</span>(trustStore);</span><br><span class="line">            sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);</span><br><span class="line"></span><br><span class="line">            <span class="type">SchemeRegistry</span> <span class="variable">registry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SchemeRegistry</span>();</span><br><span class="line">            registry.register(<span class="keyword">new</span> <span class="title class_">Scheme</span>(<span class="string">&quot;http&quot;</span>, PlainSocketFactory.getSocketFactory(), <span class="number">80</span>));</span><br><span class="line">            registry.register(<span class="keyword">new</span> <span class="title class_">Scheme</span>(<span class="string">&quot;https&quot;</span>, sf, <span class="number">443</span>));</span><br><span class="line"></span><br><span class="line">            <span class="type">ClientConnectionManager</span> <span class="variable">ccm</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadSafeClientConnManager</span>(params, registry);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> ccm;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//This function determines what object we are dealing with.</span></span><br><span class="line">    <span class="keyword">public</span> ClientConnectionManager <span class="title function_">getCCM</span><span class="params">(Object o, HttpParams params)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">className</span> <span class="operator">=</span> o.getClass().getSimpleName();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (className.equals(<span class="string">&quot;SingleClientConnManager&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> getSCCM();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (className.equals(<span class="string">&quot;ThreadSafeClientConnManager&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> getTSCCM(params);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">processOkHttp</span><span class="params">(ClassLoader classLoader)</span> &#123;</span><br><span class="line">        <span class="comment">/* hooking OKHTTP by SQUAREUP */</span></span><br><span class="line">        <span class="comment">/* com/squareup/okhttp/CertificatePinner.java available online @ https://github.com/square/okhttp/blob/master/okhttp/src/main/java/com/squareup/okhttp/CertificatePinner.java */</span></span><br><span class="line">        <span class="comment">/* public void check(String hostname, List&lt;Certificate&gt; peerCertificates) throws SSLPeerUnverifiedException&#123;&#125;*/</span></span><br><span class="line">        <span class="comment">/* Either returns true or a exception so blanket return true */</span></span><br><span class="line">        <span class="comment">/* Tested against version 2.5 */</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking com.squareup.okhttp.CertificatePinner.check(String,List) (2.5) for: &quot;</span> + currentPackageName);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            classLoader.loadClass(<span class="string">&quot;com.squareup.okhttp.CertificatePinner&quot;</span>);</span><br><span class="line">            findAndHookMethod(<span class="string">&quot;com.squareup.okhttp.CertificatePinner&quot;</span>,</span><br><span class="line">                classLoader,</span><br><span class="line">                <span class="string">&quot;check&quot;</span>,</span><br><span class="line">                String.class,</span><br><span class="line">                List.class,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam methodHookParam)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">// pass</span></span><br><span class="line">            Log.d(TAG, <span class="string">&quot;OKHTTP 2.5 not found in &quot;</span>  + currentPackageName  + <span class="string">&quot;-- not hooking&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//https://github.com/square/okhttp/blob/parent-3.0.1/okhttp/src/main/java/okhttp3/CertificatePinner.java#L144</span></span><br><span class="line">        Log.d(TAG, <span class="string">&quot;Hooking okhttp3.CertificatePinner.check(String,List) (3.x) for: &quot;</span> + currentPackageName);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            classLoader.loadClass(<span class="string">&quot;okhttp3.CertificatePinner&quot;</span>);</span><br><span class="line">            findAndHookMethod(<span class="string">&quot;okhttp3.CertificatePinner&quot;</span>,</span><br><span class="line">                classLoader,</span><br><span class="line">                <span class="string">&quot;check&quot;</span>,</span><br><span class="line">                String.class,</span><br><span class="line">                List.class,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam methodHookParam)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ClassNotFoundException e) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;OKHTTP 3.x not found in &quot;</span> + currentPackageName + <span class="string">&quot; -- not hooking&quot;</span>);</span><br><span class="line">            <span class="comment">// pass</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//https://github.com/square/okhttp/blob/parent-3.0.1/okhttp/src/main/java/okhttp3/internal/tls/OkHostnameVerifier.java</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            classLoader.loadClass(<span class="string">&quot;okhttp3.internal.tls.OkHostnameVerifier&quot;</span>);</span><br><span class="line">            findAndHookMethod(<span class="string">&quot;okhttp3.internal.tls.OkHostnameVerifier&quot;</span>,</span><br><span class="line">                classLoader,</span><br><span class="line">                <span class="string">&quot;verify&quot;</span>,</span><br><span class="line">                String.class,</span><br><span class="line">                javax.net.ssl.SSLSession.class,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam methodHookParam)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ClassNotFoundException e) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;OKHTTP 3.x not found in &quot;</span> + currentPackageName + <span class="string">&quot; -- not hooking OkHostnameVerifier.verify(String, SSLSession)&quot;</span>);</span><br><span class="line">            <span class="comment">// pass</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//https://github.com/square/okhttp/blob/parent-3.0.1/okhttp/src/main/java/okhttp3/internal/tls/OkHostnameVerifier.java</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            classLoader.loadClass(<span class="string">&quot;okhttp3.internal.tls.OkHostnameVerifier&quot;</span>);</span><br><span class="line">            findAndHookMethod(<span class="string">&quot;okhttp3.internal.tls.OkHostnameVerifier&quot;</span>,</span><br><span class="line">                classLoader,</span><br><span class="line">                <span class="string">&quot;verify&quot;</span>,</span><br><span class="line">                String.class,</span><br><span class="line">                java.security.cert.X509Certificate.class,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">XC_MethodReplacement</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">protected</span> Object <span class="title function_">replaceHookedMethod</span><span class="params">(MethodHookParam methodHookParam)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ClassNotFoundException e) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;OKHTTP 3.x not found in &quot;</span> + currentPackageName + <span class="string">&quot; -- not hooking OkHostnameVerifier.verify(String, X509)(&quot;</span>);</span><br><span class="line">            <span class="comment">// pass</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">ImSureItsLegitTrustManager</span> <span class="keyword">implements</span> <span class="title class_">X509TrustManager</span> &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">checkClientTrusted</span><span class="params">(X509Certificate[] chain, String authType)</span> <span class="keyword">throws</span> CertificateException &#123; &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">checkServerTrusted</span><span class="params">(X509Certificate[] chain, String authType)</span> <span class="keyword">throws</span> CertificateException &#123; &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> X509Certificate[] getAcceptedIssuers() &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">X509Certificate</span>[<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* This class creates a SSLSocket that trusts everyone. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TrustAllSSLSocketFactory</span> <span class="keyword">extends</span> <span class="title class_">SSLSocketFactory</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">SSLContext</span> <span class="variable">sslContext</span> <span class="operator">=</span> SSLContext.getInstance(<span class="string">&quot;TLS&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">TrustAllSSLSocketFactory</span><span class="params">(KeyStore truststore)</span> <span class="keyword">throws</span></span><br><span class="line">                      NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException &#123;</span><br><span class="line">            <span class="built_in">super</span>(truststore);</span><br><span class="line"></span><br><span class="line">            <span class="type">TrustManager</span> <span class="variable">tm</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">X509TrustManager</span>() &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">checkClientTrusted</span><span class="params">(X509Certificate[] chain, String authType)</span> <span class="keyword">throws</span> CertificateException &#123;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">checkServerTrusted</span><span class="params">(X509Certificate[] chain, String authType)</span> <span class="keyword">throws</span> CertificateException &#123;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">public</span> X509Certificate[] getAcceptedIssuers() &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line"></span><br><span class="line">            sslContext.init(<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">TrustManager</span>[] &#123; tm &#125;, <span class="literal">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Socket <span class="title function_">createSocket</span><span class="params">(Socket socket, String host, <span class="type">int</span> port, <span class="type">boolean</span> autoClose)</span> <span class="keyword">throws</span> IOException, UnknownHostException &#123;</span><br><span class="line">            <span class="keyword">return</span> sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Socket <span class="title function_">createSocket</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">            <span class="keyword">return</span> sslContext.getSocketFactory().createSocket();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// findAndHookMethod 就是hook对应方法 它hook的函数就是 证书校验用到的函数</span></span><br></pre></td></tr></table></figure>
+<p style="text-indent: 2em;">通过上述代码我们发现JustTrustMe几乎hook住了所有有关证书验证的操作通过修改返回值、忽略证书错误等方法来进行绕过。
+<p style="text-indent: 2em;">但是JustTrustMe没有hook   public OkHttpClient.Builder hostnameVerifier（Okhttp 中如果不指定 HostnameVerifier 默认调用的是 OkHostnameVerifier.verify 进行服务器主机名校验；如果设置了 HostnameVerifier，则默认调用的是自定义的 verify 方法，而OkHttpClient.Builder是用来对OkHttpClient进行设置的），所以这里就很可能出问题。至于其他的漏掉的hook目前还未测出。也有可能是他是github星星最多的项目，大家都对它进行下手了，😂。总之JustTrustMe有时候会不起作用。所以我平时也不是经常用它。
+
+<p><strong>ssl-unpining模块绕过</strong></p>
+<p style="text-indent: 2em;">此模块是我用的最多的，他比JustTrustMe 更稳定、hook的更全面，一般可以直接hook抓包，而且由于它同样不需要我们编写代码，是最方便新手的了。</p>
+<p style="text-indent: 2em;">模块下载地址：https://github.com/ac-pm/SSLUnpinning_Xposed
+
+<p style="text-indent: 2em;">直接安装后重启配置代理抓包即可，简单粗暴。</p>
+
+<p><strong>frida绕过SSLPinning</strong></p>
+<p style="text-indent: 2em;">frida确实是很好用的一个工具，它不需要像xpose那样频繁重启，而且还可以定制化hook自己想修改的函数。我平常用frida是通过js代码来进行hook的
+
+<p style="text-indent: 2em;">下面就是我常用的一个ssl-Unpinning的脚本(其实就是通过人家开源的修改而来)：
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">   Android SSL Re-pinning frida script v0.2 030417-pier</span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment">   $ adb push burpca-cert-der.crt /data/local/tmp/cert-der.crt</span></span><br><span class="line"><span class="comment">   $ frida -U -f it.app.mobile -l frida-android-repinning.js --no-pause</span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment">   https://techblog.mediaservice.net/2017/07/universal-android-ssl-pinning-bypass-with-frida/</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[.] Cert Pinning Bypass/Re-Pinning&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">CertificateFactory</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.security.cert.CertificateFactory&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">FileInputStream</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.io.FileInputStream&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">BufferedInputStream</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.io.BufferedInputStream&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> X509Certificate = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.security.cert.X509Certificate&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">KeyStore</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.security.KeyStore&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">TrustManagerFactory</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;javax.net.ssl.TrustManagerFactory&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">SSLContext</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;javax.net.ssl.SSLContext&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Load CAs from an InputStream</span></span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] Loading our CA...&quot;</span>)</span><br><span class="line">        cf = <span class="title class_">CertificateFactory</span>.<span class="title function_">getInstance</span>(<span class="string">&quot;X.509&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> fileInputStream = <span class="title class_">FileInputStream</span>.$new(<span class="string">&quot;/data/local/tmp/1111.crt&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(err) &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[o] &quot;</span> + err);</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">var</span> bufferedInputStream = <span class="title class_">BufferedInputStream</span>.$new(fileInputStream);</span><br><span class="line">          <span class="keyword">var</span> ca = cf.<span class="title function_">generateCertificate</span>(bufferedInputStream);</span><br><span class="line">        bufferedInputStream.<span class="title function_">close</span>();</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">var</span> certInfo = <span class="title class_">Java</span>.<span class="title function_">cast</span>(ca, X509Certificate);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[o] Our CA Info: &quot;</span> + certInfo.<span class="title function_">getSubjectDN</span>());</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Create a KeyStore containing our trusted CAs</span></span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] Creating a KeyStore for our CA...&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> keyStoreType = <span class="title class_">KeyStore</span>.<span class="title function_">getDefaultType</span>();</span><br><span class="line">        <span class="keyword">var</span> keyStore = <span class="title class_">KeyStore</span>.<span class="title function_">getInstance</span>(keyStoreType);</span><br><span class="line">        keyStore.<span class="title function_">load</span>(<span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">        keyStore.<span class="title function_">setCertificateEntry</span>(<span class="string">&quot;ca&quot;</span>, ca);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Create a TrustManager that trusts the CAs in our KeyStore</span></span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] Creating a TrustManager that trusts the CA in our KeyStore...&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> tmfAlgorithm = <span class="title class_">TrustManagerFactory</span>.<span class="title function_">getDefaultAlgorithm</span>();</span><br><span class="line">        <span class="keyword">var</span> tmf = <span class="title class_">TrustManagerFactory</span>.<span class="title function_">getInstance</span>(tmfAlgorithm);</span><br><span class="line">        tmf.<span class="title function_">init</span>(keyStore);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] Our TrustManager is ready...&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] Hijacking SSLContext methods now...&quot;</span>)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[-] Waiting for the app to invoke SSLContext.init()...&quot;</span>)</span><br><span class="line"> </span><br><span class="line">           <span class="title class_">SSLContext</span>.<span class="property">init</span>.<span class="title function_">overload</span>(<span class="string">&quot;[Ljavax.net.ssl.KeyManager;&quot;</span>, <span class="string">&quot;[Ljavax.net.ssl.TrustManager;&quot;</span>, <span class="string">&quot;java.security.SecureRandom&quot;</span>).<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">a,b,c</span>) &#123;</span><br><span class="line">               <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[o] App invoked javax.net.ssl.SSLContext.init...&quot;</span>);</span><br><span class="line">               <span class="title class_">SSLContext</span>.<span class="property">init</span>.<span class="title function_">overload</span>(<span class="string">&quot;[Ljavax.net.ssl.KeyManager;&quot;</span>, <span class="string">&quot;[Ljavax.net.ssl.TrustManager;&quot;</span>, <span class="string">&quot;java.security.SecureRandom&quot;</span>).<span class="title function_">call</span>(<span class="variable language_">this</span>, a, tmf.<span class="title function_">getTrustManagers</span>(), c);</span><br><span class="line">               <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[+] SSLContext initialized with our custom TrustManager!&quot;</span>);</span><br><span class="line">           &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>使用步骤：</p>
+<p>1、导出burp证书放入手机的&#x2F;data&#x2F;local&#x2F;tmp内，证书格式为crt(可直接burp证书修改后缀名)，最好也在手机上安装下这个证书方便以后抓包的操作</p>
+<p>2、adb shell 进入手机命令行 开启 frida server</p>
+<p>3、修改frida-android-repining_sa1.js代码中28行的证书路径</p>
+<p>4、frida -U -f 包名 -l .\frida-android-repining_sa1.js –no-pause</p>
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p style="text-indent: 2em;">上述这些都是我绕过SSL-Pinning的一些经验,如果有错误的地方还希望大家可知指出来,帮助我更好的学习andriod安全.然后想说最近访问点涨的有点猛,不知道是真的有人在看吗?还是有人扫描?我很慌!!!
+
+
+
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/app/" rel="tag"><i class="fa fa-tag"></i> app</a>
+              <a href="/overview/tags/ssl-unpining/" rel="tag"><i class="fa fa-tag"></i> ssl-unpining</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/" rel="prev" title="我的云服务器（linux）入侵排查">
+      <i class="fa fa-chevron-left"></i> 我的云服务器（linux）入侵排查
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/%E6%AD%BB%E4%BA%A1%E5%89%96%E6%9E%90/" rel="next" title="死亡剖析">
+      死亡剖析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFssl-pinning%EF%BC%9F"><span class="nav-text">什么是ssl-pinning？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssl-pinning%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%B3%95"><span class="nav-text">ssl-pinning实现方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xpose%E7%BB%95%E8%BF%87ssl-pining"><span class="nav-text">xpose绕过ssl-pining</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-text">结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

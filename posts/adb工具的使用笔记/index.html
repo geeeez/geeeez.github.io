@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言由于所在部门是金融行业的安全服务部门，所以很多时候都要进行银行、金融业的渗透测试，其中很多都是小程序、app等移动端应用。所以adb是必须要掌握的，我以前也从来没玩儿过andriod，但是还是迫于业务需求，自己学了一段时间。后来我想如果写出来可能更有条理些，自己也能复习一遍。所以就写了这篇。这篇文章没啥技术难点，甚至它只是我的个人笔记。我讲述下我在工作中是怎么用adb的，后面如果有时间我也会写">
+<meta property="og:type" content="article">
+<meta property="og:title" content="adb工具的使用笔记">
+<meta property="og:url" content="http://localhost:4000/posts/adb%E5%B7%A5%E5%85%B7%E7%9A%84%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="前言由于所在部门是金融行业的安全服务部门，所以很多时候都要进行银行、金融业的渗透测试，其中很多都是小程序、app等移动端应用。所以adb是必须要掌握的，我以前也从来没玩儿过andriod，但是还是迫于业务需求，自己学了一段时间。后来我想如果写出来可能更有条理些，自己也能复习一遍。所以就写了这篇。这篇文章没啥技术难点，甚至它只是我的个人笔记。我讲述下我在工作中是怎么用adb的，后面如果有时间我也会写">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-03-01T04:13:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T07:08:15.448Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="adb">
+<meta property="article:tag" content="tools">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/adb%E5%B7%A5%E5%85%B7%E7%9A%84%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>adb工具的使用笔记 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/adb%E5%B7%A5%E5%85%B7%E7%9A%84%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          adb工具的使用笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-03-01 12:13:57" itemprop="dateCreated datePublished" datetime="2019-03-01T12:13:57+08:00">2019-03-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 15:08:15" itemprop="dateModified" datetime="2022-03-23T15:08:15+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/android/" itemprop="url" rel="index"><span itemprop="name">android</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于所在部门是金融行业的安全服务部门，所以很多时候都要进行银行、金融业的渗透测试，其中很多都是小程序、app等移动端应用。所以adb是必须要掌握的，我以前也从来没玩儿过andriod，但是还是迫于业务需求，自己学了一段时间。后来我想如果写出来可能更有条理些，自己也能复习一遍。所以就写了这篇。<br>这篇文章没啥技术难点，甚至它只是我的个人笔记。我讲述下我在工作中是怎么用adb的，后面如果有时间我也会写写frida,当然frida就复杂的多了。下面还是看看adb这个工具吧。<span id="more"></span></p>
+<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>ADB是 Android 开发&#x2F;测试人员不可替代的强大工具，也是 Android 设备玩家的一个玩具。如果你观察仔细，很多刷机、刷系统的软件都是用的adb来进行操作的，这也就是为什么他们直接插上USB并打开USB调试功能就能刷机、安装等等。但是如果权限过高，刷机软件也是可以给你装点不可见的应用的。所以还是慎重用刷机软件吧！</p>
+<h4 id="直接上手"><a href="#直接上手" class="headerlink" title="直接上手"></a>直接上手</h4><p>下载ADB直接去官网下载：<a target="_blank" rel="noopener" href="https://developer.android.com/studio/releases/platform-tools.html">https://developer.android.com/studio/releases/platform-tools.html</a><br>选择合适的系统下载就行了，然后环境变量想配就配，无所谓的东西，反正你也可以直接到目录下运行adb。</p>
+<p>adb支持两种连接方式：USB 和 wifi（不常用）<br>能用USB还是用USB吧wifi 有时候会出问题 我从来不用。<br>下面直接找个root手机，我手里的是   魅族s6 : andriod7.0 还是建议用真机，模拟器总是出一堆问题。没钱买测试机的当我没说。<br>连接USB（一端手机，一端电脑） 打开USB的调试模式（在设置里面，但具体位置每个手机不一样），然后打开adb所在目录命令行直接运行adb shell (这是你只插一台手机的情况)。<br>如果你插了多台手机你可以：</p>
+<ul>
+<li><p>adb devices  &#x2F;&#x2F;看下都是哪几个手机 哪几个编号</p>
+</li>
+<li><p>adb -s b21b8569 shell  &#x2F;&#x2F;指定设备号进入shell</p>
+</li>
+<li><p>adb shell + 命令 &#x2F;&#x2F;这样就不用每次进入交互了，直接执行命令。</p>
+</li>
+</ul>
+<p>PS：有时候会出现找不到手机的情况，这时候如果你已经开启了USB调试并且手机也是ROOT权限，那么就是adb的配置问题了，直接在C:\Users&lt;用户名&gt;.android\adb_usb.ini中添加一行:0x2a45<br>,然后在cmd中执行  adb kill-server    adb start-server    adb devices 就可以看到设备了。其它操作系统同理</p>
+<p>ok 现在你可以whoami看下，一般都是普通权限，直接su就是root了。如果你需要把文件copy出来，首先不要直接copy，先把文件放到 &#x2F;data&#x2F;local&#x2F;tmp 目录下，这是一个临时目录，是我的很多同事都用来存文件的目录。记住它，嗯。然后：</p>
+<ul>
+<li>chmod 777 文件名 &#x2F;&#x2F;加权限 要不然脱不下来 即便他是临时目录也是要权限的啊。</li>
+<li>adb pull   手机路径 电脑路径   &#x2F;&#x2F;把手机路径的文件拉到电脑路径下  </li>
+<li>adb push 电脑路径 手机路径  &#x2F;&#x2F;和上面相反   注意斜杠不相同（windows和linux）</li>
+</ul>
+<p>PS：很多时候要认证看报错，而不是盲目去百度。脱不下来传不上去很多都是权限问题。</p>
+<p>一般我们不需要启动停止ADB服务，除非你手欠，或者就是要重启，请：</p>
+<ul>
+<li>adb kill-server</li>
+<li>adb start-server</li>
+</ul>
+<p>每次进入命令行都需要su 是不是很烦？没事我们可以解决：</p>
+<ul>
+<li>adb root  &#x2F;&#x2F;直接root 启动adb 以后adb shell 直接就是 root权限了</li>
+</ul>
+<p>有时候我们的端口可能正在被占用，这时候就需要修改adb的端口：</p>
+<ul>
+<li>adb -P <port> start-server   &#x2F;&#x2F;默认是5037 一般都不会占用的</li>
+</ul>
+<p>有时候我们需要看一下app的包是哪个方便我们进行hook：</p>
+<ul>
+<li>adb shell pm list packages  &#x2F;&#x2F;列出当前所有运行中的包</li>
+</ul>
+<p>安装&#x2F;卸载apk：</p>
+<ul>
+<li>adb install 1.apk  &#x2F;&#x2F;有时候手机会弹窗、需要点确认。</li>
+<li>adb uninstall 1.apk</li>
+</ul>
+<p>好玩儿的一些操作手机的指令：</p>
+<ul>
+<li>cat &#x2F;data&#x2F;misc&#x2F;wifi&#x2F;*.conf &#x2F;&#x2F;查看连接过的wifi密码</li>
+<li>adb shell input keyevent <keycode><br>  keycode    含义<br>  3    HOME 键<br>  4    返回键<br>  5    打开拨号应用<br>  6    挂断电话<br>  24    增加音量<br>  25    降低音量<br>  26    电源键<br>  27    拍照（需要在相机应用里）<br>  64    打开浏览器<br>  82    菜单键<br>  85    播放&#x2F;暂停<br>  86    停止播放<br>  87    播放下一首<br>  88    播放上一首<br>  122    移动光标到行首或列表顶部<br>  123    移动光标到行末或列表底部<br>  126    恢复播放<br>  127    暂停播放<br>  164    静音<br>  176    打开系统设置<br>  187    切换应用<br>  207    打开联系人<br>  208    打开日历<br>  209    打开音乐<br>  210    打开计算器<br>  220    降低屏幕亮度<br>  221    提高屏幕亮度<br>  223    系统休眠<br>  224    点亮屏幕<br>  231    打开语音助手<br>  276    如果没有 wakelock 则让系统休眠</li>
+</ul>
+<p>刷机相关命令：<br>adb reboot recovery   &#x2F;&#x2F;重启到 Recovery 模式<br>adb reboot                 &#x2F;&#x2F;从 Recovery 重启到 Android<br>adb reboot bootloader  &#x2F;&#x2F;重启到 Fastboot 模式</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>其实adb还有很多姿势，我介绍的可能只是冰山一角吧。但是这些对于我来说已经够用了，而且远远满足我的工作需求，所以你如果和我一样只是做些测试工作，那么这些东西差不多够用，如果你想把它当玩具，最好还是去阅读下官方文档吧。</p>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/adb/" rel="tag"><i class="fa fa-tag"></i> adb</a>
+              <a href="/overview/tags/tools/" rel="tag"><i class="fa fa-tag"></i> tools</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2%E5%86%8D%E6%AC%A1%E4%B8%8A%E7%BA%BF/" rel="prev" title="我的博客再次上线">
+      <i class="fa fa-chevron-left"></i> 我的博客再次上线
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/%E5%85%B3%E4%BA%8E%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/" rel="next" title="关于反弹shell的那些事">
+      关于反弹shell的那些事 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E4%B8%8A%E6%89%8B"><span class="nav-text">直接上手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

