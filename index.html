@@ -193,6 +193,279 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/null/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/null/" class="post-title-link" itemprop="url">FRP备忘录</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-05-26 21:15:05" itemprop="dateCreated datePublished" datetime="2022-05-26T21:15:05+08:00">2022-05-26</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>771</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="frp常用功能"><a href="#frp常用功能" class="headerlink" title="frp常用功能"></a>frp常用功能</h1><h2 id="frp穿透配合Proxifier实现内网穿透"><a href="#frp穿透配合Proxifier实现内网穿透" class="headerlink" title="frp穿透配合Proxifier实现内网穿透"></a>frp穿透配合Proxifier实现内网穿透</h2><p>服务端配置</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># frps.ini</span></span><br><span class="line">[<span class="meta">common</span>]</span><br><span class="line">bind_port = <span class="number">7000</span></span><br><span class="line"><span class="meta"># 工作台配置，不需要可以不配置</span></span><br><span class="line">dashboard_port = <span class="number">7500</span></span><br><span class="line">dashboard_user = admin</span><br><span class="line">dashboard_pwd = password</span><br></pre></td></tr></table></figure>
+
+<p>客户端配置</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># frpc.ini</span></span><br><span class="line">[<span class="meta">common</span>]</span><br><span class="line"><span class="meta"># 服务端地址</span></span><br><span class="line">server_addr = <span class="number">111.111</span><span class="number">.111</span>.xxx</span><br><span class="line">server_port = <span class="number">7000</span></span><br><span class="line">tls_enable = ture</span><br><span class="line"></span><br><span class="line"><span class="meta"># 使用socks插件和Proxifier工具实现代理功能</span></span><br><span class="line">[<span class="meta">plugin_socks</span>]</span><br><span class="line">type = tcp</span><br><span class="line">remote_port = <span class="number">6000</span></span><br><span class="line">plugin = socks5</span><br><span class="line">plugin_user = admin</span><br><span class="line">plugin_passwd = admin123</span><br><span class="line">use_encryption = <span class="literal">true</span></span><br><span class="line">use_compression = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 内网穿透功能  ssh 111.111.111.xxx:6000</span></span><br><span class="line">[<span class="meta">ssh</span>]</span><br><span class="line">type = tcp</span><br><span class="line">local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">local_port = <span class="number">22</span></span><br><span class="line">remote_port = <span class="number">6000</span></span><br></pre></td></tr></table></figure>
+
+<p>nohup后台运行 配合Proxifier 直接穿透内网</p>
+<p>  frpc_1.ini：<br>[common]<br>server_addr &#x3D; 39.105.56.145<br>server_port &#x3D; 9004<br>[socks5_to_1]<br>type &#x3D; tcp<br>plugin &#x3D; socks5<br>remote_port &#x3D; 10088<br>[socks5_to_2]<br>type &#x3D; tcplocal_ip &#x3D; 127.0.0.1<br>local_port &#x3D; 10088<br>remote_port &#x3D; 9028</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/python_circle_import/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/python_circle_import/" class="post-title-link" itemprop="url">python的循环引用问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-05-01 15:50:42" itemprop="dateCreated datePublished" datetime="2022-05-01T15:50:42+08:00">2022-05-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>678</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="python的循环引用"><a href="#python的循环引用" class="headerlink" title="python的循环引用"></a>python的循环引用</h2><h3 id="什么是循环引用"><a href="#什么是循环引用" class="headerlink" title="什么是循环引用"></a>什么是循环引用</h3><p>最近写代码遇见了几次python的循环调用问题，主要原因肯定是编码不规范，应该是共同调用的代码抽离出来重新封装，而不是B里面有A需要的代码，同时A里面也有B需要的代码，这样交叉引用python就会报错</p>
+<p>当我们import一个python文件时，python会首先去查找这个文件之前是否被import过，如果这个文件之前有被import过，就不会重新再import一次。否则会倒入，并执行一边代码。</p>
+<p>python核心编程这本书也说过这个问题:</p>
+<blockquote>
+<p>加载模块会导致这个模块被执行。也就是被执行模块的顶层代码将直接被执行。这通常包含设定全局变量以及类和函数的声明。一个模块只被加载一次，无论它被导入多少次。这可以阻止多重导入时代码被多次执行</p>
+</blockquote>
+<h3 id="如何解决"><a href="#如何解决" class="headerlink" title="如何解决"></a>如何解决</h3><p>1、最好的解决方案当然是抽离出来公用函数，重新封装。防止循环引用</p>
+<p>2、 解决方案1<br>   from common.xx import GetR****<br>   修改为：from common.xx import *</p>
+<p>3、解决方案2<br>   把import放在函数里面 需要用到的时候在import<br>   这个仅是权宜之计。</p>
+<p>4、解决方案3<br>   直接倒入模块名，需要的函数由模块名调用<br>   import</p>
+<p>5、解决方案4<br>     使用TYPE_CHECKING</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> TYPE_CHECKING:</span><br><span class="line">   	<span class="keyword">from</span> models <span class="keyword">import</span> a</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/">https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19887316">https://www.zhihu.com/question/19887316</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/What-is-JDNI/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/What-is-JDNI/" class="post-title-link" itemprop="url">什么是JNDI</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-04-14 11:13:23" itemprop="dateCreated datePublished" datetime="2022-04-14T11:13:23+08:00">2022-04-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么是JNDI"><a href="#什么是JNDI" class="headerlink" title="什么是JNDI"></a>什么是JNDI</h1><h2 id="JNDI概念"><a href="#JNDI概念" class="headerlink" title="JNDI概念"></a>JNDI概念</h2><p>JNDI全称Java Naming and Directory Interface 翻译过来就是Java命名和目录接口。这个概念搞出来就是为了方便人们来记录一些不容易记录都内容。有点类似于域名和ip的映射。</p>
+<h2 id="JNDI作用"><a href="#JNDI作用" class="headerlink" title="JNDI作用"></a>JNDI作用</h2><p>网上比较经典的例子就是JDBC连接数据库：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Scr</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//JDBC驱动名</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">JDBC_DRIVER</span> <span class="operator">=</span> <span class="string">&quot;com.mysql.jdbc.Driver&quot;</span>;</span><br><span class="line">        <span class="comment">//数据库URL：这里的tt是数据库名称</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">JDBC_URL</span> <span class="operator">=</span> <span class="string">&quot;jdbc:mysql://localhost:3306/tt?useSSL=false&amp;serverTimezone=UTC&quot;</span>;</span><br><span class="line"><span class="comment">//        数据库的用户名与密码</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">USER</span> <span class="operator">=</span> <span class="string">&quot;root&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">PASS</span> <span class="operator">=</span> <span class="string">&quot;admin123&quot;</span>;</span><br><span class="line">        <span class="comment">//通过DriverManager类获得该连接对象才能访问数据库</span></span><br><span class="line">        <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="comment">//        通过Connection获得该结果对象用于执行静态的SQL语句</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">statement</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"><span class="comment">//            注册JDBC驱动</span></span><br><span class="line">            Class.forName(JDBC_DRIVER);</span><br><span class="line">            </span><br><span class="line"><span class="comment">//            数据库的连接：通过DriverManager类的getConnection方法，传入三个参数：数据库URL、用户名、用户密码，实例化connection对象</span></span><br><span class="line">            connection = DriverManager.getConnection(JDBC_URL,USER,PASS);</span><br><span class="line"><span class="comment">//            实例化statement对象</span></span><br><span class="line">            statement = (Statement) connection.createStatement();</span><br><span class="line"><span class="comment">//            定义数据库查询语句：查询aa表中的name、sex两列数据</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT name,sex FROM aa&quot;</span>;</span><br><span class="line"><span class="comment">//            执行查询语句</span></span><br><span class="line">            <span class="type">ResultSet</span> <span class="variable">rSet</span> <span class="operator">=</span> statement.executeQuery(sql);</span><br><span class="line"><span class="comment">//            展开查询到的数据</span></span><br><span class="line">            <span class="keyword">while</span>(rSet.next()) &#123;</span><br><span class="line"><span class="comment">//                这里getString()方法中的参数对应的是数据库表中的列名</span></span><br><span class="line">                <span class="type">String</span> <span class="variable">get_name</span> <span class="operator">=</span> rSet.getString(<span class="string">&quot;name&quot;</span>);</span><br><span class="line">                <span class="type">String</span> <span class="variable">get_sex</span> <span class="operator">=</span> rSet.getString(<span class="string">&quot;sex&quot;</span>);</span><br><span class="line"><span class="comment">//                输出数据</span></span><br><span class="line">                System.out.println(<span class="string">&quot;名字:&quot;</span>+get_name);</span><br><span class="line">                System.out.print(<span class="string">&quot;性别:&quot;</span>+get_sex);                   </span><br><span class="line">            &#125;  </span><br><span class="line"><span class="comment">//            依次关闭对象</span></span><br><span class="line">            rSet.close();</span><br><span class="line">            statement.close();</span><br><span class="line">            connection.close();            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;      </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到这是我们初学java时的代码，因为那时候我们都是一个人开发整个系统，如果有一天一家公司有成百上千的人开发同一套系统呢？是不是不应该所有的程序员都知道这个账号密码、url格式、后端的实现逻辑、数据库类型等等？这就是Java编程中重要的思想：<strong>解藕</strong>。</p>
+<p>解藕当然呢不只JNDI这一种方式。很多时候封装的越来越细小也算是解耦。但是JNDI提供了这种更方便的解藕概念。</p>
+<p>比如上面这个链接数据库的代码我可以用JNDI这样做：</p>
+<p>定义一个xml模版，mysql.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">datasources</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">local-tx-datasource</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">jndi-name</span>&gt;</span>mysqlconfigsouce<span class="tag">&lt;/<span class="name">jndi-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">connection-url</span>&gt;</span>jdbc:mysql://localhost:3306/<span class="tag">&lt;/<span class="name">connection-url</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">driver-class</span>&gt;</span>com.mysql.jdbc.Driver<span class="tag">&lt;/<span class="name">driver-class</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">user-name</span>&gt;</span>root<span class="tag">&lt;/<span class="name">user-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>passwd<span class="tag">&lt;/<span class="name">password</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">exception-sorter-class-name</span>&gt;</span>  </span><br><span class="line">org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter  </span><br><span class="line"><span class="tag">&lt;/<span class="name">exception-sorter-class-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">metadata</span>&gt;</span>  </span><br><span class="line">       <span class="tag">&lt;<span class="name">type-mapping</span>&gt;</span>mySQL<span class="tag">&lt;/<span class="name">type-mapping</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;/<span class="name">metadata</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">local-tx-datasource</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">datasources</span>&gt;</span>  </span><br></pre></td></tr></table></figure>
+<p>然后我们在程序中引用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Connection conn=<span class="literal">null</span>;  </span><br><span class="line"><span class="keyword">try</span> &#123;  </span><br><span class="line">  Context ctx=<span class="keyword">new</span> <span class="title class_">InitialContext</span>();  </span><br><span class="line">  Object datasourceRef=ctx.lookup(<span class="string">&quot;java:mysqlconfigsouce&quot;</span>); <span class="comment">//引用数据源</span></span><br><span class="line">  DataSource ds=(Datasource)datasourceRef;  </span><br><span class="line">  conn=ds.getConnection();  </span><br><span class="line">  ......  </span><br><span class="line">  c.close();  </span><br><span class="line">&#125; <span class="keyword">catch</span>(Exception e) &#123;  </span><br><span class="line">  e.printStackTrace();  </span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;  </span><br><span class="line">  <span class="keyword">if</span>(conn!=<span class="literal">null</span>) &#123;  </span><br><span class="line">    <span class="keyword">try</span> &#123;  </span><br><span class="line">      conn.close();  </span><br><span class="line">    &#125; <span class="keyword">catch</span>(SQLException e) &#123; &#125;  </span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当然JNDI只是一个概念，具体实现还有rmi和ldap等协议。这里只是举个例子。</p>
+<p>这里补充一点：正如我们第一节所说的，JNDI是一个类似域名和ip的对应机制，那javax.naming 的包中提供了Context接口，最重要的就是两个方法：</p>
+<p>1、 void bind( String name , Object object )<br>    将名称绑定到对象。所有中间上下文和目标上下文（由该名称最终原子组件以外的其他所有组件指定）都必须已经存在。<br>2、Object lookup( String name )<br>    检索指定的对象。如果 name为空，则返回此上下文的一个新实例（该实例表示与此上下文相同的命名上下文，但其环境可以独立地进行修改，而且可以并发访问）。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/UTCTF-WEB-WP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -258,6 +531,96 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/posts/UTCTF-WEB-WP/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/frp_bak/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/frp_bak/" class="post-title-link" itemprop="url">FRP备忘录</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2021-05-26 21:15:05" itemprop="dateCreated datePublished" datetime="2021-05-26T21:15:05+08:00">2021-05-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">内网安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="frp常用功能"><a href="#frp常用功能" class="headerlink" title="frp常用功能"></a>frp常用功能</h1><h2 id="frp穿透配合Proxifier实现内网穿透"><a href="#frp穿透配合Proxifier实现内网穿透" class="headerlink" title="frp穿透配合Proxifier实现内网穿透"></a>frp穿透配合Proxifier实现内网穿透</h2><p>内网穿透常用，一般用来穿透内网进行下一步的渗透。FRP做一层两层穿透确实挺好用的，多层穿透还是直接msf或者nps更方便一点。</p>
+<p>服务端配置</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frps.ini</span></span><br><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="attr">bind_port</span> = <span class="number">7000</span></span><br><span class="line"><span class="comment"># 工作台配置，不需要可以不配置</span></span><br><span class="line"><span class="attr">dashboard_port</span> = <span class="number">7500</span></span><br><span class="line"><span class="attr">dashboard_user</span> = admin</span><br><span class="line"><span class="attr">dashboard_pwd</span> = password</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/frp_bak/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -719,360 +1082,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%AD%BB%E4%BA%A1%E5%89%96%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E6%AD%BB%E4%BA%A1%E5%89%96%E6%9E%90/" class="post-title-link" itemprop="url">死亡剖析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-10-28 00:01:01" itemprop="dateCreated datePublished" datetime="2019-10-28T00:01:01+08:00">2019-10-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>54</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>我本来在这里写了几十行字，</p>
-<p>但是我一一删除，</p>
-<p>成年人的直觉告诉我，</p>
-<p>可怜是不值得被同情的，更不应该给别人贩卖卑微。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/" class="post-title-link" itemprop="url">如何绕过app的ssl-pinning</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-29 22:12:57" itemprop="dateCreated datePublished" datetime="2019-09-29T22:12:57+08:00">2019-09-29</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/app/" itemprop="url" rel="index"><span itemprop="name">app</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>25k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>23 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="什么是ssl-pinning？"><a href="#什么是ssl-pinning？" class="headerlink" title="什么是ssl-pinning？"></a>什么是ssl-pinning？</h3><p style="text-indent: 2em;">为了防止中间人攻击，app很多采用了证书固定技术，就是证书的双向认证。  
-我们在burp抓取浏览器https的包时，有时候会弹出警告当前证书不可信，然后我们手动勾选信任即可进行抓包（这种就是单向验证，我们强制服务端接收我们自己的证书）。
-</p>
-<p style="text-indent: 2em;">app的双向验证就是，如果我们的证书和app内置在客户端的证书不一致，那么他就直接报错或者直接退出。所以我们在渗透测试app的业务时需要一点手段绕过ssl的双向认证，目前绕过ssl-pinning的主要手段就是hook和逆向源码重新修改修改 IPA 文件、打包、安装。
-</p>
-<p style="text-indent: 2em;">由于很多app都进行了加固，逆向源码是不太容易的事情，所以更多的人采用hook函数的方法来进行ssl-pinning的绕过，本篇文章就是介绍两种过SSL-unpining的绕过方法。
-</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/" class="post-title-link" itemprop="url">我的云服务器（linux）入侵排查</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-27 12:12:57" itemprop="dateCreated datePublished" datetime="2019-09-27T12:12:57+08:00">2019-09-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">内网安全</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h3><p>我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/" class="post-title-link" itemprop="url">phpstudy后门事件</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-24 12:12:57" itemprop="dateCreated datePublished" datetime="2019-09-24T12:12:57+08:00">2019-09-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="phpstudy后门事件-gt-我的虚拟机中招了-😂"><a href="#phpstudy后门事件-gt-我的虚拟机中招了-😂" class="headerlink" title="phpstudy后门事件   -&gt;  我的虚拟机中招了 😂"></a>phpstudy后门事件   -&gt;  我的虚拟机中招了 😂</h2><p>最近，phpstudy 后门事件搞得风风火火的，然后我检查了自己的笔记本，发现没有中招，本来还高兴于自己的安全意识，因为我下载软件基本从官网下载。结果当我打开我的虚拟机的时候，发现这个版本和我自己用的版本不一致，于是我测试了一下，down，后门存在。虚拟机上也放了一丢丢的敏感文件，这次真的是有点尴尬了，赶紧删除对应版本。不给我平常用的都是7.0，所以问题也不算太大。看来以后下载东西真的要严格把关了。虚拟机上的这个我觉得是虚拟机就随便搞了一个进去，结果就中招了。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1175,12 +1184,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">122k</span>
+    <span title="站点总字数">128k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:51</span>
+    <span title="站点阅读时长">1:57</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
