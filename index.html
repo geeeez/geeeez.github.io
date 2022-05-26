@@ -193,85 +193,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/null/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/null/" class="post-title-link" itemprop="url">FRP备忘录</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2022-05-26 21:15:05" itemprop="dateCreated datePublished" datetime="2022-05-26T21:15:05+08:00">2022-05-26</time>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>771</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="frp常用功能"><a href="#frp常用功能" class="headerlink" title="frp常用功能"></a>frp常用功能</h1><h2 id="frp穿透配合Proxifier实现内网穿透"><a href="#frp穿透配合Proxifier实现内网穿透" class="headerlink" title="frp穿透配合Proxifier实现内网穿透"></a>frp穿透配合Proxifier实现内网穿透</h2><p>服务端配置</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># frps.ini</span></span><br><span class="line">[<span class="meta">common</span>]</span><br><span class="line">bind_port = <span class="number">7000</span></span><br><span class="line"><span class="meta"># 工作台配置，不需要可以不配置</span></span><br><span class="line">dashboard_port = <span class="number">7500</span></span><br><span class="line">dashboard_user = admin</span><br><span class="line">dashboard_pwd = password</span><br></pre></td></tr></table></figure>
-
-<p>客户端配置</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># frpc.ini</span></span><br><span class="line">[<span class="meta">common</span>]</span><br><span class="line"><span class="meta"># 服务端地址</span></span><br><span class="line">server_addr = <span class="number">111.111</span><span class="number">.111</span>.xxx</span><br><span class="line">server_port = <span class="number">7000</span></span><br><span class="line">tls_enable = ture</span><br><span class="line"></span><br><span class="line"><span class="meta"># 使用socks插件和Proxifier工具实现代理功能</span></span><br><span class="line">[<span class="meta">plugin_socks</span>]</span><br><span class="line">type = tcp</span><br><span class="line">remote_port = <span class="number">6000</span></span><br><span class="line">plugin = socks5</span><br><span class="line">plugin_user = admin</span><br><span class="line">plugin_passwd = admin123</span><br><span class="line">use_encryption = <span class="literal">true</span></span><br><span class="line">use_compression = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 内网穿透功能  ssh 111.111.111.xxx:6000</span></span><br><span class="line">[<span class="meta">ssh</span>]</span><br><span class="line">type = tcp</span><br><span class="line">local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br><span class="line">local_port = <span class="number">22</span></span><br><span class="line">remote_port = <span class="number">6000</span></span><br></pre></td></tr></table></figure>
-
-<p>nohup后台运行 配合Proxifier 直接穿透内网</p>
-<p>  frpc_1.ini：<br>[common]<br>server_addr &#x3D; 39.105.56.145<br>server_port &#x3D; 9004<br>[socks5_to_1]<br>type &#x3D; tcp<br>plugin &#x3D; socks5<br>remote_port &#x3D; 10088<br>[socks5_to_2]<br>type &#x3D; tcplocal_ip &#x3D; 127.0.0.1<br>local_port &#x3D; 10088<br>remote_port &#x3D; 9028</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/python_circle_import/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1082,6 +1003,90 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%AD%BB%E4%BA%A1%E5%89%96%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/%E6%AD%BB%E4%BA%A1%E5%89%96%E6%9E%90/" class="post-title-link" itemprop="url">死亡剖析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2019-10-28 00:01:01" itemprop="dateCreated datePublished" datetime="2019-10-28T00:01:01+08:00">2019-10-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>54</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>我本来在这里写了几十行字，</p>
+<p>但是我一一删除，</p>
+<p>成年人的直觉告诉我，</p>
+<p>可怜是不值得被同情的，更不应该给别人贩卖卑微。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1184,12 +1189,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">128k</span>
+    <span title="站点总字数">127k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:57</span>
+    <span title="站点阅读时长">1:56</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

@@ -477,14 +477,14 @@
 <p>php parse_url：<br>host: 匹配最后一个@后面符合格式的host</p>
 <p>libcurl：<br>host：匹配第一个@后面符合格式的host</p>
 <p>如：<a target="_blank" rel="noopener" href="http://u:p%40a.com%3A80@b.com/">http://u:p@a.com:80@b.com/</a></p>
-<p>php解析结果：<br>    schema: http<br>    host: b.com<br>    user: u<br>    pass: <a href="mailto:&#112;&#x40;&#97;&#x2e;&#x63;&#x6f;&#109;">&#112;&#x40;&#97;&#x2e;&#x63;&#x6f;&#109;</a>:80<br>libcurl解析结果：<br>    schema: http<br>    host: a.com<br>    user: u<br>    pass: p<br>    port: 80<br>    后面的@b.com&#x2F;会被忽略掉</p>
+<p>php解析结果：<br>    schema: http<br>    host: b.com<br>    user: u<br>    pass: <a href="mailto:&#112;&#64;&#97;&#46;&#x63;&#111;&#x6d;">&#112;&#64;&#97;&#46;&#x63;&#111;&#x6d;</a>:80<br>libcurl解析结果：<br>    schema: http<br>    host: a.com<br>    user: u<br>    pass: p<br>    port: 80<br>    后面的@b.com&#x2F;会被忽略掉</p>
 <p>我们可以构造一个URL地址，用来让php认为host是b.com 而libcurl实际请求另一个域名。</p>
 <figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="regexp">//u</span>:p:@a.com:<span class="number">3306</span>@b.com/</span><br><span class="line">http:<span class="regexp">//u</span>:@a.com:<span class="number">3306</span>@b.com/</span><br></pre></td></tr></table></figure>
 <p>但是这里还有一个问题，开头流程中说明了php解析URL后会过滤空白字符和数字。数字会被过滤，所以，a.com:3306是不行的，3306只能放在最后，但是放在最后端口就无法被curl获取到，但是根据rfc3986规定可以：<br>gopher:&#x2F;&#x2F;foo@[cafebabe.cf]@yolo.com:3306</p>
 <blockquote>
 <p>A host identified by an Internet Protocol literal address, version 6 or later, is distinguished by enclosing the IP literal within square brackets (“[“ and “]“). This is the only place where square bracket characters are allowed in the URI syntax.<br>IP-literal &#x3D; “[“ ( IPv6address &#x2F; IPvFuture ) “]”<br>也就是说[ip]是一种host的形式，libcurl在解析时候认为[]包裹的是host</p>
 </blockquote>
-<p>还有一种十六进制表现形式<br>gopher:&#x2F;&#x2F;foo@localhost:<a href="mailto:&#x66;&#x40;&#114;&#x69;&#99;&#116;&#x65;&#x72;&#122;&#x2e;&#109;&#101;">&#x66;&#x40;&#114;&#x69;&#99;&#116;&#x65;&#x72;&#122;&#x2e;&#109;&#101;</a>:3306&#x2F;</p>
+<p>还有一种十六进制表现形式<br>gopher:&#x2F;&#x2F;foo@localhost:<a href="mailto:&#102;&#64;&#114;&#x69;&#99;&#116;&#x65;&#114;&#x7a;&#46;&#x6d;&#x65;">&#102;&#64;&#114;&#x69;&#99;&#116;&#x65;&#114;&#x7a;&#46;&#x6d;&#x65;</a>:3306&#x2F;</p>
 <h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
 <li><a target="_blank" rel="noopener" href="http://tools.40huo.cn/#!papers.md">《Build Your SSRF EXP Autowork》猪猪侠</a></li>
 <li><a target="_blank" rel="noopener" href="https://_thorns.gitbooks.io/sec/content/teng_xun_mou_chu_ssrf_lou_6d1e28_fei_chang_hao_de_.html">腾讯某处 SSRF 漏洞（非常好的利用点）附利用脚本</a></li>
@@ -642,12 +642,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">128k</span>
+    <span title="站点总字数">127k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:57</span>
+    <span title="站点阅读时长">1:56</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
