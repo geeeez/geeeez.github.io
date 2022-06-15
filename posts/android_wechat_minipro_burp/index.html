@@ -28,11 +28,14 @@
 <meta property="og:site_name" content="匆匆那年">
 <meta property="og:description" content="前言我的手机是安卓9.0 本来一直用的微信6.0，微信6.0证书随便信任，所以抓包也一直没问题。但是最近测试的时候发现微信版本太低会导致部分小程序打开界面有问题，无奈只能升级到最新微信版本，同时进行了抓包的配置。所以记录了一下。 微信版本对手机系统证书的支持 安卓系统 7.0 以下版本，不管微信任意版本，都会信任系统提供的证书 安卓系统 7.0 以上版本，微信 7.0 以下版本，微信会信任系统提供">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220615180710327.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220615181428598.png">
 <meta property="article:published_time" content="2022-06-15T09:49:08.000Z">
-<meta property="article:modified_time" content="2022-06-15T10:15:57.288Z">
+<meta property="article:modified_time" content="2022-06-15T10:29:45.890Z">
 <meta property="article:author" content="Geez">
 <meta property="article:tag" content="抓包">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://localhost:4000/images/pages/image-20220615180710327.png">
 
 <link rel="canonical" href="http://localhost:4000/posts/android_wechat_minipro_burp/">
 
@@ -237,7 +240,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.1k</span>
+              <span>863</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -276,7 +279,7 @@
 <h3 id="倒入证书"><a href="#倒入证书" class="headerlink" title="倒入证书"></a>倒入证书</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">adb root</span><br><span class="line">adb remount</span><br><span class="line">adb push 9a5ba575.0 /data/local/tmp/ <span class="comment"># 直接放系统目录是没权限的</span></span><br><span class="line"></span><br><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"><span class="built_in">cp</span>  /data/local/tmp/9a5ba575.0 /system/etc/security/cacerts/ <span class="comment"># 迁移到系统根证书</span></span><br><span class="line"><span class="built_in">chmod</span>  644 9a5ba575.0 <span class="comment"># 给权限</span></span><br></pre></td></tr></table></figure>
 
 <p>重启后登陆进入设置中查看证书：portSwigger</p>
-<p>![image-20220615180710327](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220615180710327.png)</p>
+<p><img data-src="/images/pages/image-20220615180710327.png" alt="image-20220615180710327"></p>
 <p>如图证书已经装进系统目录</p>
 <h2 id="burp抓包"><a href="#burp抓包" class="headerlink" title="burp抓包"></a>burp抓包</h2><p>这时候我们设置代理，进行抓包会发现仍无法抓取小程序的包。因为以下规则。</p>
 <blockquote>
@@ -284,7 +287,7 @@
 </blockquote>
 <p>你可以理解为双向证书绑定了，只信任自己内置的证书，所以我们要向别的app hook证书那样解决这个问题。这里我们直接用前人的工具了：<a target="_blank" rel="noopener" href="https://github.com/ac-pm/SSLUnpinning_Xposed">sslunpining</a></p>
 <p>xpose 直接抓这个插件 并hook微信 重启后即可抓包。</p>
-<p>![image-20220615181428598](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220615181428598.png)</p>
+<p><img data-src="/images/pages/image-20220615181428598.png" alt="image-20220615181428598"></p>
 <p>这样微信就可以信任第三方证书了，我们的burp就可以抓包了。</p>
 <p>当然有能力的大佬可以直接逆微信apk的源码写个frida hook，毕竟第三方工具不一定一直有效。</p>
 
@@ -434,7 +437,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">129k</span>
+    <span title="站点总字数">128k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
