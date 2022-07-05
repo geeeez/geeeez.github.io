@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://localhost:4000/images/pages/image-20220705161744409.png">
 <meta property="og:image" content="http://localhost:4000/images/pages/image-20220705162041847.png">
 <meta property="article:published_time" content="2022-07-05T07:27:28.000Z">
-<meta property="article:modified_time" content="2022-07-05T08:33:25.065Z">
+<meta property="article:modified_time" content="2022-07-05T08:38:08.863Z">
 <meta property="article:author" content="Geez">
 <meta property="article:tag" content="CTF">
 <meta name="twitter:card" content="summary">
@@ -288,15 +288,14 @@
 <p><img data-src="/images/pages/image-20220705160301716.png" alt="image-20220705160301716"></p>
 <p>但是这里的git泄漏我并没有拿到源码，不知道是不是有什么奇怪知识点。所以就去github上找了对应的<a target="_blank" rel="noopener" href="https://github.com/NavigateCMS/Navigate-CMS">Navigatecms</a> 源码</p>
 <p>通过搜索最近的漏洞详情，发现2022年刚爆出一个任意文件读取的漏洞提醒，根据代码审计了对应代码发现在navigate_download.php存在id参数的任意文件读取：</p>
-<p>payload：<a target="_blank" rel="noopener" href="http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd</a></p>
+<p>payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd</span><br></pre></td></tr></table></figure>
+
 <p>但是没什么用 flag不在根目录。</p>
 <p>然后搜索到另一个任意文件覆盖上传：</p>
 <p><a target="_blank" rel="noopener" href="https://www.exploit-db.com/exploits/45561">https://www.exploit-db.com/exploits/45561</a></p>
 <p>但是因为github的代码是最新的所以已经修复过了，只能通过上面的任意文件读取拿到navigate_upload.php源码：</p>
-<p><a target="_blank" rel="noopener" href="http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../var/www/html/navigate_upload.php">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../var/www/html/navigate_upload.php</a></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
-
-
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../var/www/html/navigate_upload.php</span><br></pre></td></tr></table></figure>
 
 <p>拿到源码发现漏洞存在于139行</p>
 <p><img data-src="/images/pages/image-20220705161744409.png" alt="image-20220705161744409"></p>
@@ -310,7 +309,7 @@
 <p>拿到root后我们去删除&#x2F;var&#x2F;www&#x2F;html&#x2F;bocai.*  依然不行，后来发现文件存在a属性，通过修改属性即可删除：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lsattr bocai.png</span><br><span class="line">chattr -a bocai.png</span><br><span class="line">lsattr bocai.html</span><br><span class="line">chattr -a bocai.html</span><br></pre></td></tr></table></figure>
 
-<p>最后我们删除bocai.* 运行&#x2F;var&#x2F;www&#x2F;html&#x2F;I<strong>want</strong>capture<strong>the</strong>flag拿到flag</p>
+<p>最后我们删除bocai.*  再次运行&#x2F;var&#x2F;www&#x2F;html&#x2F;I_want_capture_the_flag拿到flag</p>
 <p><strong>拓展</strong></p>
 <p>Linux chattr命令用于改变文件属性。</p>
 <p>这项指令可改变存放在ext2文件系统上的文件或目录属性，这些属性共有以下8种模式：</p>
