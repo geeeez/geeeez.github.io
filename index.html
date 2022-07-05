@@ -193,6 +193,98 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/PCL-CTF-WEB2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/PCL-CTF-WEB2/" class="post-title-link" itemprop="url">鹏程杯CTF-两道有意思的题目</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-07-05 15:27:28" itemprop="dateCreated datePublished" datetime="2022-07-05T15:27:28+08:00">2022-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目：</p>
+<p>1、简单的php </p>
+<p>2、高手高手高高手</p>
+<h2 id="简单的php"><a href="#简单的php" class="headerlink" title="简单的php"></a>简单的php</h2><p>这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">    <span class="variable">$code</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;code&#x27;</span>];</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">strlen</span>(<span class="variable">$code</span>) &gt; <span class="number">80</span> <span class="keyword">or</span> <span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/[A-Za-z0-9]|\&#x27;|&quot;|`|\ |,|\.|-|\+|=|\/|\\|&lt;|&gt;|\$|\?|\^|&amp;|\|/is&#x27;</span>,<span class="variable">$code</span>))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">&#x27; Hello&#x27;</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="string">&#x27;;&#x27;</span> === <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/[^\s\(\)]+?\((?R)?\)/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$code</span>))&#123;</span><br><span class="line">        @<span class="keyword">eval</span>(<span class="variable">$code</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/PCL-CTF-WEB2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/android_wechat_minipro_burp/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -997,94 +1089,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/Apache_solr_RCE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/Apache_solr_RCE/" class="post-title-link" itemprop="url">Apache solr RCE（CVE-2019-xxxx）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-10-31 23:12:57" itemprop="dateCreated datePublished" datetime="2019-10-31T23:12:57+08:00">2019-10-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&amp;#160; &amp;#160; &amp;#160; 记录一下复现过程，防止下次遇见的时候再去翻资料， 首先 Apache Solr是一个独立的企业级搜索应用服务器，它对外提供类似于Web-service的API接口。用户可以通过http请求，向搜索引擎服务器提交一定格式的XML文件，生成索引；也可以通过Http Get操作提出查找请求，并得到XML格式的返回结果。 Apache solr历史上有众多高危漏洞，为了自己以后遇见直接找到所有漏洞复现方式，先贴个链接： <a target="_blank" rel="noopener" href="https://gist.githubusercontent.com/s00py/a1ba36a3689fa13759ff910e179fc133/raw/fae5e663ffac0e3996fd9dbb89438310719d347a/gistfile1.txt ">apache solr历史漏洞列表</a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/Apache_solr_RCE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1187,12 +1191,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">128k</span>
+    <span title="站点总字数">133k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:57</span>
+    <span title="站点阅读时长">2:01</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
