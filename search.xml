@@ -1849,4 +1849,49 @@
         <tag>ssl-unpining</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Celery实现定时任务</title>
+    <url>//posts/Celery-timing/</url>
+    <content><![CDATA[<h1 id="Celery定时任务"><a href="#Celery定时任务" class="headerlink" title="Celery定时任务"></a>Celery定时任务</h1><h2 id="celery-beat"><a href="#celery-beat" class="headerlink" title="celery beat"></a>celery beat</h2><p>定时任务由 Celery Beat 进程周期性地将任务发往任务队列，所以我们需要启动一个Celery Beat和一个Celery Worker。Celery Beat启动方式和Celery Worker一致，下面我们先来看下Celery定时任务怎么coding。</p>
+<h2 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h2><p>首先是定时任务的各种设置</p>
+<h3 id="时区"><a href="#时区" class="headerlink" title="时区"></a>时区</h3><p>默认情况下是UTC 时区，可以通过timezone修改：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">timezone=<span class="string">&#x27;Europe/London&#x27;</span></span><br><span class="line"><span class="comment"># 或者配置中国时间</span></span><br><span class="line">app.conf.timezone = <span class="string">&#x27;Asia/Shanghai&#x27;</span> </span><br><span class="line">app.conf.enable_utc = <span class="literal">False</span> </span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<h3 id="beat-schedule"><a href="#beat-schedule" class="headerlink" title="beat_schedule"></a>beat_schedule</h3><p>定时任务的核心配置</p>
+<p>task： 指定任务的名字<br>schedule : 设定任务的调度方式，可以是一个表示秒的整数，也可以是一个 timedelta 对象，或者是一个 crontab 对象（后面介绍），总之就是设定任务如何重复执行<br>args：     任务的位置参数以列表的形式<br>kwargs：任务的关键字参数,以字典的形式<br>options：所有 apply_async 所支持的参数</p>
+<p>一个常见的例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">myapp.conf.beat_schedule = &#123;</span><br><span class="line">    <span class="comment"># m每分钟一次demo_schedule任务</span></span><br><span class="line">    <span class="string">&#x27;sending_email_minute&#x27;</span>: &#123;</span><br><span class="line">        <span class="string">&#x27;task&#x27;</span>: <span class="string">&#x27;sending_email&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;schedule&#x27;</span>: crontab(),</span><br><span class="line">        <span class="string">&#x27;args&#x27;</span>: (<span class="string">&quot;123456@qq.com&quot;</span>, <span class="string">&quot;hello&quot;</span>),</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="执行周期的对象"><a href="#执行周期的对象" class="headerlink" title="执行周期的对象"></a>执行周期的对象</h3><p><strong>timedelta 对象</strong></p>
+<p>表示间隔时间执行，是比较简单的一种定时方式。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> timedelta</span><br><span class="line"></span><br><span class="line">timedelta(seconds=<span class="number">3</span>), <span class="comment">#每三秒 执行一次</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>crontab 对象</strong></p>
+<p>参考与linux的crontab定制方式，可进行细节化定制定时任务</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#schedule配置举例</span></span><br><span class="line"><span class="keyword">from</span> celery.schedules <span class="keyword">import</span> crontab</span><br><span class="line"><span class="comment"># 每分钟执行一次</span></span><br><span class="line">crontab()</span><br><span class="line"><span class="comment"># 每天凌晨十二点执行</span></span><br><span class="line">crontab(minute=<span class="number">0</span>, hour=<span class="number">0</span>)</span><br><span class="line"><span class="comment"># 或者这么写，每小时执行一次</span></span><br><span class="line">crontab(minute=<span class="number">0</span>, hour=<span class="string">&quot;*/1&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="加载配置"><a href="#加载配置" class="headerlink" title="加载配置"></a>加载配置</h2><p>1、app.conf.参数名称 &#x3D; 参数值<br>2、app.config_from_object(配置文件路径)<br>3、app.conf.update(<br>    参数名称&#x3D;参数值,<br>    参数名称&#x3D;参数值<br>)</p>
+<h2 id="Celery-beat-和-Worker启动"><a href="#Celery-beat-和-Worker启动" class="headerlink" title="Celery beat 和 Worker启动"></a>Celery beat 和 Worker启动</h2><p>1、celery -A celery_server.myapp beat -l debug</p>
+<p>2、celery -A celery_server.myapp worker</p>
+<h2 id="定时任务demo"><a href="#定时任务demo" class="headerlink" title="定时任务demo"></a>定时任务demo</h2><p>celery_server.py</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment"># redis开启后 启动下面两个任务</span></span><br><span class="line"><span class="comment"># 1、celery -A celery_server.myapp beat -l debug</span></span><br><span class="line"><span class="comment"># 2、celery -A celery_server.myapp worker</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</span><br><span class="line"><span class="keyword">from</span> celery.schedules <span class="keyword">import</span> crontab</span><br><span class="line"> </span><br><span class="line">myapp = Celery(<span class="string">&#x27;schedule&#x27;</span>)</span><br><span class="line">myapp.conf.broker_url = <span class="string">&#x27;redis://localhost:6379/0&#x27;</span></span><br><span class="line">myapp.conf.result_backend = <span class="string">&#x27;redis://localhost:6379/1&#x27;</span></span><br><span class="line">myapp.conf.imports = [<span class="string">&#x27;celery_task&#x27;</span>]</span><br><span class="line">myapp.conf.worker_concurrency = <span class="number">1</span></span><br><span class="line"> </span><br><span class="line">myapp.conf.beat_schedule = &#123;</span><br><span class="line">    <span class="comment"># 每分钟一次demo_schedule任务</span></span><br><span class="line">    <span class="string">&#x27;sending_email_minute&#x27;</span>: &#123;</span><br><span class="line">        <span class="string">&#x27;task&#x27;</span>: <span class="string">&#x27;sending_email&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;schedule&#x27;</span>: crontab(),</span><br><span class="line">        <span class="string">&#x27;args&#x27;</span>: (<span class="string">&quot;123456@qq.com&quot;</span>, <span class="string">&quot;hello&quot;</span>),</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>celery_task.py</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># redis开启后 启动下面两个任务</span></span><br><span class="line"><span class="comment"># 1、celery -A celery_server.myapp beat -l debug</span></span><br><span class="line"><span class="comment"># 2、celery -A celery_server.myapp worker</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> celery_server <span class="keyword">import</span> myapp</span><br><span class="line"></span><br><span class="line"><span class="meta">@myapp.task(<span class="params">name=<span class="string">&#x27;sending_email&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send_email</span>(<span class="params">email,content</span>):</span><br><span class="line">	requests.get(<span class="string">&quot;http://redis.xxxxx.ceye.io&quot;</span>)</span><br><span class="line">	<span class="built_in">print</span>(email+<span class="string">&quot;发送成功&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>进入到代码所在目录，启动：</p>
+<p>celery -A celery_server.myapp beat -l debug</p>
+<p>celery -A celery_server.myapp worker</p>
+<p>定时任务就会定时执行。</p>
+<h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><p>后续如果遇到更复杂的定时任务的时候再接着补充，目前仅用到了一些简单的定时任务模块。</p>
+]]></content>
+      <categories>
+        <category>coding</category>
+      </categories>
+      <tags>
+        <tag>python</tag>
+      </tags>
+  </entry>
 </search>
