@@ -235,7 +235,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.4k</span>
+              <span>3.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -256,7 +256,7 @@
       
           <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>再一次CTF比赛中遇到了三四层穿透的靶场，当时由于没有外网，而且也不知道什么网络原因导致穿透三层的时候一直没成功。这个假期正好有时间就找了一个靶场，看看多层的穿透到底应该怎么来比较方便。</p>
 <p>靶场选取的是CFS三层靶场，网上一搜就有，这里不再提供下载链接了。</p>
-<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="网络环境"><a href="#网络环境" class="headerlink" title="网络环境"></a>网络环境</h3><p>这里是三层网络环境，设置了三个vmnet: &#x2F;images&#x2F;pages&#x2F;</p>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="网络环境"><a href="#网络环境" class="headerlink" title="网络环境"></a>网络环境</h3><p>这里是三层网络环境，设置了三个vmnet: </p>
 <p><img data-src="/images/pages/image-20221005202301343.png" alt="image-20221005202301343"></p>
           <!--noindex-->
             <div class="post-button">
@@ -373,7 +373,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/null/">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/shiro%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%AF%86%E9%92%A5%E8%AF%AF%E5%88%A4%E6%96%AD%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -387,7 +387,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/posts/null/" class="post-title-link" itemprop="url">shiro漏洞的密钥误判断问题</a>
+            <a href="/posts/shiro%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%AF%86%E9%92%A5%E8%AF%AF%E5%88%A4%E6%96%AD%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">shiro漏洞的密钥误判断问题</a>
         </h2>
 
         <div class="post-meta">
@@ -399,6 +399,15 @@
 
               <time title="创建时间：2022-08-08 17:48:09" itemprop="dateCreated datePublished" datetime="2022-08-08T17:48:09+08:00">2022-08-08</time>
             </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
+                </span>
+            </span>
 
           
             <span class="post-meta-item" title="本文字数">
@@ -406,7 +415,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
+              <span>254</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -425,7 +434,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在好几次HW中发现现有的几个扫描shiro key的漏洞经常会爆出密钥，但是又无法利用，刚开始的时候以为是利用链的问题，后来发现有时候同样的站，跑不同的几次有时候能扫描出来密钥，有时候则不行。后来分析了这个工具发现密钥误报和利用链有关。</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>在shiro反序列化漏洞刚出来的那段时间，网上的大部分工具都是通过URLDNS这条链条来验证的，这个验证有点是比较准确，缺点就是在很多不出网的内网机器中容易漏扫。后来牛逼的大佬发现了SimplePrincipalCollection这个类，</p>
+<p><strong>暂未写完，有空再来填坑</strong></p>
+
       
     </div>
 
@@ -1179,7 +1191,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">150k</span>
+    <span title="站点总字数">151k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
