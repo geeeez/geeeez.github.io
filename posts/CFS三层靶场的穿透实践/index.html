@@ -46,7 +46,7 @@
 <meta property="og:image" content="http://localhost:4000/images/pages/image-20221006112657017.png">
 <meta property="og:image" content="http://localhost:4000/images/pages/image-20221006113952985.png">
 <meta property="article:published_time" content="2022-10-05T09:27:07.000Z">
-<meta property="article:modified_time" content="2022-10-08T03:12:37.223Z">
+<meta property="article:modified_time" content="2022-10-08T06:56:29.241Z">
 <meta property="article:author" content="Geez">
 <meta property="article:tag" content="内网安全">
 <meta name="twitter:card" content="summary">
@@ -255,7 +255,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.3k</span>
+              <span>3.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -361,6 +361,8 @@
 <p><strong>备注</strong>：拿到meterpreter时不要退出使用background后台挂起，否则无法继续渗透。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>frp单层代理确实非常稳定，但是多层代理时并不是很好用，还是推荐使用msf。msf的工具挺齐全的可以基本做到完整的内网穿透利用。当然msf也提供了sockts5的代理，当需要使用的时候可以使用msf进行sockts代理的开启，然后使用proxifier工具进行其他工具的代理使用。在测试过程中发现sockts5的代理无论是msf的还是frp的在进行nmap扫描的时候都会出问题，目前原因还未可知。</p>
 <p>下次有时间搞明白为什么sockts5在进行nmap代理的时候无法扫描端口。无论是frp的sockts5还是msf生成的sockts5都存在这个问题。</p>
+<h2 id="更新补充"><a href="#更新补充" class="headerlink" title="更新补充"></a>更新补充</h2><p>sockts5代理官方有说明并不能完全支持所有应用，所以sockts5支持nmap是有问题的。<br>另外scokts4可以支持部分扫描 仅可使用-sT参数</p>
+<p>详情参考 <a target="_blank" rel="noopener" href="https://security.stackexchange.com/questions/120708/nmap-through-proxy">https://security.stackexchange.com/questions/120708/nmap-through-proxy</a></p>
 
     </div>
 
@@ -461,7 +463,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-text">环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%8E%AF%E5%A2%83"><span class="nav-text">网络环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E6%89%91%E5%9B%BE"><span class="nav-text">拓扑图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BF%E9%80%8F%E5%86%85%E7%BD%91"><span class="nav-text">穿透内网</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#frp"><span class="nav-text">frp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A6%96%E5%85%88%E6%98%AF%E4%B8%80%E5%B1%82%E7%A9%BF%E9%80%8F"><span class="nav-text">首先是一层穿透</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#frp%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-text">frp的缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MSF%E7%A9%BF%E9%80%8F%E4%B8%89%E5%B1%82%E5%86%85%E7%BD%91%E6%89%93445"><span class="nav-text">MSF穿透三层内网打445</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-text">环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%8E%AF%E5%A2%83"><span class="nav-text">网络环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E6%89%91%E5%9B%BE"><span class="nav-text">拓扑图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BF%E9%80%8F%E5%86%85%E7%BD%91"><span class="nav-text">穿透内网</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#frp"><span class="nav-text">frp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A6%96%E5%85%88%E6%98%AF%E4%B8%80%E5%B1%82%E7%A9%BF%E9%80%8F"><span class="nav-text">首先是一层穿透</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#frp%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-text">frp的缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MSF%E7%A9%BF%E9%80%8F%E4%B8%89%E5%B1%82%E5%86%85%E7%BD%91%E6%89%93445"><span class="nav-text">MSF穿透三层内网打445</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E8%A1%A5%E5%85%85"><span class="nav-text">更新补充</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -513,7 +515,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:17</span>
+    <span title="站点阅读时长">2:16</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
