@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="CSP的原理和绕过xss的编码那么复杂，一不小心就会过滤失败，同时不同的触发点还要逐个修复、即使可以统前端过滤，仍存在漏掉的风险。那么有没有一种办法可以禁止用户插入的js代码执行呢？是有的，这就是CSP！ CSP的实现和执行全部由浏览器完成，浏览器来根据你的规则，禁止引入外部的那些链接和插入的js代码的执行，那怎么告诉浏览器我要开启CSP策略呢？ 使用方法1、通过 HTTP 头信息的Content">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xss之CSP的原理和绕过">
+<meta property="og:url" content="http://localhost:4000/posts/xss%E4%B9%8BCSP%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E7%BB%95%E8%BF%87/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="CSP的原理和绕过xss的编码那么复杂，一不小心就会过滤失败，同时不同的触发点还要逐个修复、即使可以统前端过滤，仍存在漏掉的风险。那么有没有一种办法可以禁止用户插入的js代码执行呢？是有的，这就是CSP！ CSP的实现和执行全部由浏览器完成，浏览器来根据你的规则，禁止引入外部的那些链接和插入的js代码的执行，那怎么告诉浏览器我要开启CSP策略呢？ 使用方法1、通过 HTTP 头信息的Content">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-26T02:41:22.000Z">
+<meta property="article:modified_time" content="2022-11-06T13:08:15.202Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="web安全">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/xss%E4%B9%8BCSP%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E7%BB%95%E8%BF%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>xss之CSP的原理和绕过 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/xss%E4%B9%8BCSP%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E7%BB%95%E8%BF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          xss之CSP的原理和绕过
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-10-26 10:41:22" itemprop="dateCreated datePublished" datetime="2022-10-26T10:41:22+08:00">2022-10-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="CSP的原理和绕过"><a href="#CSP的原理和绕过" class="headerlink" title="CSP的原理和绕过"></a>CSP的原理和绕过</h1><p>xss的编码那么复杂，一不小心就会过滤失败，同时不同的触发点还要逐个修复、即使可以统前端过滤，仍存在漏掉的风险。那么有没有一种办法可以禁止用户插入的js代码执行呢？是有的，这就是CSP！</p>
+<p>CSP的实现和执行全部由浏览器完成，浏览器来根据你的规则，禁止引入外部的那些链接和插入的js代码的执行，那怎么告诉浏览器我要开启CSP策略呢？</p>
+<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><p>1、<strong>通过 HTTP 头信息的Content-Security-Policy</strong></p>
+<figure class="highlight csp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Content-Security-Policy</span>: <span class="keyword">script-src</span> <span class="string">&#x27;self&#x27;</span>; <span class="keyword">object-src</span> <span class="string">&#x27;none&#x27;</span>; </span><br><span class="line"><span class="keyword">style-src</span> cdn.example.org third-party.org; <span class="keyword">child-src</span> https:</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>2、<strong>通过网页的meta标签。</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;script-src &#x27;self&#x27;; object-src &#x27;none&#x27;; style-src cdn.example.org third-party.org; child-src https:&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="CSP策略字段"><a href="#CSP策略字段" class="headerlink" title="CSP策略字段"></a>CSP策略字段</h2><p>我们在网站的响应头重可以看到一般CSP的HTTP Header长这样：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Content-Security-Policy</span>: </span><br><span class="line">base-uri &#x27;self&#x27;;</span><br><span class="line">object-src &#x27;self&#x27;;</span><br><span class="line">script-src &#x27;self&#x27; &#x27;unsafe-eval&#x27; &#x27;unsafe-inline&#x27; &#x27;report-sample&#x27; *.xxx.com; </span><br><span class="line">frame-src &#x27;self&#x27; *.xxx.com;</span><br><span class="line">report-uri https://xxx.log.xxx.com</span><br></pre></td></tr></table></figure>
+
+<p>常用的CSP字段表：</p>
+<table>
+<thead>
+<tr>
+<th align="left">指令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>default-src</strong></td>
+<td align="left">针对 <code>xxx-src</code> 指令的默认行为</td>
+</tr>
+<tr>
+<td align="left"><strong>script-src</strong></td>
+<td align="left">限制脚本加载白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>base-uri</strong></td>
+<td align="left">指定 <code>&lt;base&gt;</code> 标签的 url 的值</td>
+</tr>
+<tr>
+<td align="left"><strong>child-src</strong></td>
+<td align="left">限制内嵌框架，比如 frame， iframe 的域名白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>connect-src</strong></td>
+<td align="left">限定对外请求域名的白名单 (通过 XHR、WebSockets、EventSource等)</td>
+</tr>
+<tr>
+<td align="left"><strong>font-src</strong></td>
+<td align="left">限定字体文件的请求域名白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>form-action</strong></td>
+<td align="left">限定 <code>&lt;form&gt;</code> 标签表单提交的白名单，就是 action 的域名白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>frame-ancestors</strong></td>
+<td align="left">指定可以嵌入当前页面的外部资源。 该指令适用于 <code>&lt;frame&gt;</code>、<code>&lt;iframe&gt;</code>、<code>&lt;embed&gt;</code> 和 <code>&lt;applet&gt;</code> 标记。 该指令不能在 <code>&lt;meta&gt;</code> 标记中使用，并且仅适用于非 HTML 资源。</td>
+</tr>
+<tr>
+<td align="left"><strong>frame-src</strong></td>
+<td align="left">等同于 child-src，在第二版废弃过，第三版又恢复</td>
+</tr>
+<tr>
+<td align="left"><strong>img-src</strong></td>
+<td align="left">限定图片加载域名白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>media-src</strong></td>
+<td align="left">限定视频和音频的加载域名白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>object-src</strong></td>
+<td align="left">插件加载白名单，比如 flash</td>
+</tr>
+<tr>
+<td align="left"><strong>plugin-types</strong></td>
+<td align="left">限制可以使用的插件格式</td>
+</tr>
+<tr>
+<td align="left"><strong>report-uri</strong></td>
+<td align="left">指定当违反内容安全策略时浏览器将发送报告的 URL。 此指令不能在 标记中使用。 下面有 demo 演示</td>
+</tr>
+<tr>
+<td align="left"><strong>style-src</strong></td>
+<td align="left">样式表加载白名单</td>
+</tr>
+<tr>
+<td align="left"><strong>upgrade-insecure-requests</strong></td>
+<td align="left">自动将网页上所有加载外部资源的 HTTP 链接换成 HTTPS 协议</td>
+</tr>
+<tr>
+<td align="left"><strong>worker-src</strong></td>
+<td align="left">限制 worker 加载白名单(包含 shared worker，service worker)， 第三版才有， 支持有限</td>
+</tr>
+</tbody></table>
+<p>对于不同的src分别设置有时候是繁杂的。可以通过default-src统一设置默认。当default-src设置时，任何xxx-src如果没有设置，即为default-src的策略，如果设置则覆盖default-src的策略。</p>
+<h3 id="CSP特殊设置字段"><a href="#CSP特殊设置字段" class="headerlink" title="CSP特殊设置字段"></a>CSP特殊设置字段</h3><h4 id="unsafe-inline-含义"><a href="#unsafe-inline-含义" class="headerlink" title="unsafe-inline 含义"></a>unsafe-inline 含义</h4><p>unsafe-inline允许内联的js和css的执行，比如on事件、javascript伪协议script标签内代码等。如果不声明此字段，很多网站的功能可能会异常。但是这并不是CSP的缺陷，而是开发编码的问题，如果可以做到统一不使用内联js，比如编排好使用的js文件，不使用内联函数，关闭unsafe-inline即可防止绝大多数的xss。</p>
+<p>当然也有另一种方法可以在不实用unsafe-inline的情况下执行js代码，比如：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Hello, world.&#x27;</span>);</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+<p>这个代码的哈希值计算结果放在 CSP 里面：<br>Content-Security-Policy: script-src ‘sha256-qznLcsROx4GACP2dm0UCKCzCG-HiZ1guq6ZZDob_Tng&#x3D;’</p>
+<p>但是即使禁用了unsafe-inline script-src还有另一个攻击面： data：src</p>
+<p>当date可用时也会造成xss的攻击</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;data:text/javascript,evil()&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="unsafe-eval含义"><a href="#unsafe-eval含义" class="headerlink" title="unsafe-eval含义"></a>unsafe-eval含义</h4><p>unsafe-eval允许将字符串重新转为可执行代码，比较高风险，如无必要，也是禁止开放。</p>
+<h4 id="object-src"><a href="#object-src" class="headerlink" title="object-src"></a>object-src</h4><p>如果没有default-src设置的话，object-src必须设置，因为Flash 里面可以执行外部脚本。会导致各种安全问题。</p>
+<h3 id="JSONP"><a href="#JSONP" class="headerlink" title="JSONP"></a>JSONP</h3><p>必须特别注意 JSONP 的回调函数。因为再多次测试中发现，jsonp的回调函数一般是可控的，这种同域名下的可控回调会导致CSP策略的失效。比如你限制了必需是网站子域名，正好子域名中有一个jsonp回调函数可控，那么就有了加载任意js的资源点。</p>
+<p>一旦myCallback参数可控且在返回中，那么返回的js代码就可控了。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;! DOCTYPE html &gt;</span><br><span class="line">&lt; html lang=&quot;en&quot; &gt;</span><br><span class="line">&lt; head &gt;</span><br><span class="line">    &lt; meta charset=&quot;UTF-8&quot; &gt;</span><br><span class="line">    &lt; title &gt; jsonp下XSS注入 &lt; /title&gt;</span><br><span class="line">&lt; /head&gt;</span><br><span class="line">&lt; body &gt;</span><br><span class="line">&lt; script &gt;</span><br><span class="line">    function myCallback(jsonObject) &#123;</span><br><span class="line">        //函数内容</span><br><span class="line">    &#125;</span><br><span class="line">&lt; script src=&quot;https://xxx.com?callback=myCallback&quot; &gt;<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">&lt; /body&gt;</span><br><span class="line">&lt; /html&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="CSP的错误配置和绕过"><a href="#CSP的错误配置和绕过" class="headerlink" title="CSP的错误配置和绕过"></a>CSP的错误配置和绕过</h2><p>推荐一个分析CSP策略缺陷的在线工具：<a target="_blank" rel="noopener" href="https://csp-evaluator.withgoogle.com/">https://csp-evaluator.withgoogle.com/</a></p>
+<h3 id="为了正常功能使用unsafe-inline"><a href="#为了正常功能使用unsafe-inline" class="headerlink" title="为了正常功能使用unsafe-inline"></a>为了正常功能使用unsafe-inline</h3><p>如下面的策略使用了unsafe-inline就可以争产的xss注入了</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Content-Security-Policy</span><span class="punctuation">: </span>script-src https://sina.com https://baidu.com &#x27;unsafe-inline&#x27; child-src &#x27;none&#x27;; report-uri /Report-parsing-url;</span><br></pre></td></tr></table></figure>
+<h3 id="忘记配置object-src"><a href="#忘记配置object-src" class="headerlink" title="忘记配置object-src"></a>忘记配置object-src</h3><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Content-Security-Policy</span><span class="punctuation">: </span>script-src https://sina.com https://baidu.com &#x27;unsafe-inline&#x27;; report-uri /Report-parsing-url;</span><br></pre></td></tr></table></figure>
+<p>上面的代码没有配置object-src属性，可能会导致flash相关的安全问题,以下几种标签都可以加载flash。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">embed</span> <span class="attr">src</span>=<span class="string">&quot;https://not-example.com/flash&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">embed</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">data</span>=<span class="string">&quot;https://not-example.com/plugin&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">object</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">applet</span> <span class="attr">archive</span>=<span class="string">&quot;https://not-example.com/java&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">applet</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">data</span>=<span class="string">&quot;data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="jsonp绕过CSP"><a href="#jsonp绕过CSP" class="headerlink" title="jsonp绕过CSP"></a>jsonp绕过CSP</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Content-Security-Policy:script-src ‘self’ accounts.google.com/random/ website.with.redirect.com; object-src ‘none’; report-uri /Report-parsing-url;</span><br></pre></td></tr></table></figure>
+<p>如果白名单内的域名存在jsonp回调函数可操纵的漏洞，就会造成CSP的绕过。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://web.dev/csp/#policy-applies-to-a-wide-variety-of-resources">https://web.dev/csp/#policy-applies-to-a-wide-variety-of-resources</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/web%E5%AE%89%E5%85%A8/" rel="tag"><i class="fa fa-tag"></i> web安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/xss%E4%B9%8B%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81/" rel="prev" title="xss之浏览器的编码与解码">
+      <i class="fa fa-chevron-left"></i> xss之浏览器的编码与解码
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CSP%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E7%BB%95%E8%BF%87"><span class="nav-text">CSP的原理和绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-text">使用方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSP%E7%AD%96%E7%95%A5%E5%AD%97%E6%AE%B5"><span class="nav-text">CSP策略字段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CSP%E7%89%B9%E6%AE%8A%E8%AE%BE%E7%BD%AE%E5%AD%97%E6%AE%B5"><span class="nav-text">CSP特殊设置字段</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#unsafe-inline-%E5%90%AB%E4%B9%89"><span class="nav-text">unsafe-inline 含义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#unsafe-eval%E5%90%AB%E4%B9%89"><span class="nav-text">unsafe-eval含义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#object-src"><span class="nav-text">object-src</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JSONP"><span class="nav-text">JSONP</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSP%E7%9A%84%E9%94%99%E8%AF%AF%E9%85%8D%E7%BD%AE%E5%92%8C%E7%BB%95%E8%BF%87"><span class="nav-text">CSP的错误配置和绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BA%86%E6%AD%A3%E5%B8%B8%E5%8A%9F%E8%83%BD%E4%BD%BF%E7%94%A8unsafe-inline"><span class="nav-text">为了正常功能使用unsafe-inline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%98%E8%AE%B0%E9%85%8D%E7%BD%AEobject-src"><span class="nav-text">忘记配置object-src</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jsonp%E7%BB%95%E8%BF%87CSP"><span class="nav-text">jsonp绕过CSP</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">160k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:25</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>

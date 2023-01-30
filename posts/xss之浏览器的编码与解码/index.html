@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#6c599f">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/./images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/./images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/./images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/./images/safari-pinned-tab-next.svg" color="#6c599f">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=EB Garamond, Noto Serif SC:300,300italic,400,400italic,700,700italic|Long Cang:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="xss之浏览器的编码和解码在做一些xss的过滤和绕过时，总是使用各种编码绕过，有时候是unicode，有时候是urlencode，有时候是HTML实体化编码，但是很多时候都是直接fuzz，对于存在xss的漏洞点，并没有清楚的分析和认识，对于浏览器的编码和解码没有系统的认识，这会导致我们的payload理解不到位，从而错失很多个src中的xss漏洞。为了以后能更好的挖掘xss漏洞和更快的fuzz出过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xss之浏览器的编码与解码">
+<meta property="og:url" content="http://localhost:4000/posts/xss%E4%B9%8B%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81/">
+<meta property="og:site_name" content="匆匆那年">
+<meta property="og:description" content="xss之浏览器的编码和解码在做一些xss的过滤和绕过时，总是使用各种编码绕过，有时候是unicode，有时候是urlencode，有时候是HTML实体化编码，但是很多时候都是直接fuzz，对于存在xss的漏洞点，并没有清楚的分析和认识，对于浏览器的编码和解码没有系统的认识，这会导致我们的payload理解不到位，从而错失很多个src中的xss漏洞。为了以后能更好的挖掘xss漏洞和更快的fuzz出过">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-25T13:17:58.000Z">
+<meta property="article:modified_time" content="2023-01-30T01:31:02.547Z">
+<meta property="article:author" content="Geez">
+<meta property="article:tag" content="web安全">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/posts/xss%E4%B9%8B%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>xss之浏览器的编码与解码 | 匆匆那年</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">匆匆那年</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">钟声敲在你我耳边</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fas fa-home"></i>首页</a>
+
+  </li>
+        
+            
+  <li class="menu-item menu-item-overview">
+
+    <a href="/overview/" rel="section"><i class="fa fa-fw fa-fas fa-archive"></i>总览</a>
+
+  </li>
+
+
+      
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fas fa-location-arrow"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-friends">
+
+    <a href="/friends/" rel="section"><i class="fa fa-fw fa-fas fa-heart"></i>友链</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/xss%E4%B9%8B%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          xss之浏览器的编码与解码
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-10-25 21:17:58" itemprop="dateCreated datePublished" datetime="2022-10-25T21:17:58+08:00">2022-10-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="xss之浏览器的编码和解码"><a href="#xss之浏览器的编码和解码" class="headerlink" title="xss之浏览器的编码和解码"></a>xss之浏览器的编码和解码</h1><p>在做一些xss的过滤和绕过时，总是使用各种编码绕过，有时候是unicode，有时候是urlencode，有时候是HTML实体化编码，但是很多时候都是直接fuzz，对于存在xss的漏洞点，并没有清楚的分析和认识，对于浏览器的编码和解码没有系统的认识，这会导致我们的payload理解不到位，从而错失很多个src中的xss漏洞。为了以后能更好的挖掘xss漏洞和更快的fuzz出过waf手法。今天就来详细梳理下浏览器的编码和解码过程。</p>
+<span id="more"></span>
+
+<h2 id="浏览器工作过程"><a href="#浏览器工作过程" class="headerlink" title="浏览器工作过程"></a>浏览器工作过程</h2><p>我们都知道网上有很多人写了一个”url点击后电脑都做了什么”，如果感兴趣可以去看看。这里不在赘述请求服务端的流程，这里主要梳理的是一个页面响应后浏览器是如何渲染给我们看的。</p>
+<p>浏览器是可以解析html、svg、xhtml的，我们日常使用的网页也基本都是这三种格式，浏览器首先将响应的HTML类文本解析为DOM树。当然CSS解析也会解析为CSS的TREE，但是这里不讨论CSS。我们下面都以HTML举例</p>
+<p>浏览器通过解析HTML为DOM 树并通过开始标签、结束标签和标签的属性、方法等根据算法进行解析的。所以浏览器首先是解析HTML，然后根据标签构建DOM树，此时浏览器是没办法识别实体编码的那些内容的，构建完dom树后，浏览器才会对标签里的内容进行解析，然后遇到实体编码的话会解码。所以实体化编码的标签是不会构建为节点的（所以实体化编码很多时候都有用)。</p>
+<p>浏览器通过上述的步骤来解析各个标签，最终结合javascript的引擎和CSS的引擎完成对整个页面的操作和渲染。</p>
+<h2 id="浏览器的解码顺序"><a href="#浏览器的解码顺序" class="headerlink" title="浏览器的解码顺序"></a>浏览器的解码顺序</h2><p>页面响应后浏览器拿到了HTML的页面文本，浏览器首先根据节点构建DOM树，构建的时候是不会进行解码的，所以如果你输入一个</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>&amp;#<span class="attr">x3d</span>;&quot;<span class="attr">http:</span>//<span class="attr">xxx.com</span>/<span class="attr">1.jpg</span>&quot;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>即使<a target="_blank" rel="noopener" href="http://xxx.com/1.jpg%E7%9C%9F%E7%9A%84%E6%98%AF%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E4%B9%9F%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AE%E5%88%B0%EF%BC%8C%E8%BF%99%E4%B8%AAimg%E6%A0%87%E7%AD%BE%E4%B9%9F%E6%98%AF%E6%98%BE%E7%A4%BA%E4%B8%8D%E5%87%BA%E6%9D%A5%E7%9A%84%EF%BC%8C%E5%9B%A0%E4%B8%BA%E6%9E%84%E5%BB%BA%E7%9A%84%E6%97%B6%E5%80%99%E6%B2%A1%E6%9C%89%E8%A7%A3%E7%A0%81%EF%BC%8Csrc%E4%B8%8D%E4%BC%9A%E8%A2%AB%E8%AE%A4%E4%B8%BA%E6%98%AF%E4%B8%80%E4%B8%AA%E9%93%BE%E6%8E%A5%EF%BC%8C%E4%B9%9F%E5%B0%B1%E6%B2%A1%E6%9C%89%E4%BA%86%E8%BF%99%E4%B8%AA%E5%B1%9E%E6%80%A7%E3%80%82">http://xxx.com/1.jpg真的是一张图片也可以访问到，这个img标签也是显示不出来的，因为构建的时候没有解码，src不会被认为是一个链接，也就没有了这个属性。</a></p>
+<p>javascript在html解析中也存在一定的作用，会参与其dom树的构建。所以这并不是线性顺序的。比如dom型xss，但是大方向上，解析还是先html的解析。</p>
+<p>DOM节点建立起来以后就要进行解析了，比如他遇到script标签就需要JavaScript来解析，当遇到style就给css的解析器。src、href这种链接形式的会调用URL解码、同时对于一些伪协议，也会调用相应的解析器。</p>
+<p>比如下面这个例子：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:%61%6c%65%72%74&quot;</span>&gt;</span>123<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个例子是可以弹窗的，因为dom树构建后，解析过程中发现href为一个链接，会进行urldecode，然后因为javascript伪协议，会交给javascript来解析，最终造成代码执行。</p>
+<p>当然javascript本身就支持unicode,所以下面这样也是可以弹窗的：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:%5c%75%30%30%36%31%6c%65%72%74(123);&quot;</span>&gt;</span>12345<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 需要注意的是括号、引号 不能被unicode替代，否则js不会认为这是需要解码的方法或者字段，只会被当作字符串。 --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>下面我们用两张图来看下浏览器工作和解码的流程：</p>
+<p>图一DOM树：</p>
+<p>![image-20221026102503733](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20221026102503733.png)</p>
+<p>图二构建流程：</p>
+<p>![image-20221026102859384](&#x2F;Users&#x2F;geez&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20221026102859384.png)</p>
+<p>如上面两个图所示，HTML解析构建DOM-&gt;script参与构建DOM-&gt;DOM TREE构建完后会进行HTML解码-&gt;rendering渲染（如果中间遇到URL会进行URLDECODE）</p>
+<p>既然了解了解析的流程，那么我们也得了解下可以自解码的编码有哪些？</p>
+<p>HTML有两种编码方式：进制编码和实体编码。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">&amp;lt;</span></span><br><span class="line">&amp;#60</span><br><span class="line">&amp;#x61</span><br></pre></td></tr></table></figure>
+
+<p>JavaScript自解码有三种：Unicode，十进制，十六进制</p>
+<p>注意：在js中，单引号，双引号和圆括号等属于控制字符，编码后将无法识别，所以下面这种无法执行：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 不可以执行</span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;1&quot;</span> <span class="attr">onerror</span>=<span class="string">\u0061\u006c\u0065\u0072\u0074\u0028\u0031\u0029</span>&gt;</span></span><br><span class="line">#可以执行</span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;1&quot;</span> <span class="attr">onerror</span>=<span class="string">\u0061\u006c\u0065\u0072\u0074(</span>&#x27;\<span class="attr">u0031</span>&#x27;)&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>URL只有一种编码方式就是URL，这个很好理解。</p>
+<h2 id="在实践中理解"><a href="#在实践中理解" class="headerlink" title="在实践中理解"></a>在实践中理解</h2><p>下面是一个常用的xss payload</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:alert(123)&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>因为javascript解析器可以解析unicode，所以我们可以变种：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:\u0061\u006c\u0065\u0072\u0074(123)&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>因为href是一个链接所以肯定会被URL解码，所以我们可以变种</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:%5c%75%30%30%36%31%5c%75%30%30%36%63%5c%75%30%30%36%35%5c%75%30%30%37%32%5c%75%30%30%37%34%28%31%32%33%29&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>现在因为构建DOM树的时候会对HTML进行自解码，所以我们可以变种</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;<span class="symbol">&amp;#x006a;</span><span class="symbol">&amp;#x0061;</span><span class="symbol">&amp;#x0076;</span><span class="symbol">&amp;#x0061;</span><span class="symbol">&amp;#x0073;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0072;</span><span class="symbol">&amp;#x0069;</span><span class="symbol">&amp;#x0070;</span><span class="symbol">&amp;#x0074;</span><span class="symbol">&amp;#x003a;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0036;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0036;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0036;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0036;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0032;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0063;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0035;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0030;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0037;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0034;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0032;</span><span class="symbol">&amp;#x0038;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0032;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0033;</span><span class="symbol">&amp;#x0025;</span><span class="symbol">&amp;#x0032;</span><span class="symbol">&amp;#x0039;</span>&quot;</span>&gt;</span>3333<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>现在我们对于这种浏览器的编码有个基本的认识了，但是前面说到这个javascript可以操纵dom，进行动态生成节点，也是产生domxss的重要原因，下面这个解码就比较复杂了：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Type&quot;</span> <span class="attr">content</span>=<span class="string">&quot;text/html; charset=utf-8&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">id</span>=<span class="string">&quot;a&quot;</span> <span class="attr">src</span>=<span class="string">&quot;http://baidu.com&quot;</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- &lt;input value=&quot;修改URL&quot; id=&quot;b&quot;&gt; --&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;button&quot;</span> <span class="attr">value</span>=<span class="string">&quot;确定&quot;</span> <span class="attr">onclick</span>=<span class="string">modify_src()</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">	<span class="keyword">function</span> <span class="title function_">modify_src</span>(<span class="params">value</span>)&#123;</span></span><br><span class="line"><span class="language-javascript">		<span class="keyword">var</span> a = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;a&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">		<span class="keyword">var</span> b = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;b&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">		<span class="comment">// 用户可控点value</span></span></span><br><span class="line"><span class="language-javascript">		a.<span class="property">innerHTML</span>=<span class="string">&quot;&lt;img src=# onerror=alert(123)&gt;&quot;</span>;</span></span><br><span class="line"><span class="language-javascript">	&#125;</span></span><br><span class="line"><span class="language-javascript">	<span class="comment">// // html编码函数</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">// function htmlEncodeByRegExp(str) &#123;</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         var temp = &quot;&quot;;</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         if (str.length == 0) return &quot;&quot;;</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         temp = str.replace(/&amp;/g, &quot;&amp;amp;&quot;);</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         temp = temp.replace(/&lt;/g, &quot;&amp;lt;&quot;);</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         temp = temp.replace(/&gt;/g, &quot;&amp;gt;&quot;);</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         temp = temp.replace(/\&#x27;/g, &quot;&amp;#39;&quot;);</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         temp = temp.replace(/\&quot;/g, &quot;&amp;quot;&quot;);</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//         return temp;</span></span></span><br><span class="line"><span class="language-javascript">	<span class="comment">//     &#125;</span></span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>看看上面这个如果innerHTML可控会有多少种编码方式？如果你真的理解了这里就不再赘述，应该是多层unicode和HTML编码可以混用依然执行弹窗。</p>
+<p>所以，得出结论，在大多数情况下如果必须插入标签才能触发的xss实体化编码还是好用的，当然，具体情况要具体分析</p>
+<p>另外我们在一些过滤绕过中，发现svg的出场次数也挺高的，这是因为svg是可以内嵌其他标签，同时会被html解码</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">svg</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-handlebars"><span class="language-xml"><span class="symbol">&amp;#x0061;</span><span class="symbol">&amp;#x006c;</span><span class="symbol">&amp;#x0065;</span><span class="symbol">&amp;#x0072;</span><span class="symbol">&amp;#x0074;</span><span class="symbol">&amp;#x0028;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0031;</span><span class="symbol">&amp;#x0029;</span></span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span><span class="tag">&lt;/<span class="name">svg</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>HTML解析、CSS解析、JS解析和URL解析。这四个解析器的解析顺序搞懂，XSS的编码绕过问题就比较容易理解了，遇到一些SRC的xss点也可以绕过的更从容一点。</p>
+<h2 id="Refrence"><a href="#Refrence" class="headerlink" title="Refrence"></a>Refrence</h2><ul>
+<li><p><a target="_blank" rel="noopener" href="http://xuelinf.github.io/2016/05/18/%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81-%E6%B5%8F%E8%A7%88%E5%99%A8%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88/">http://xuelinf.github.io/2016/05/18/%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81-%E6%B5%8F%E8%A7%88%E5%99%A8%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88/</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="http://taligarsiel.com/Projects/howbrowserswork1.htm#Parsing_general">http://taligarsiel.com/Projects/howbrowserswork1.htm#Parsing_general</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+
+<span style="margin-top:30px; color:var(--blockquote-color); font-size:0.85em">
+        <br>
+        <span class="post-end-item" title="copyright"">
+            <span class="post-end-item-icon" style="margin-right: 3px">
+                <i class="fab fa-fw fa-creative-commons"></i>
+            </span>
+            <span class="post-end-item-text">采用署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0）许可协议</span>
+        </span>
+</span>
+
+
+
+
+
+<div class="donations">
+    <div class="donation-label">「分享也是一种学习」</div>
+</div>
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/overview/tags/web%E5%AE%89%E5%85%A8/" rel="tag"><i class="fa fa-tag"></i> web安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/CFS%E4%B8%89%E5%B1%82%E9%9D%B6%E5%9C%BA%E7%9A%84%E7%A9%BF%E9%80%8F%E5%AE%9E%E8%B7%B5/" rel="prev" title="CFS三层靶场的穿透实践">
+      <i class="fa fa-chevron-left"></i> CFS三层靶场的穿透实践
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/xss%E4%B9%8BCSP%E7%9A%84%E5%8E%9F%E7%90%86%E5%92%8C%E7%BB%95%E8%BF%87/" rel="next" title="xss之CSP的原理和绕过">
+      xss之CSP的原理和绕过 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#xss%E4%B9%8B%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E7%BC%96%E7%A0%81%E5%92%8C%E8%A7%A3%E7%A0%81"><span class="nav-text">xss之浏览器的编码和解码</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="nav-text">浏览器工作过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E8%A7%A3%E7%A0%81%E9%A1%BA%E5%BA%8F"><span class="nav-text">浏览器的解码顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%AE%9E%E8%B7%B5%E4%B8%AD%E7%90%86%E8%A7%A3"><span class="nav-text">在实践中理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Refrence"><span class="nav-text">Refrence</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Geez"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Geez</p>
+  <div class="site-description" itemprop="description">黑客,诗人,养龟仔</div>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/geeeez/" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;geeeez&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-fab fa-github"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-fas fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Geez</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">160k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:25</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+  
+
+    </div>
+</body>
+</html>
