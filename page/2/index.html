@@ -193,6 +193,574 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/Celery-timing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/Celery-timing/" class="post-title-link" itemprop="url">Celery实现定时任务</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-07-18 15:17:56" itemprop="dateCreated datePublished" datetime="2022-07-18T15:17:56+08:00">2022-07-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/coding/" itemprop="url" rel="index"><span itemprop="name">coding</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Celery定时任务"><a href="#Celery定时任务" class="headerlink" title="Celery定时任务"></a>Celery定时任务</h1><h2 id="celery-beat"><a href="#celery-beat" class="headerlink" title="celery beat"></a>celery beat</h2><p>定时任务由 Celery Beat 进程周期性地将任务发往任务队列，所以我们需要启动一个Celery Beat和一个Celery Worker。Celery Beat启动方式和Celery Worker一致，下面我们先来看下Celery定时任务怎么coding。</p>
+<h2 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h2><p>首先是定时任务的各种设置</p>
+<h3 id="时区"><a href="#时区" class="headerlink" title="时区"></a>时区</h3><p>默认情况下是UTC 时区，可以通过timezone修改：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">timezone=<span class="string">&#x27;Europe/London&#x27;</span></span><br><span class="line"><span class="comment"># 或者配置中国时间</span></span><br><span class="line">app.conf.timezone = <span class="string">&#x27;Asia/Shanghai&#x27;</span> </span><br><span class="line">app.conf.enable_utc = <span class="literal">False</span> </span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/Celery-timing/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/PCL-CTF-WEB2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/PCL-CTF-WEB2/" class="post-title-link" itemprop="url">鹏程杯CTF-两道有意思的题目</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-07-05 15:27:28" itemprop="dateCreated datePublished" datetime="2022-07-05T15:27:28+08:00">2022-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/CTF/" itemprop="url" rel="index"><span itemprop="name">CTF</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>其实这次web题目质量一般，可能web只有一道题目做起来让人觉得知识点和考察方式都很好，既简单又困难的那种感觉吧，web题目应该是AK了，但是有一部分没啥营养，这里就记录下两道题目：</p>
+<p>1、简单的php </p>
+<p>2、高手高手高高手</p>
+<h2 id="简单的php"><a href="#简单的php" class="headerlink" title="简单的php"></a>简单的php</h2><p>这道题目其实以前也遇到过，不过这里过滤了更多的东西，中心思想还是一致的，我们首先看代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">    <span class="variable">$code</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;code&#x27;</span>];</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">strlen</span>(<span class="variable">$code</span>) &gt; <span class="number">80</span> <span class="keyword">or</span> <span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/[A-Za-z0-9]|\&#x27;|&quot;|`|\ |,|\.|-|\+|=|\/|\\|&lt;|&gt;|\$|\?|\^|&amp;|\|/is&#x27;</span>,<span class="variable">$code</span>))&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">&#x27; Hello&#x27;</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="string">&#x27;;&#x27;</span> === <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/[^\s\(\)]+?\((?R)?\)/&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$code</span>))&#123;</span><br><span class="line">        @<span class="keyword">eval</span>(<span class="variable">$code</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/PCL-CTF-WEB2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/android_wechat_minipro_burp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/android_wechat_minipro_burp/" class="post-title-link" itemprop="url">微信最新版小程序burp抓包</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-06-15 17:49:08" itemprop="dateCreated datePublished" datetime="2022-06-15T17:49:08+08:00">2022-06-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/android/" itemprop="url" rel="index"><span itemprop="name">android</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>863</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我的手机是安卓9.0 本来一直用的微信6.0，微信6.0证书随便信任，所以抓包也一直没问题。但是最近测试的时候发现微信版本太低会导致部分小程序打开界面有问题，无奈只能升级到最新微信版本，同时进行了抓包的配置。所以记录了一下。</p>
+<h2 id="微信版本对手机系统证书的支持"><a href="#微信版本对手机系统证书的支持" class="headerlink" title="微信版本对手机系统证书的支持"></a>微信版本对手机系统证书的支持</h2><ul>
+<li>安卓系统 7.0 以下版本，不管微信任意版本，都会信任系统提供的证书</li>
+<li>安卓系统 7.0 以上版本，微信 7.0 以下版本，微信会信任系统提供的证书</li>
+<li>安卓系统 7.0 以上版本，微信 7.0 以上版本，微信只信任它自己配置的证书列表</li>
+</ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/android_wechat_minipro_burp/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/python_circle_import/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/python_circle_import/" class="post-title-link" itemprop="url">python的循环引用问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-05-01 15:50:42" itemprop="dateCreated datePublished" datetime="2022-05-01T15:50:42+08:00">2022-05-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/coding/" itemprop="url" rel="index"><span itemprop="name">coding</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>678</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="python的循环引用"><a href="#python的循环引用" class="headerlink" title="python的循环引用"></a>python的循环引用</h2><h3 id="什么是循环引用"><a href="#什么是循环引用" class="headerlink" title="什么是循环引用"></a>什么是循环引用</h3><p>最近写代码遇见了几次python的循环调用问题，主要原因肯定是编码不规范，应该是共同调用的代码抽离出来重新封装，而不是B里面有A需要的代码，同时A里面也有B需要的代码，这样交叉引用python就会报错</p>
+<p>当我们import一个python文件时，python会首先去查找这个文件之前是否被import过，如果这个文件之前有被import过，就不会重新再import一次。否则会倒入，并执行一边代码。</p>
+<p>python核心编程这本书也说过这个问题:</p>
+<blockquote>
+<p>加载模块会导致这个模块被执行。也就是被执行模块的顶层代码将直接被执行。这通常包含设定全局变量以及类和函数的声明。一个模块只被加载一次，无论它被导入多少次。这可以阻止多重导入时代码被多次执行</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/python_circle_import/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/What-is-JDNI/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/What-is-JDNI/" class="post-title-link" itemprop="url">什么是JNDI</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-04-14 11:13:23" itemprop="dateCreated datePublished" datetime="2022-04-14T11:13:23+08:00">2022-04-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/java%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">java安全</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么是JNDI"><a href="#什么是JNDI" class="headerlink" title="什么是JNDI"></a>什么是JNDI</h1><p>J2SE，是java2的标准版，主要用于开发桌面的应用程序。</p>
+<p><strong>J2SE包含了构成java语言核心的类：数据库连接、接口定义、输入输出、网络编辑等。</strong></p>
+<p>J2EE, 是java2的企业版，主要用于分布式的网络程序的开发。</p>
+<p><strong>j2ee包含j2se中的类，还包含用于开发企业级应用的类，也包含企业应用中很多的API。例如：JDBC、JNDI、EJB等</strong>。</p>
+<p><strong>不少专家认为，没有透彻理解JNDI的意义和作用，就没有真正掌握J2EE特别是EJB的知识</strong></p>
+<h2 id="JNDI概念"><a href="#JNDI概念" class="headerlink" title="JNDI概念"></a>JNDI概念</h2><p>JNDI全称Java Naming and Directory Interface 翻译过来就是Java命名和目录接口。这个概念搞出来就是为了方便人们来记录一些不容易记录都内容。有点类似于域名和ip的映射。所以如果要深入的学可能会被绕进去，现在你可以简单的理解为他是一个字典，给不同的对象和属性（value）取名（key）。到时候好找出来用。</p>
+<h2 id="JNDI作用"><a href="#JNDI作用" class="headerlink" title="JNDI作用"></a>JNDI作用</h2><p>网上比较经典的例子就是JDBC连接数据库：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Scr</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//JDBC驱动名</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">JDBC_DRIVER</span> <span class="operator">=</span> <span class="string">&quot;com.mysql.jdbc.Driver&quot;</span>;</span><br><span class="line">        <span class="comment">//数据库URL：这里的tt是数据库名称</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">JDBC_URL</span> <span class="operator">=</span> <span class="string">&quot;jdbc:mysql://localhost:3306/tt?useSSL=false&amp;serverTimezone=UTC&quot;</span>;</span><br><span class="line"><span class="comment">//        数据库的用户名与密码</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">USER</span> <span class="operator">=</span> <span class="string">&quot;root&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">PASS</span> <span class="operator">=</span> <span class="string">&quot;admin123&quot;</span>;</span><br><span class="line">        <span class="comment">//通过DriverManager类获得该连接对象才能访问数据库</span></span><br><span class="line">        <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="comment">//        通过Connection获得该结果对象用于执行静态的SQL语句</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">statement</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"><span class="comment">//            注册JDBC驱动</span></span><br><span class="line">            Class.forName(JDBC_DRIVER);</span><br><span class="line">            </span><br><span class="line"><span class="comment">//            数据库的连接：通过DriverManager类的getConnection方法，传入三个参数：数据库URL、用户名、用户密码，实例化connection对象</span></span><br><span class="line">            connection = DriverManager.getConnection(JDBC_URL,USER,PASS);</span><br><span class="line"><span class="comment">//            实例化statement对象</span></span><br><span class="line">            statement = (Statement) connection.createStatement();</span><br><span class="line"><span class="comment">//            定义数据库查询语句：查询aa表中的name、sex两列数据</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT name,sex FROM aa&quot;</span>;</span><br><span class="line"><span class="comment">//            执行查询语句</span></span><br><span class="line">            <span class="type">ResultSet</span> <span class="variable">rSet</span> <span class="operator">=</span> statement.executeQuery(sql);</span><br><span class="line"><span class="comment">//            展开查询到的数据</span></span><br><span class="line">            <span class="keyword">while</span>(rSet.next()) &#123;</span><br><span class="line"><span class="comment">//                这里getString()方法中的参数对应的是数据库表中的列名</span></span><br><span class="line">                <span class="type">String</span> <span class="variable">get_name</span> <span class="operator">=</span> rSet.getString(<span class="string">&quot;name&quot;</span>);</span><br><span class="line">                <span class="type">String</span> <span class="variable">get_sex</span> <span class="operator">=</span> rSet.getString(<span class="string">&quot;sex&quot;</span>);</span><br><span class="line"><span class="comment">//                输出数据</span></span><br><span class="line">                System.out.println(<span class="string">&quot;名字:&quot;</span>+get_name);</span><br><span class="line">                System.out.print(<span class="string">&quot;性别:&quot;</span>+get_sex);                   </span><br><span class="line">            &#125;  </span><br><span class="line"><span class="comment">//            依次关闭对象</span></span><br><span class="line">            rSet.close();</span><br><span class="line">            statement.close();</span><br><span class="line">            connection.close();            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;      </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/What-is-JDNI/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/cobaltstrike%E9%9A%90%E8%97%8F%E7%89%B9%E5%BE%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Geez">
+      <meta itemprop="description" content="黑客,诗人,养龟仔">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="匆匆那年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/cobaltstrike%E9%9A%90%E8%97%8F%E7%89%B9%E5%BE%81/" class="post-title-link" itemprop="url">cobaltstrike隐藏特征</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发布：</span>
+
+              <time title="创建时间：2022-04-14 11:13:23" itemprop="dateCreated datePublished" datetime="2022-04-14T11:13:23+08:00">2022-04-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类：</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/overview/%E7%BA%A2%E8%93%9D%E5%AF%B9%E6%8A%97/" itemprop="url" rel="index"><span itemprop="name">红蓝对抗</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="cobaltstrike隐藏特征记录"><a href="#cobaltstrike隐藏特征记录" class="headerlink" title="cobaltstrike隐藏特征记录"></a>cobaltstrike隐藏特征记录</h1><h2 id="端口特征"><a href="#端口特征" class="headerlink" title="端口特征"></a>端口特征</h2><p>端口尽量修改非默认端口，除了是规避特征，也防止被扫。这个修改端口非常简单，这里不再赘述。</p>
+<h2 id="证书特征"><a href="#证书特征" class="headerlink" title="证书特征"></a>证书特征</h2><p>这里cobalstrike有两个地方需要用到证书，一个是和CS的通信，另一个则是我们创建https监听器时也需要证书，这两个都有默认自带，但是肯定是有特征的，所以都需要自己生成。一般网上教程会忽略对https证书的修改，可能也会被杀软标记。</p>
+<h4 id="ulike-store"><a href="#ulike-store" class="headerlink" title="ulike.store"></a>ulike.store</h4><p>我们这里直接使用linux自带的keytool命令生成证书</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keytool -keystore ulike.store -storepass xxxx123 -keypass xxxx123 -genkey -keyalg RSA -<span class="built_in">alias</span> ulike.com -dname <span class="string">&quot;CN=US, OU=ulike.com, O=Sofaware, L=Somewhere, ST=Cyberspace, C=CN&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里面的密码我们要记住，后面定制profile还需要使用。</p>
+<p>你可以生成两个不同的证书，也可以都适用这一个证书。当然网上还有教程推荐生成带绿标的https证书，我觉得没有那个必要，能用就行，如果你需要一个真正合规的https证书，那你需要申请一个域名，然后去cloudfare或者freessl网站上去申请一个证书，也是免费的。</p>
+<h2 id="流量和行为特征"><a href="#流量和行为特征" class="headerlink" title="流量和行为特征"></a>流量和行为特征</h2><p>流量特征如果你有深厚的编程功底，可以直接去二开CS，很多安全大厂也是这样做的。当然我没有😂，所以我选择定制一下profile, cs的profile文件可以修改流量特征以及修改beacon的默认行为，目的是为了让通信变得更加隐蔽。</p>
+<p>如果你对profile的语法还不够了解，甚至不知道是什么，推荐去读一下官方文档或者这个：<a target="_blank" rel="noopener" href="https://blog.zsec.uk/cobalt-strike-profiles/">https://blog.zsec.uk/cobalt-strike-profiles/</a></p>
+<p>我们这里不直接提供profile 样例，而是说一下应该注意什么：</p>
+<ul>
+<li><p>首先是要修改https http 的各种流量特征，加一些自己的定制字段和header伪造为正常的流量。</p>
+</li>
+<li><p>修改pipename管道名称</p>
+</li>
+<li><p>绑定https证书</p>
+</li>
+</ul>
+<p>我们绑定上面的证书在profile中可以这样写</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https-certificate &#123;</span><br><span class="line">    <span class="built_in">set</span> keystore <span class="string">&quot;ulike.store&quot;</span>;</span><br><span class="line">    <span class="built_in">set</span> password <span class="string">&quot;xxxx123&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>至于其他的一些细节，比如<strong>进程注入、反射的beacon.dll文件的具体特征等</strong>，可以去github上查找红队大佬的profile案例，理解后学习。每个人的写法不一致，而且被研究后也容易被针对。</p>
+<h2 id="vps特征"><a href="#vps特征" class="headerlink" title="vps特征"></a>vps特征</h2><p>有时候我们的流量免杀可能都做到位了，但是还是被杀，可以考虑下是不是vps被标记了。更换vps。或者在一开始使用的时候，就可以使用cdn，域前置技术，来规避vps的ip被直接标记。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/UTCTF-WEB-WP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -459,7 +1027,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%B7%A8%E5%9F%9F%E7%9A%84%E5%87%A0%E7%A7%8D%E5%AE%9E%E7%8E%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -473,7 +1041,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">SSRF的那些问题</a>
+            <a href="/posts/%E6%B5%8F%E8%A7%88%E5%99%A8%E8%B7%A8%E5%9F%9F%E7%9A%84%E5%87%A0%E7%A7%8D%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">浏览器跨域的几种实现</a>
         </h2>
 
         <div class="post-meta">
@@ -483,7 +1051,7 @@
               </span>
               <span class="post-meta-item-text">发布：</span>
 
-              <time title="创建时间：2020-02-11 23:12:57" itemprop="dateCreated datePublished" datetime="2020-02-11T23:12:57+08:00">2020-02-11</time>
+              <time title="创建时间：2020-03-11 13:12:57" itemprop="dateCreated datePublished" datetime="2020-03-11T13:12:57+08:00">2020-03-11</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -501,14 +1069,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>10k</span>
+              <span>5.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -520,551 +1088,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>SSRF是非常容易忽略的一个漏洞，我甚至在渗透测试的项目中甚至不会去深究这方面的漏洞，因为它通常危害较小，并且极难利用。但是上次我在一个项目中发现了一个SSRF，并且同服务器还有另一个对内开放的网站，这样这个SSRF就为攻击者建立了一个从对外开放到网站渗透到对内开放的网站。最后利用SSRF探测到了对内开放的那个网站有sql注入，虽然没有getshell，但是还是引起了重视，SSRF在很多时候还是有用武之地的。</p>
-<h3 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h3><p>SSRF(Server-Side Request Forgery:服务器端请求伪造) 是一种由攻击者构造形成由服务端发起请求的一个安全漏洞。很晦涩！！！举个例子：服务端有一个在线加载图片的功能，你传入一个图片URL，网站就会加载出来对应图片，所以图片的URL是网站服务器去访问的，如果我们利用这点传入一些只有服务端才能进行访问的URL，比如不对外开放的后台地址，那么这个过程就是服务端的请求伪造。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/SSRF%E7%9A%84%E9%82%A3%E4%BA%9B%E9%97%AE%E9%A2%98/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>同源策略是浏览器安全策略的核心，非同源不得交互，但是有时候一家公司有自己的不同业务，不同的子域名，或者说有合作方，不同的域名端口需要交互数据呢。这就是跨域的需求。</p>
+<p>跨域目前一般常见两种方式：Jsonp、CORS、代理。</p>
+<h2 id="JSONP"><a href="#JSONP" class="headerlink" title="JSONP"></a>JSONP</h2><p>js在script标签中是不受同源策略限制的，我们也经常能看到<code>&lt;script src=&quot;http://xxx.xxx.xx.x/xxx.js&quot;&gt;</code>，当然img也不受限制，但是img不太好做后续数据的处理。</p>
+<p>jsonp的核心是在前端动态创建一个script标签。并设置src属性指向跨域的服务器。服务器返回包含json数据的javascript函数。前端接受到对应函数和对应的数据，直接执行处理就拿到了我们想调用接口拿到的数据。</p>
+<p><strong>demo</strong></p>
+<p>我们实现一个demo，后端用我比较熟悉的Flask</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request, render_template_string</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假设这是一个返回JSONP响应的服务端点</span></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/jsonp&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">jsonp_demo</span>():</span><br><span class="line">    <span class="comment"># 获得客户端传递的回调函数名称</span></span><br><span class="line">    callback = request.args.get(<span class="string">&#x27;callback&#x27;</span>, <span class="string">&#x27;callbackFunction&#x27;</span>)</span><br><span class="line">    data = &#123;<span class="string">&#x27;user&#x27;</span>: <span class="string">&#x27;Alice&#x27;</span>, <span class="string">&#x27;id&#x27;</span>: <span class="number">123</span>&#125;  <span class="comment"># 这里是我们想要传递给客户端的数据</span></span><br><span class="line">    response = <span class="string">f&quot;<span class="subst">&#123;callback&#125;</span>(<span class="subst">&#123;data&#125;</span>)&quot;</span></span><br><span class="line">    <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+<p>如果有浏览器访问&#x2F;jsonp接口就会获取回调函数的名称，然后把这个接口需要传递的数据封装进去。然后前端代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>JSONP Demo<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="comment">// 定义处理JSONP响应的回调函数</span></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">function</span> <span class="title function_">handleJSONPResponse</span>(<span class="params">data</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Received data:&#x27;</span>, data);</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-handlebars"><span class="language-xml"></span></span></span><br><span class="line"><span class="language-xml"><span class="language-handlebars">        // 动态添加<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript">标签进行跨域请求</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">        <span class="keyword">function</span> <span class="title function_">requestJSONP</span>(<span class="params">url, callbackName</span>) &#123;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">            <span class="keyword">var</span> scriptTag = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&#x27;script&#x27;</span>);</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">            scriptTag.<span class="property">src</span> = url + <span class="string">&#x27;?callback=&#x27;</span> + callbackName; <span class="comment">// 添加callback参数到URL</span></span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">            <span class="variable language_">document</span>.<span class="property">head</span>.<span class="title function_">appendChild</span>(scriptTag);</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">        &#125;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">        <span class="comment">// 调用JSONP请求</span></span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">        <span class="comment">// 注意更改URL中的端口号为你的Flask服务器运行的端口号</span></span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">        <span class="title function_">requestJSONP</span>(<span class="string">&#x27;http://localhost:5000/jsonp&#x27;</span>, <span class="string">&#x27;handleJSONPResponse&#x27;</span>);</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="language-handlebars">    </span></span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>JSONP跨域请求示例<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/">
+<p>前端请求<a href="http://localhost:5000/jsonp%E6%8E%A5%E5%8F%A3%EF%BC%8C%E5%B9%B6%E8%8E%B7%E5%8F%96%E4%BA%86%E6%95%B0%E6%8D%AE%E6%89%93%E5%8D%B0%E3%80%82%E5%A6%82%E6%9E%9C%E4%B8%8D%E4%BD%BF%E7%94%A8jsonp%EF%BC%8C%E9%82%A3%E4%B9%88%E7%9B%B4%E6%8E%A5%E5%9C%A8%E5%BD%93%E5%89%8D%E5%9F%9F%E4%B8%8B%E8%AF%B7%E6%B1%82%E5%88%AB%E7%9A%84%E5%9F%9F%E7%9A%84%E6%8E%A5%E5%8F%A3%E6%98%AF%E4%B8%8D%E5%90%88%E6%B3%95%E7%9A%84%E3%80%82%E6%89%80%E4%BB%A5jsonp%E8%A7%A3%E5%86%B3%E4%BA%86%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98%E3%80%82">http://localhost:5000/jsonp接口，并获取了数据打印。如果不使用jsonp，那么直接在当前域下请求别的域的接口是不合法的。所以jsonp解决了跨域问题。</a></p>
+<p>优点：简单高效兼容性好</p>
+<p>缺点：只支持GET请求，还有xss漏洞的奉献。（src的低危的主要贡献漏洞😂）</p>
+<h2 id="CORS跨域"><a href="#CORS跨域" class="headerlink" title="CORS跨域"></a>CORS跨域</h2><p>有些人看完上面的jsonp跨域可能想，为啥不能script标签里面执行AJAX的动态请求呢？</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">title</span>&gt;</span>AJAX Request to Baidu<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;DOMContentLoaded&#x27;</span>, <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">var</span> xhr = <span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>(); <span class="comment">// 创建XMLHttpRequest对象</span></span></span><br><span class="line"><span class="language-javascript">            <span class="comment">// 配置请求方法、URL以及异步处理</span></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="title function_">open</span>(<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;http://www.baidu.com&#x27;</span>, <span class="literal">true</span>);</span></span><br><span class="line"><span class="language-javascript">            <span class="comment">// 设置状态变化回调处理请求结果</span></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="property">onreadystatechange</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                <span class="comment">// 仅当请求完成且响应就绪时才运行</span></span></span><br><span class="line"><span class="language-javascript">                <span class="keyword">if</span> (xhr.<span class="property">readyState</span> === <span class="number">4</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                    <span class="comment">// 检查HTTP响应状态码是否为200 OK</span></span></span><br><span class="line"><span class="language-javascript">                    <span class="keyword">if</span> (xhr.<span class="property">status</span> === <span class="number">200</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                        <span class="comment">// 这里可以获取到返回内容进行处理，例如打印到控制台</span></span></span><br><span class="line"><span class="language-javascript">                        <span class="variable language_">console</span>.<span class="title function_">log</span>(xhr.<span class="property">responseText</span>);</span></span><br><span class="line"><span class="language-javascript">                    &#125; <span class="keyword">else</span> &#123;</span></span><br><span class="line"><span class="language-javascript">                        <span class="comment">// 请求失败处理</span></span></span><br><span class="line"><span class="language-javascript">                        <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;AJAX Request to Baidu failed&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">                    &#125;</span></span><br><span class="line"><span class="language-javascript">                &#125;</span></span><br><span class="line"><span class="language-javascript">            &#125;;</span></span><br><span class="line"><span class="language-javascript">            <span class="comment">// 发送HTTP请求</span></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="title function_">send</span>();</span></span><br><span class="line"><span class="language-javascript">        &#125;);</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
+<img data-src="/images/pages/image-20240313105201430.png" alt="image-20240313105201430" style="zoom:50%;" />
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="post-title-link" itemprop="url">php绕过disable函数进行命令执行</a>
-        </h2>
+<p>可以看到仍然被同源策略限制。</p>
+<p>怎么解决呢？这里就是CORS了。</p>
+<p>1、当浏览器发起跨域请求，它会先发送一个“预检(Preflight)”请求，该请求采用<code>OPTIONS</code>方法，并携带诸如<code>Origin</code>、<code>Access-Control-Request-Method</code>和<code>Access-Control-Request-Headers</code>之类的特定头信息，询问服务器是否愿意接受跨源请求。</p>
+<p>2、服务器的回应是关键所在。如果服务器准许，它会回复一个包含<code>Access-Control-Allow-Origin</code>、<code>Access-Control-Allow-Methods</code>等头信息的“预检响应”，明确告诉浏览器哪些跨域行为是被许可的。</p>
+<p>3、一旦服务器的“预检响应”亮绿灯，浏览器随即会发送正式的请求。服务器此时通过检查请求头的<code>Origin</code>字段，决定是否允许访问资源，并在响应头中包含<code>Access-Control-Allow-Origin</code>字段，列明哪些域名可以接收响应数据。</p>
+<p>CORS不仅仅是关于XMLHttpRequest请求的，它还涵盖了其他安全机制，包括对cookies和认证的处理。大多数现代浏览器都已支持CORS，但一些旧版的浏览器，像是IE10及其以下版本，则不支持这项功能。</p>
+<h2 id="代理实现跨域"><a href="#代理实现跨域" class="headerlink" title="代理实现跨域"></a>代理实现跨域</h2><p>我们可以实现一个代理服务器来实现跨域，也就是A和B域之间有一个代理服务器。平常我们写python代码用requets请求百度，从来没有人拦截我们对吧，因为我们不是在浏览器操作，那我们可以请求一个我们自身的接口，这个接口从代码层再去另一个服务器拿数据再返回给前端，那这个接口就是一个代理。</p>
+<p>通过实现代理来实现跨域也是一种方法，但是好像不太多见。</p>
+<p>服务端代理代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">&#x27;express&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> fetch = <span class="built_in">require</span>(<span class="string">&#x27;node-fetch&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = <span class="title function_">express</span>();</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">PORT</span> = <span class="number">3000</span>; <span class="comment">// 代理服务器端口</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 允许跨域</span></span><br><span class="line">app.<span class="title function_">use</span>(<span class="function">(<span class="params">req, res, next</span>) =&gt;</span> &#123;</span><br><span class="line">    res.<span class="title function_">header</span>(<span class="string">&#x27;Access-Control-Allow-Origin&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span><br><span class="line">    <span class="title function_">next</span>();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 代理路由，将请求转发到百度</span></span><br><span class="line">app.<span class="title function_">get</span>(<span class="string">&#x27;/proxy&#x27;</span>, <span class="keyword">async</span> (req, res) =&gt; &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="title function_">fetch</span>(<span class="string">&#x27;http://www.baidu.com&#x27;</span>);</span><br><span class="line">        <span class="keyword">const</span> data = <span class="keyword">await</span> response.<span class="title function_">text</span>();</span><br><span class="line">        res.<span class="title function_">send</span>(data); <span class="comment">// 将从百度获取的数据发送回客户端</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Error making proxy request:&#x27;</span>, error);</span><br><span class="line">        res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">send</span>(<span class="string">&#x27;An error occurred while making proxy request&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="variable constant_">PORT</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`Proxy server is running on http://localhost:<span class="subst">$&#123;PORT&#125;</span>`</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
+<p>前端代码</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>AJAX Proxy Demo<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">function</span> <span class="title function_">makeRequest</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">var</span> xhr = <span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>();</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="comment">// 使用自己的代理服务器</span></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="title function_">open</span>(<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;http://localhost:3000/proxy&#x27;</span>, <span class="literal">true</span>);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="property">onreadystatechange</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                <span class="keyword">if</span> (xhr.<span class="property">readyState</span> === <span class="number">4</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                    <span class="keyword">if</span> (xhr.<span class="property">status</span> === <span class="number">200</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">                        <span class="comment">// 这里将显示百度首页的HTML</span></span></span><br><span class="line"><span class="language-javascript">                        <span class="variable language_">console</span>.<span class="title function_">log</span>(xhr.<span class="property">responseText</span>);</span></span><br><span class="line"><span class="language-javascript">                        <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;response&#x27;</span>).<span class="property">innerHTML</span> = xhr.<span class="property">responseText</span>;</span></span><br><span class="line"><span class="language-javascript">                    &#125; <span class="keyword">else</span> &#123;</span></span><br><span class="line"><span class="language-javascript">                        <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Proxy request failed.&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">                    &#125;</span></span><br><span class="line"><span class="language-javascript">                &#125;</span></span><br><span class="line"><span class="language-javascript">            &#125;;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            xhr.<span class="title function_">send</span>();</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>AJAX Proxy Demo<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">onclick</span>=<span class="string">&quot;makeRequest()&quot;</span>&gt;</span>Request Baidu through Proxy<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;response&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-              <time title="创建时间：2020-02-02 20:12:57" itemprop="dateCreated datePublished" datetime="2020-02-02T20:12:57+08:00">2020-02-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
-                </span>
-            </span>
 
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>901</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
 
-        </div>
-      </header>
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
 
-      
-          <h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>命令执行一般都用php自带的函数来进行执行,但是很多时候运维或者搞安全的会禁用这些用不到的函数来加固,包括一些CTF也是禁用一些函数来考察你的绕过能力,这时候就需要你对常见的函数绕过进行一些了解,本文就是总结下php在所有自带命令执行函数被禁后的其他操作.</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/php%E7%BB%95%E8%BF%87disable%E5%87%BD%E6%95%B0%E8%BF%9B%E8%A1%8C%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
+<h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><p>不太明白一些面试总是会问的特别细，比如一些CORS字段什么的，CSP的一些字段等等，感觉太多啦 有时候确实记不住啊，看见知道是什么意思还不行吗？有点废脑子，有时候知道已经理解啦，但是还是记不住那些参数。</p>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%88%91%E7%9A%84git%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E6%88%91%E7%9A%84git%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">我的git笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-12-25 23:12:57" itemprop="dateCreated datePublished" datetime="2019-12-25T23:12:57+08:00">2019-12-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/coding/" itemprop="url" rel="index"><span itemprop="name">coding</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>12k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>11 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>看了很多教程，发现还是很多东西记不住，如果不写写的话两天就忘了，所以记一下笔记。为了让别人有教程的感觉，对笔记进行了由浅入深的排序，可以帮你们快速入门。</p>
-<h3 id="git由来"><a href="#git由来" class="headerlink" title="git由来"></a>git由来</h3><p>linux在后期的开发过程中开发人员和代码量巨大，急需版本控制工具，刚开始有公司赞助给他们用，后来他们试图破解这个工具(确实很作死)，人家不给他用了，这些linux coder一气之下用C开发了初代的git，后来火了之后又在2008年做了github网站托管全球代码，从此git走入千家万户。<br>git是分布式的，但是我们普通人用起来和集中式没有区别。所以不用管这个概念。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E6%88%91%E7%9A%84git%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/Apache_solr_RCE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/Apache_solr_RCE/" class="post-title-link" itemprop="url">Apache solr RCE（CVE-2019-xxxx）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-10-31 23:12:57" itemprop="dateCreated datePublished" datetime="2019-10-31T23:12:57+08:00">2019-10-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&amp;#160; &amp;#160; &amp;#160; 记录一下复现过程，防止下次遇见的时候再去翻资料， 首先 Apache Solr是一个独立的企业级搜索应用服务器，它对外提供类似于Web-service的API接口。用户可以通过http请求，向搜索引擎服务器提交一定格式的XML文件，生成索引；也可以通过Http Get操作提出查找请求，并得到XML格式的返回结果。 Apache solr历史上有众多高危漏洞，为了自己以后遇见直接找到所有漏洞复现方式，先贴个链接： <a target="_blank" rel="noopener" href="https://gist.githubusercontent.com/s00py/a1ba36a3689fa13759ff910e179fc133/raw/fae5e663ffac0e3996fd9dbb89438310719d347a/gistfile1.txt ">apache solr历史漏洞列表</a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/Apache_solr_RCE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/" class="post-title-link" itemprop="url">如何绕过app的ssl-pinning</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-29 22:12:57" itemprop="dateCreated datePublished" datetime="2019-09-29T22:12:57+08:00">2019-09-29</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/android/" itemprop="url" rel="index"><span itemprop="name">android</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>25k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>23 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="什么是ssl-pinning？"><a href="#什么是ssl-pinning？" class="headerlink" title="什么是ssl-pinning？"></a>什么是ssl-pinning？</h3><p style="text-indent: 2em;">为了防止中间人攻击，app很多采用了证书固定技术，就是证书的双向认证。  
-我们在burp抓取浏览器https的包时，有时候会弹出警告当前证书不可信，然后我们手动勾选信任即可进行抓包（这种就是单向验证，我们强制服务端接收我们自己的证书）。
-</p>
-<p style="text-indent: 2em;">app的双向验证就是，如果我们的证书和app内置在客户端的证书不一致，那么他就直接报错或者直接退出。所以我们在渗透测试app的业务时需要一点手段绕过ssl的双向认证，目前绕过ssl-pinning的主要手段就是hook和逆向源码重新修改修改 IPA 文件、打包、安装。
-</p>
-<p style="text-indent: 2em;">由于很多app都进行了加固，逆向源码是不太容易的事情，所以更多的人采用hook函数的方法来进行ssl-pinning的绕过，本篇文章就是介绍两种过SSL-unpining的绕过方法。
-</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E5%A6%82%E4%BD%95%E7%BB%95%E8%BF%87app%E7%9A%84ssl-pinning/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/" class="post-title-link" itemprop="url">我的云服务器（linux）入侵排查</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-27 12:12:57" itemprop="dateCreated datePublished" datetime="2019-09-27T12:12:57+08:00">2019-09-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">内网安全</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h3><p>我最近老是感觉自己的阿里云服务器不太安全，因为我是密码登陆的，没配置密钥，我总在甲方的电脑上登陆我的服务器，虽然上面也没啥敏感东西。但是今天有空的时候还是排查了一下，因为心虚。结果是个乌龙，只能说有些东西还没了解过。不过这一过程也重新温习了下我这基础的不能再基础的应急响应能力。🤭</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/%E6%88%91%E7%9A%84%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://localhost:4000/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Geez">
-      <meta itemprop="description" content="黑客,诗人,养龟仔">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="匆匆那年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/" class="post-title-link" itemprop="url">phpstudy后门事件</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发布：</span>
-
-              <time title="创建时间：2019-09-24 12:12:57" itemprop="dateCreated datePublished" datetime="2019-09-24T12:12:57+08:00">2019-09-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类：</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/overview/web%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">web安全</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="phpstudy后门事件-gt-我的虚拟机中招了-😂"><a href="#phpstudy后门事件-gt-我的虚拟机中招了-😂" class="headerlink" title="phpstudy后门事件   -&gt;  我的虚拟机中招了 😂"></a>phpstudy后门事件   -&gt;  我的虚拟机中招了 😂</h2><p>最近，phpstudy 后门事件搞得风风火火的，然后我检查了自己的笔记本，发现没有中招，本来还高兴于自己的安全意识，因为我下载软件基本从官网下载。结果当我打开我的虚拟机的时候，发现这个版本和我自己用的版本不一致，于是我测试了一下，down，后门存在。虚拟机上也放了一丢丢的敏感文件，这次真的是有点尴尬了，赶紧删除对应版本。不给我平常用的都是7.0，所以问题也不算太大。看来以后下载东西真的要严格把关了。虚拟机上的这个我觉得是虚拟机就随便搞了一个进去，结果就中招了。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/phpstudy%E5%90%8E%E9%97%A8%E4%BA%8B%E4%BB%B6/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
       
     </div>
 
@@ -1172,7 +1234,7 @@
 <div class="copyright">
   
   &copy; 2016 – 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-fas fa-heart"></i>
   </span>
@@ -1181,12 +1243,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">160k</span>
+    <span title="站点总字数">192k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:25</span>
+    <span title="站点阅读时长">2:54</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
