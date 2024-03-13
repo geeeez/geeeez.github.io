@@ -21,15 +21,15 @@
     var CONFIG = {"hostname":"localhost","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="JAVA反序列话串记前言java的反序列化看一些，ysoserial和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的ysoserial代码，这篇文章也可以帮你梳理。">
+  <meta name="description" content="JAVA反序列串记前言java的反序列化看一些，ysoserial和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的ysoserial代码，这篇文章也可以帮你梳理。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="2023java反序列化随便乱记">
 <meta property="og:url" content="http://localhost:4000/posts/2023java-deserilize-view/">
 <meta property="og:site_name" content="匆匆那年">
-<meta property="og:description" content="JAVA反序列话串记前言java的反序列化看一些，ysoserial和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的ysoserial代码，这篇文章也可以帮你梳理。">
+<meta property="og:description" content="JAVA反序列串记前言java的反序列化看一些，ysoserial和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的ysoserial代码，这篇文章也可以帮你梳理。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-12-06T04:13:23.000Z">
-<meta property="article:modified_time" content="2024-03-11T09:28:36.702Z">
+<meta property="article:modified_time" content="2024-03-13T06:18:08.542Z">
 <meta property="article:author" content="Geez">
 <meta property="article:tag" content="Java安全">
 <meta name="twitter:card" content="summary">
@@ -237,7 +237,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.5k</span>
+              <span>1.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -256,7 +256,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="JAVA反序列话串记"><a href="#JAVA反序列话串记" class="headerlink" title="JAVA反序列话串记"></a>JAVA反序列话串记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>java的反序列化看一些，<em>ysoserial</em>和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的<em>ysoserial</em>代码，这篇文章也可以帮你梳理。</p>
+        <h1 id="JAVA反序列串记"><a href="#JAVA反序列串记" class="headerlink" title="JAVA反序列串记"></a>JAVA反序列串记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>java的反序列化看一些，<em>ysoserial</em>和fastjson以及shiro的，但是笔记没怎么做。这篇文章主要做笔记给自己看，把java反序列化中的链串一下，可能只有我自己能看懂吧😂。当然如果你已经跟完所有的<em>ysoserial</em>代码，这篇文章也可以帮你梳理。</p>
 <span id="more"></span>
 
 <h2 id="URLDNS"><a href="#URLDNS" class="headerlink" title="URLDNS"></a>URLDNS</h2><p>URLDNS链是最简单的，调用链如下：</p>
@@ -274,17 +274,7 @@
 <h2 id="CB1"><a href="#CB1" class="headerlink" title="CB1"></a>CB1</h2><p>把CC4的PriorityQueue变成Beancomparator#compare()来触发Propertyutils#getProperty</p>
 <p>PriorityQueue-&gt;compare()会调用Propertyutils-&gt;getProperty，正好走到TemplatesImpl的加载字节码调用链中。</p>
 <p>TemplatesImpl#getOutputProperties()-&gt;TemplatesImpl#newtransformers()</p>
-<h2 id="fastjson"><a href="#fastjson" class="headerlink" title="fastjson"></a>fastjson</h2><h2 id="log4j"><a href="#log4j" class="headerlink" title="log4j"></a>log4j</h2><p>服务端安全组 应用安全。</p>
-<p>应用安全，组件相关的漏洞上线前的东西。</p>
-<p>工具 人工的代码审计。</p>
-<p>专项治理。</p>
-<p>SDL。</p>
-<p>CTF 有专门蓝军。</p>
-<p>10点-8点。</p>
-<p>部门稳定性怎么样？挺稳定的。</p>
-<p>黑白灰 SDL流程。</p>
-<p>技术 + 研发能力 。</p>
-
+<h2 id="fastjson"><a href="#fastjson" class="headerlink" title="fastjson"></a>fastjson</h2><h2 id="log4j"><a href="#log4j" class="headerlink" title="log4j"></a>log4j</h2>
     </div>
 
     
@@ -322,8 +312,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/posts/undefined/" rel="prev" title="">
-      <i class="fa fa-chevron-left"></i> 
+    <a href="/posts/2023DownunderCTF-writeup/" rel="prev" title="2023DownunderCTF-writeup">
+      <i class="fa fa-chevron-left"></i> 2023DownunderCTF-writeup
     </a></div>
       <div class="post-nav-item"></div>
     </div>
@@ -384,7 +374,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E8%AF%9D%E4%B8%B2%E8%AE%B0"><span class="nav-text">JAVA反序列话串记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#URLDNS"><span class="nav-text">URLDNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC1"><span class="nav-text">CC1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#transformer"><span class="nav-text">transformer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lazymap"><span class="nav-text">lazymap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC6"><span class="nav-text">CC6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC3"><span class="nav-text">CC3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC4"><span class="nav-text">CC4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CB1"><span class="nav-text">CB1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastjson"><span class="nav-text">fastjson</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#log4j"><span class="nav-text">log4j</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E4%B8%B2%E8%AE%B0"><span class="nav-text">JAVA反序列串记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#URLDNS"><span class="nav-text">URLDNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC1"><span class="nav-text">CC1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#transformer"><span class="nav-text">transformer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lazymap"><span class="nav-text">lazymap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC6"><span class="nav-text">CC6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC3"><span class="nav-text">CC3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC4"><span class="nav-text">CC4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CB1"><span class="nav-text">CB1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastjson"><span class="nav-text">fastjson</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#log4j"><span class="nav-text">log4j</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -431,7 +421,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">192k</span>
+    <span title="站点总字数">191k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
